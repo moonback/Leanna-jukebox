@@ -1,4 +1,4 @@
-import { Pause, Play, X, RotateCw } from 'lucide-react';
+import { X, RotateCw } from 'lucide-react';
 import { usePlayer } from '../../hooks/usePlayer';
 import { Button } from '../ui/Button';
 import type { Song } from '../../types/song';
@@ -16,7 +16,7 @@ interface SimplePlayerProps {
  * Le composant est recréé pour chaque chanson (key côté parent), ce qui évite les états mélangés.
  */
 export function SimplePlayer({ song, volume, onStarted, onEnded, onClose }: SimplePlayerProps) {
-  const { hostRef, state, play, pause, retry } = usePlayer({
+  const { hostRef, state, retry } = usePlayer({
     songId: song.id,
     videoId: song.youtubeVideoId,
     autoplay: true,
@@ -25,7 +25,6 @@ export function SimplePlayer({ song, volume, onStarted, onEnded, onClose }: Simp
     onEnded,
   });
 
-  const isPlaying = state.status === 'playing';
   const hasError = state.status === 'error' && state.error !== undefined;
 
   return (
@@ -45,8 +44,6 @@ export function SimplePlayer({ song, volume, onStarted, onEnded, onClose }: Simp
         )}
       </div>
 
-      <p style={{ margin: 0, fontWeight: 900, fontSize: '1.2rem', textAlign: 'center', overflowWrap: 'anywhere' }}>{song.title}</p>
-
       {hasError && state.error && (
         <div role="alert" style={{ textAlign: 'center', display: 'grid', gap: 10, justifyItems: 'center' }}>
           <p style={{ margin: 0, fontWeight: 800 }}>{state.error.childMessage}</p>
@@ -59,18 +56,6 @@ export function SimplePlayer({ song, volume, onStarted, onEnded, onClose }: Simp
       )}
 
       <div className="row-wrap" style={{ justifyContent: 'center' }}>
-        {isPlaying ? (
-          <Button size="xxl" variant="primary" label="Pause" onClick={pause} icon={<Pause size={40} fill="currentColor" />} />
-        ) : (
-          <Button
-            size="xxl"
-            variant="primary"
-            label="Lecture"
-            disabled={state.status === 'demo' || state.status === 'loading' || hasError}
-            onClick={play}
-            icon={<Play size={40} fill="currentColor" />}
-          />
-        )}
         <Button size="icon" label="Fermer le lecteur" onClick={onClose} icon={<X size={26} />} />
       </div>
     </section>

@@ -41,7 +41,7 @@ export function SimpleModePage() {
   return (
     <AppShell showNavigation={false}>
       <header className="row-wrap" style={{ gap: 12, justifyContent: 'space-between' }}>
-        <h1 style={{ margin: 0, fontSize: 'clamp(1.4rem, 5vw, 2rem)', fontWeight: 900 }}>Mode simple</h1>
+        <h1 style={{ margin: 0, fontSize: 'clamp(1.4rem, 5vw, 2rem)', fontWeight: 900 }}>Leanna-Jukebox</h1>
         {/* Sortie protégée : seul un parent avec le code PIN peut quitter ce mode. */}
         <button
           type="button"

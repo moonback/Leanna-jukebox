@@ -67,7 +67,7 @@ svg {
   min-height: 100dvh;
   padding: calc(var(--safe-top) + 12px) calc(var(--safe-right) + 16px) calc(var(--safe-bottom) + 96px)
     calc(var(--safe-left) + 16px);
-  max-width: 1200px;
+  /* max-width: 1200px; */
   margin: 0 auto;
 }
 
