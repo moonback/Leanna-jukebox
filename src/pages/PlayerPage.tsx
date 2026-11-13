@@ -69,7 +69,7 @@ export function PlayerPage() {
         key={song.id}
         song={song}
         autoplay={autoplay}
-        volume={settings.maxVolumePreference / 100}
+        volume={settings.maxVolumePreference}
         fullscreenMode={settings.fullscreenMode}
         hasPrevious={index > 0}
         hasNext={index >= 0 && index < queue.length - 1}

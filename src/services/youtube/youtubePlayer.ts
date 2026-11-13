@@ -8,6 +8,7 @@ export interface YTPlayer {
   playVideo(): void;
   pauseVideo(): void;
   setVolume(volume: number): void;
+  unMute(): void;
   getCurrentTime(): number;
   getDuration(): number;
   destroy(): void;
@@ -139,7 +140,12 @@ export async function createYouTubePlayer(
             load: (id) => ready.loadVideoById(id),
             play: () => ready.playVideo(),
             pause: () => ready.pauseVideo(),
-            setVolume: (v) => ready.setVolume(Math.max(0, Math.min(100, v))),
+            // Volume en 0–100 (échelle de l'API). Le son est explicitement réactivé : un lecteur lancé
+            // automatiquement peut démarrer coupé.
+            setVolume: (v) => {
+              ready.unMute();
+              ready.setVolume(Math.max(0, Math.min(100, v)));
+            },
             getTime: () => ready.getCurrentTime(),
             getDuration: () => ready.getDuration(),
             destroy: () => ready.destroy(),

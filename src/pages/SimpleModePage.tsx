@@ -126,7 +126,7 @@ export function SimpleModePage() {
               <SimplePlayer
                 key={current.id}
                 song={current}
-                volume={settings.maxVolumePreference / 100}
+                volume={settings.maxVolumePreference}
                 onStarted={(id) => {
                   void markPlayed(id, db);
                 }}
