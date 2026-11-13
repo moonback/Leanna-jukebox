@@ -9,6 +9,7 @@ import { SimplePlayer } from '../components/music/SimplePlayer';
 import { LoadingState } from '../components/ui/LoadingState';
 import { EmptyState } from '../components/ui/EmptyState';
 import { Illustration } from '../illustrations/Illustration';
+import { youtubeThumbnailUrl } from '../services/youtube/youtubeUrlParser';
 import { useMusicLibrary } from '../hooks/useMusicLibrary';
 import { useSettings } from '../hooks/useSettings';
 import { markPlayed } from '../storage/songRepository';
@@ -102,7 +103,17 @@ export function SimpleModePage() {
                     background: selected ? 'linear-gradient(135deg, #ffc2d6, #d9ccf6)' : 'var(--color-surface-strong)',
                   }}
                 >
-                  <Illustration name={song.illustration} style={{ width: 44, height: 44, flex: '0 0 auto' }} />
+                  {song.youtubeVideoId ? (
+                    <img
+                      src={youtubeThumbnailUrl(song.youtubeVideoId)}
+                      alt=""
+                      loading="lazy"
+                      draggable={false}
+                      style={{ width: '100%', aspectRatio: '16 / 9', objectFit: 'cover', borderRadius: 12 }}
+                    />
+                  ) : (
+                    <Illustration name={song.illustration} style={{ width: 56, height: 56, flex: '0 0 auto' }} />
+                  )}
                   <span className="simple-row__title">{song.title}</span>
                 </button>
               );

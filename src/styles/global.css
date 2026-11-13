@@ -138,20 +138,23 @@ svg {
 
 .simple-list {
   display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 10px;
   min-width: 0;
 }
 
 .simple-row {
   display: flex;
+  flex-direction: column;
   align-items: center;
-  gap: 12px;
-  min-height: 72px;
-  padding: 10px 14px;
+  justify-content: center;
+  gap: 6px;
+  min-height: 120px;
+  padding: 10px 8px;
   border-radius: var(--radius-md);
   box-shadow: var(--shadow-soft);
   border: 2px solid var(--color-border);
-  text-align: left;
+  text-align: center;
   min-width: 0;
   transition: transform 0.15s ease;
 }
