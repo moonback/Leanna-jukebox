@@ -1,0 +1,36 @@
+:root {
+  --color-cream: #fff8ef;
+  --color-peach: #ffd8c2;
+  --color-pink: #ffc2d6;
+  --color-pink-deep: #e96d97;
+  --color-lavender: #d9ccf6;
+  --color-lavender-deep: #7d62c4;
+  --color-sky: #cfe8ff;
+  --color-sky-deep: #3f86c9;
+  --color-mint: #c8f2e0;
+  --color-mint-deep: #2f9e74;
+  --color-ink: #3f3350;
+  --color-ink-soft: #6e6283;
+  --color-surface: rgba(255, 255, 255, 0.72);
+  --color-surface-strong: rgba(255, 255, 255, 0.92);
+  --color-border: rgba(255, 255, 255, 0.9);
+  --color-danger: #c2415d;
+  --color-focus: #7d62c4;
+
+  --shadow-soft: 0 10px 30px rgba(120, 90, 160, 0.18);
+  --shadow-press: 0 4px 12px rgba(120, 90, 160, 0.2);
+  --radius-xl: 32px;
+  --radius-lg: 24px;
+  --radius-md: 16px;
+  --touch-min: 56px;
+  --touch-xxl: 88px;
+
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-left: env(safe-area-inset-left, 0px);
+  --safe-right: env(safe-area-inset-right, 0px);
+
+  font-family: 'Nunito', 'Segoe UI', system-ui, -apple-system, sans-serif;
+  color: var(--color-ink);
+  color-scheme: light;
+}

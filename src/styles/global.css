@@ -1,0 +1,343 @@
+@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@600;800;900&display=swap');
+@import './variables.css';
+@import './animations.css';
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  margin: 0;
+  min-height: 100%;
+  width: 100%;
+  overflow-x: hidden;
+}
+
+body {
+  background:
+    radial-gradient(circle at 10% 10%, var(--color-pink) 0, transparent 35%),
+    radial-gradient(circle at 90% 20%, var(--color-sky) 0, transparent 35%),
+    radial-gradient(circle at 50% 100%, var(--color-mint) 0, transparent 40%),
+    linear-gradient(160deg, var(--color-cream), var(--color-lavender));
+  background-color: var(--color-cream);
+  -webkit-font-smoothing: antialiased;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: manipulation;
+}
+
+button {
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+  border: none;
+  background: none;
+  touch-action: manipulation;
+}
+
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  outline: 3px solid var(--color-focus);
+  outline-offset: 3px;
+}
+
+input,
+select,
+textarea {
+  font: inherit;
+  user-select: text;
+  -webkit-user-select: text;
+}
+
+img,
+svg {
+  display: block;
+  max-width: 100%;
+}
+
+.app-shell {
+  min-height: 100dvh;
+  padding: calc(var(--safe-top) + 12px) calc(var(--safe-right) + 16px) calc(var(--safe-bottom) + 96px)
+    calc(var(--safe-left) + 16px);
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.app-shell--player {
+  padding-bottom: calc(var(--safe-bottom) + 24px);
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+/* ----- Cartes et surfaces (glassmorphism léger) ----- */
+.glass {
+  background: var(--color-surface);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 2px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-soft);
+}
+
+.card {
+  background: var(--color-surface-strong);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-soft);
+  padding: 16px;
+}
+
+.section-title {
+  font-size: 1.4rem;
+  font-weight: 900;
+  margin: 24px 4px 12px;
+  color: var(--color-ink);
+}
+
+.grid-songs {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 150px), 1fr));
+  gap: 18px;
+}
+
+.grid-tiles {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 170px), 1fr));
+  gap: 16px;
+}
+
+/* Accès rapides : toujours trois grandes cibles côte à côte, du téléphone à la tablette. */
+.quick-tiles {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+}
+
+/* Mode simple : titres à gauche, vidéo à droite. */
+.simple-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr);
+  gap: 16px;
+  align-items: start;
+  margin-top: 16px;
+}
+
+.simple-list {
+  display: grid;
+  gap: 10px;
+  min-width: 0;
+}
+
+.simple-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 72px;
+  padding: 10px 14px;
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-soft);
+  border: 2px solid var(--color-border);
+  text-align: left;
+  min-width: 0;
+  transition: transform 0.15s ease;
+}
+
+.simple-row:active {
+  transform: scale(0.98);
+}
+
+.simple-row__title {
+  flex: 1;
+  min-width: 0;
+  font-weight: 900;
+  font-size: 1.05rem;
+  overflow-wrap: anywhere;
+}
+
+.simple-player-column {
+  position: sticky;
+  top: 12px;
+  min-width: 0;
+}
+
+.simple-placeholder {
+  display: grid;
+  place-items: center;
+  min-height: 220px;
+  padding: 16px;
+  text-align: center;
+}
+
+.quick-tiles > a {
+  min-height: 110px;
+}
+
+.row-wrap {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+}
+
+.stack {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* ----- Boutons ----- */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  min-height: var(--touch-min);
+  padding: 12px 22px;
+  border-radius: 999px;
+  font-weight: 900;
+  font-size: 1.05rem;
+  box-shadow: var(--shadow-press);
+  transition: transform 0.15s ease, box-shadow 0.15s ease, filter 0.15s ease;
+}
+
+.btn:active {
+  transform: scale(0.96);
+}
+
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.btn--primary {
+  background: linear-gradient(135deg, #ff9eb9, #c9a6ff);
+  color: #fff;
+}
+
+.btn--secondary {
+  background: var(--color-surface-strong);
+  color: var(--color-ink);
+}
+
+.btn--danger {
+  background: #ffe1e7;
+  color: var(--color-danger);
+}
+
+.btn--icon {
+  width: var(--touch-min);
+  height: var(--touch-min);
+  padding: 0;
+  border-radius: 50%;
+}
+
+.btn--xxl {
+  min-height: var(--touch-xxl);
+  min-width: var(--touch-xxl);
+  font-size: 1.35rem;
+  border-radius: 999px;
+}
+
+/* ----- Champs (espace parents uniquement) ----- */
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-weight: 800;
+}
+
+.field input,
+.field select {
+  min-height: 48px;
+  padding: 10px 14px;
+  border-radius: var(--radius-md);
+  border: 2px solid #e6dcf5;
+  background: #fff;
+  color: var(--color-ink);
+  font-weight: 600;
+}
+
+.field--row {
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.error-text {
+  color: var(--color-danger);
+  font-weight: 800;
+  margin: 0;
+}
+
+.muted {
+  color: var(--color-ink-soft);
+  font-weight: 600;
+  margin: 0;
+}
+
+/* ----- Espace parents : mise en page responsive ----- */
+.parent-layout {
+  display: grid;
+  gap: 16px;
+  grid-template-columns: minmax(0, 1fr);
+}
+
+@media (min-width: 900px) {
+  .parent-layout--split {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr);
+  }
+}
+
+.item-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  border-radius: var(--radius-md);
+  background: #fff;
+  min-width: 0;
+}
+
+.item-row__title {
+  flex: 1;
+  min-width: 0;
+  overflow-wrap: anywhere;
+  font-weight: 800;
+}
+
+/* ----- Modales (parent) ----- */
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(63, 51, 80, 0.35);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  z-index: 50;
+}
+
+.modal {
+  width: min(560px, 100%);
+  max-height: 90dvh;
+  overflow-y: auto;
+  background: var(--color-surface-strong);
+  border-radius: var(--radius-xl);
+  padding: 24px;
+  box-shadow: var(--shadow-soft);
+}
