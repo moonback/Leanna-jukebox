@@ -43,7 +43,7 @@ export function ImagierPage() {
   };
 
   return (
-    <AppShell>
+    <AppShell showNavigation={false}>
       <header className="imagier-hero glass">
         <Link to="/" aria-label="Retour à l’accueil" className="btn btn--secondary btn--icon imagier-hero__back" style={{ textDecoration: 'none' }}>
           <ChevronLeft size={28} />
