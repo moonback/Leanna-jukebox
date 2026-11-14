@@ -1,4 +1,4 @@
-import { useState, type FormEvent } from 'react';
+import { useRef, useState, type FormEvent } from 'react';
 import { Check, DownloadCloud, Search } from 'lucide-react';
 import { Modal } from '../ui/Modal';
 import { Button } from '../ui/Button';
@@ -49,6 +49,7 @@ export function SongEditor({ song, categories, defaultCategoryId, onClose }: Son
   const [busy, setBusy] = useState(false);
   const [fetching, setFetching] = useState(false);
 
+  const saveRef = useRef<HTMLButtonElement>(null);
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<YouTubeResult[] | null>(null);
   const [searching, setSearching] = useState(false);
@@ -76,6 +77,9 @@ export function SongEditor({ song, categories, defaultCategoryId, onClose }: Son
     setLink(youtubeWatchUrl(result.videoId));
     setTitle(result.title);
     setError(null);
+    // Amène directement le parent sur « Enregistrer » (focus sans saut, puis défilement doux).
+    saveRef.current?.focus({ preventScroll: true });
+    saveRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
   };
 
   const fetchTitle = async () => {
@@ -207,7 +211,7 @@ export function SongEditor({ song, categories, defaultCategoryId, onClose }: Son
         {error && <p className="error-text" role="alert">{error}</p>}
         <div className="row-wrap" style={{ justifyContent: 'flex-end' }}>
           <Button onClick={onClose}>Annuler</Button>
-          <Button type="submit" variant="primary" disabled={busy}>
+          <Button ref={saveRef} type="submit" variant="primary" disabled={busy}>
             Enregistrer
           </Button>
         </div>
