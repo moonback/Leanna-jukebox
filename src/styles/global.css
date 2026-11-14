@@ -761,69 +761,176 @@ body {
 .swipe-action:disabled { opacity: .45; }
 
 /* ===== Imagier (mots illustrés de A à Z) ===== */
-.imagier-chip { font-size: 1rem; min-height: 48px; }
-.imagier-letters {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-  margin: 12px 0 0;
+.imagier-tint--tout      { --tint: #efe3f3; --tint-deep: #b07fb8; }
+.imagier-tint--animaux   { --tint: #fbe6d4; --tint-deep: #d08a52; }
+.imagier-tint--fruits    { --tint: #fbdfe6; --tint-deep: #d46a86; }
+.imagier-tint--legumes   { --tint: #e1efd9; --tint-deep: #6c9a5a; }
+.imagier-tint--vehicules { --tint: #dceaf3; --tint-deep: #5b8db0; }
+.imagier-tint--maison    { --tint: #f6edcf; --tint-deep: #b8953a; }
+.imagier-tint--nature    { --tint: #ddeee9; --tint-deep: #4f9a87; }
+
+.imagier-toolbar {
+  position: sticky;
+  top: calc(var(--safe-top) + 8px);
+  z-index: 10;
+  margin-top: 16px;
+  padding: 10px 12px 12px;
+  display: grid;
+  gap: 10px;
+  overflow: hidden;
 }
-.imagier-letters a {
+.imagier-tab {
+  flex: 0 0 auto;
+  scroll-snap-align: start;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 52px;
+  padding: 6px 18px 6px 8px;
+  border: 2px solid transparent;
+  border-radius: 999px;
+  background: var(--tint);
+  color: var(--color-ink);
+  font: inherit;
+  font-weight: 900;
+  font-size: 1rem;
+  cursor: pointer;
+  touch-action: manipulation;
+  transition: transform .15s ease, box-shadow .15s ease;
+}
+.imagier-tab__emoji {
   display: grid;
   place-items: center;
-  min-width: 40px;
-  min-height: 40px;
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: rgba(255,255,255,.85);
+  font-size: 1.3rem;
+}
+.imagier-tab.is-active {
+  border-color: var(--tint-deep);
+  box-shadow: 0 6px 16px rgba(102, 91, 130, .22);
+  transform: translateY(-2px);
+}
+.imagier-letters {
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.imagier-letters::-webkit-scrollbar { display: none; }
+.imagier-letters button {
+  flex: 0 0 auto;
+  width: 40px;
+  height: 40px;
+  border: 0;
   border-radius: 12px;
   background: var(--color-surface-strong);
   color: var(--color-lavender-deep);
+  font: inherit;
   font-weight: 900;
-  text-decoration: none;
+  font-size: 1.05rem;
+  cursor: pointer;
+  touch-action: manipulation;
 }
+.imagier-letters button:active { background: var(--color-lavender); }
+
+.imagier-section { scroll-margin-top: calc(var(--safe-top) + 150px); }
 .imagier-letter {
-  font-size: 2rem;
-  font-weight: 900;
-  margin: 20px 4px 8px;
-  color: var(--color-pink-deep);
-  scroll-margin-top: 16px;
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin: 28px 4px 12px;
 }
-.imagier-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(min(100%, 120px), 1fr));
-  gap: 12px;
-}
-.imagier-card {
+.imagier-letter__badge {
   display: grid;
   place-items: center;
-  gap: 4px;
-  padding: 14px 8px;
-  min-height: 130px;
+  width: 56px;
+  height: 56px;
+  border-radius: 18px;
+  background: linear-gradient(135deg, #f0a6c4, #a99be0);
+  color: #fff;
+  font-size: 2rem;
+  font-weight: 900;
+  box-shadow: var(--shadow-press);
+  align-self: center;
+}
+.imagier-letter__lower { font-size: 1.8rem; font-weight: 900; color: var(--color-ink-soft); opacity: .6; }
+
+.imagier-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 140px), 1fr));
+  gap: 14px;
+}
+.imagier-card {
+  position: relative;
+  display: grid;
+  justify-items: center;
+  align-content: center;
+  gap: 10px;
+  padding: 16px 8px 14px;
+  min-height: 160px;
+  border: 3px solid rgba(255,255,255,.9);
+  border-radius: var(--radius-lg);
+  background: linear-gradient(180deg, var(--tint), color-mix(in srgb, var(--tint) 70%, #fff));
+  box-shadow: var(--shadow-soft);
   font: inherit;
   color: var(--color-ink);
   cursor: pointer;
   touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
   transition: transform .12s ease;
 }
-.imagier-card:active { transform: scale(.94); }
-.imagier-card__emoji { font-size: 3.4rem; line-height: 1; }
-.imagier-card__name { font-weight: 900; font-size: 1.05rem; text-align: center; }
-.imagier-zoom {
-  background: var(--color-surface-strong);
-  border-radius: var(--radius-xl);
-  box-shadow: var(--shadow-soft);
-  padding: 24px;
-  width: min(420px, calc(100% - 32px));
+.imagier-card:active { transform: scale(.95); }
+.imagier-card__bubble {
+  display: grid;
+  place-items: center;
+  width: 92px;
+  height: 92px;
+  border-radius: 50%;
+  background: rgba(255,255,255,.8);
+  box-shadow: inset 0 -4px 0 rgba(0,0,0,.04);
+}
+.imagier-card__emoji { font-size: 3.6rem; line-height: 1; }
+.imagier-card__name {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 32px;
+  padding: 2px 12px;
+  border-radius: 999px;
+  font-weight: 900;
+  font-size: 1.1rem;
   text-align: center;
 }
-.imagier-zoom__emoji {
-  border: 0;
-  background: none;
-  font-size: clamp(6rem, 30vw, 10rem);
-  line-height: 1.1;
-  cursor: pointer;
-  touch-action: manipulation;
+.imagier-card.is-speaking {
+  border-color: var(--tint-deep);
+  animation: imagier-bounce .5s ease;
 }
-.imagier-zoom__word {
-  font-size: clamp(2rem, 8vw, 3rem);
-  font-weight: 900;
-  margin: 8px 0 20px;
+.imagier-card.is-speaking .imagier-card__emoji { animation: imagier-wiggle .6s ease; }
+.imagier-card.is-speaking .imagier-card__name {
+  background: var(--tint-deep);
+  color: #fff;
+  animation: pop-in .25s ease;
+}
+.imagier-card__sound { animation: imagier-pulse .8s ease-in-out infinite; }
+
+@keyframes imagier-bounce {
+  0% { transform: scale(1); }
+  35% { transform: scale(1.08); }
+  65% { transform: scale(.97); }
+  100% { transform: scale(1); }
+}
+@keyframes imagier-wiggle {
+  0%, 100% { transform: rotate(0); }
+  25% { transform: rotate(-12deg) scale(1.1); }
+  50% { transform: rotate(10deg) scale(1.15); }
+  75% { transform: rotate(-5deg); }
+}
+@keyframes imagier-pulse { 50% { opacity: .4; } }
+
+@media (prefers-reduced-motion: reduce) {
+  .imagier-card.is-speaking,
+  .imagier-card.is-speaking .imagier-card__emoji,
+  .imagier-card__sound { animation: none; }
 }
