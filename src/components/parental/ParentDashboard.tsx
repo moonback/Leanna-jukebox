@@ -1,8 +1,9 @@
-import { useState } from 'react';
+﻿import { useState } from 'react';
 import { ArrowDown, ArrowUp, Pencil, Plus, Star, Trash2 } from 'lucide-react';
 import { useMusicLibrary } from '../../hooks/useMusicLibrary';
 import { Illustration } from '../../illustrations/Illustration';
 import { Button } from '../ui/Button';
+import { SwipeRow } from '../ui/SwipeRow';
 import { SongEditor } from './SongEditor';
 import { PlaylistEditor } from './PlaylistEditor';
 import { CategoryEditor } from './CategoryEditor';
@@ -50,8 +51,10 @@ function SongsTab() {
   const { songs, categories } = useMusicLibrary();
   const [editing, setEditing] = useState<Song | 'new' | null>(null);
   const [confirmId, setConfirmId] = useState<string | null>(null);
+  const [filter, setFilter] = useState<string>('all');
   const [error, setError] = useState<string | null>(null);
   const categoryTitle = (id: string) => categories.find((c) => c.id === id)?.title ?? '—';
+  const visible = filter === 'all' ? songs : songs.filter((s) => s.categoryId === filter);
 
   const run = async (action: () => Promise<unknown>) => {
     setError(null);
@@ -63,47 +66,107 @@ function SongsTab() {
   };
 
   return (
-    <section className="stack" aria-label="Gestion des chansons">
-      <div className="row-wrap" style={{ justifyContent: 'space-between' }}>
-        <h2 style={{ margin: 0 }}>Mes chansons ({songs.length})</h2>
-        <Button variant="primary" icon={<Plus size={20} />} onClick={() => setEditing('new')} disabled={categories.length === 0}>
-          Ajouter une chanson
+    <section className="stack songs-admin" aria-label="Gestion des chansons">
+      <div className="songs-admin__head">
+        <div>
+          <h2 style={{ margin: 0 }}>Mes chansons</h2>
+          <p className="muted songs-admin__count">
+            {songs.length} chanson{songs.length > 1 ? 's' : ''} · glisse une ligne pour agir
+          </p>
+        </div>
+        <Button variant="primary" className="songs-admin__add" icon={<Plus size={20} />} onClick={() => setEditing('new')} disabled={categories.length === 0}>
+          <span className="songs-admin__add-label">Ajouter</span>
         </Button>
       </div>
-      {error && <p className="error-text" role="alert">{error}</p>}
-      {songs.length === 0 && <p className="muted">Aucune chanson pour le moment. Colle un lien YouTube pour commencer.</p>}
-      {songs.map((song, index) => (
-        <div key={song.id} className="item-row">
-          <div style={{ width: 52, height: 52, background: '#fff', borderRadius: 14, flex: '0 0 auto' }}>
-            <Illustration name={song.illustration} style={{ width: 52, height: 52 }} />
-          </div>
-          <div style={{ flex: 1, minWidth: 0 }}>
-            <div className="item-row__title">
-              {song.title} {song.isDemo && <span className="muted">(démo, fictive)</span>}
-            </div>
-            <div className="muted" style={{ fontSize: '0.85rem' }}>
-              {categoryTitle(song.categoryId)}
-              {song.youtubeVideoId ? ` · ${song.youtubeVideoId}` : ' · pas de vidéo'}
-            </div>
-          </div>
-          <div className="row-wrap" style={{ gap: 6 }}>
-            <Button size="icon" label="Monter" disabled={index === 0} onClick={() => run(() => moveSong(song.id, -1, db))} icon={<ArrowUp size={20} />} />
-            <Button size="icon" label="Descendre" disabled={index === songs.length - 1} onClick={() => run(() => moveSong(song.id, 1, db))} icon={<ArrowDown size={20} />} />
-            <Button size="icon" label={song.favorite ? 'Retirer des favoris' : 'Ajouter aux favoris'} onClick={() => run(() => toggleFavorite(song.id, db))} icon={<Star size={20} fill={song.favorite ? 'currentColor' : 'none'} />} />
-            <Button size="icon" label="Modifier" onClick={() => setEditing(song)} icon={<Pencil size={20} />} />
-            {confirmId === song.id ? (
-              <>
-                <Button variant="danger" onClick={() => run(() => deleteSong(song.id, db)).then(() => setConfirmId(null))}>
-                  Supprimer
-                </Button>
-                <Button onClick={() => setConfirmId(null)}>Non</Button>
-              </>
-            ) : (
-              <Button size="icon" variant="danger" label="Supprimer la chanson" onClick={() => setConfirmId(song.id)} icon={<Trash2 size={20} />} />
-            )}
-          </div>
+
+      {categories.length > 1 && (
+        <div className="chip-scroll" role="tablist" aria-label="Filtrer par catégorie">
+          <button type="button" className={`chip${filter === 'all' ? ' is-active' : ''}`} onClick={() => setFilter('all')}>
+            Toutes
+          </button>
+          {categories.map((c) => (
+            <button key={c.id} type="button" className={`chip${filter === c.id ? ' is-active' : ''}`} onClick={() => setFilter(c.id)}>
+              {c.title}
+            </button>
+          ))}
         </div>
-      ))}
+      )}
+
+      {error && <p className="error-text" role="alert">{error}</p>}
+      {visible.length === 0 && <p className="muted">Aucune chanson ici. Colle un lien YouTube pour commencer.</p>}
+
+      {visible.map((song) => {
+        const index = songs.findIndex((s) => s.id === song.id);
+        const confirming = confirmId === song.id;
+        return (
+          <SwipeRow
+            key={song.id}
+            rightWidth={168}
+            closeSignal={confirming ? null : song.id + String(song.favorite)}
+            leftAction={
+              <button type="button" className="swipe-action swipe-action--fav" onClick={() => run(() => toggleFavorite(song.id, db))}>
+                <Star size={22} fill={song.favorite ? 'currentColor' : 'none'} />
+                <span>{song.favorite ? 'Retirer' : 'Favori'}</span>
+              </button>
+            }
+            rightActions={
+              <>
+                <button type="button" className="swipe-action swipe-action--edit" onClick={() => setEditing(song)}>
+                  <Pencil size={22} />
+                  <span>Modifier</span>
+                </button>
+                {confirming ? (
+                  <button
+                    type="button"
+                    className="swipe-action swipe-action--danger is-confirm"
+                    onClick={() => run(() => deleteSong(song.id, db)).then(() => setConfirmId(null))}
+                  >
+                    <Trash2 size={22} />
+                    <span>Confirmer ?</span>
+                  </button>
+                ) : (
+                  <button type="button" className="swipe-action swipe-action--danger" onClick={() => setConfirmId(song.id)}>
+                    <Trash2 size={22} />
+                    <span>Supprimer</span>
+                  </button>
+                )}
+              </>
+            }
+          >
+            <div className="song-row">
+              <div className="song-row__thumb">
+                {song.youtubeVideoId ? (
+                  <img src={`https://i.ytimg.com/vi/${song.youtubeVideoId}/mqdefault.jpg`} alt="" loading="lazy" draggable={false} />
+                ) : (
+                  <Illustration name={song.illustration} style={{ width: '100%', height: '100%' }} />
+                )}
+              </div>
+              <div className="song-row__body">
+                <div className="song-row__title">
+                  {song.favorite && <Star size={14} fill="currentColor" className="song-row__star" />}
+                  {song.title}
+                </div>
+                <div className="song-row__meta">
+                  <span className="chip chip--small">{categoryTitle(song.categoryId)}</span>
+                  {song.isDemo && <span className="muted">démo</span>}
+                  {!song.youtubeVideoId && <span className="muted">pas de vidéo</span>}
+                </div>
+              </div>
+              {filter === 'all' && (
+                <div className="song-row__move">
+                  <button type="button" aria-label="Monter" disabled={index === 0} onClick={() => run(() => moveSong(song.id, -1, db))}>
+                    <ArrowUp size={18} />
+                  </button>
+                  <button type="button" aria-label="Descendre" disabled={index === songs.length - 1} onClick={() => run(() => moveSong(song.id, 1, db))}>
+                    <ArrowDown size={18} />
+                  </button>
+                </div>
+              )}
+            </div>
+          </SwipeRow>
+        );
+      })}
+
       {editing && (
         <SongEditor
           song={editing === 'new' ? undefined : editing}

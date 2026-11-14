@@ -1,8 +1,9 @@
-import { useState } from 'react';
+﻿import { useState } from 'react';
 import { ArrowDown, ArrowUp, Plus, Trash2, X } from 'lucide-react';
 import { useMusicLibrary } from '../../hooks/useMusicLibrary';
 import { usePlaylistSongs } from '../../hooks/usePlaylists';
 import { Button } from '../ui/Button';
+import { SwipeRow } from '../ui/SwipeRow';
 import { IllustrationPicker } from '../ui/IllustrationPicker';
 import { Illustration } from '../../illustrations/Illustration';
 import { createPlaylist, deletePlaylist, addSongToPlaylist, movePlaylistSong, removeSongFromPlaylist, updatePlaylist } from '../../storage/playlistRepository';
@@ -18,6 +19,7 @@ export function PlaylistEditor() {
   const [newIllustration, setNewIllustration] = useState<IllustrationKey>('star');
   const [error, setError] = useState<string | null>(null);
   const [confirmDelete, setConfirmDelete] = useState(false);
+  const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
   const { playlist, songs: playlistSongs } = usePlaylistSongs(selectedId ?? undefined);
   const [addSongId, setAddSongId] = useState('');
 
