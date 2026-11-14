@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { X, RotateCw, SkipBack, SkipForward } from 'lucide-react';
 import { usePlayer } from '../../hooks/usePlayer';
 import { Button } from '../ui/Button';
@@ -29,6 +30,19 @@ export function SimplePlayer({ song, volume, onStarted, onEnded, onClose, onPrev
   });
 
   const hasError = state.status === 'error' && state.error !== undefined;
+
+  // Mode simple : la vidéo ne doit offrir aucune interaction (logo, titre, « Regarder sur YouTube »,
+  // suggestions de fin, lien d'erreur). `inert` bloque clic, toucher et clavier sur l'iframe ;
+  // la lecture reste pilotée uniquement par l'API depuis nos boutons.
+  useEffect(() => {
+    const host = hostRef.current;
+    if (!host) return;
+    host.setAttribute('inert', '');
+    host.style.pointerEvents = 'none';
+    return () => {
+      host.removeAttribute('inert');
+    };
+  }, [hostRef, state.status]);
 
   return (
     <section className="glass" aria-label="Lecteur simple" style={{ padding: 12, display: 'grid', gap: 10, justifyItems: 'center', animation: 'simple-pop-in 0.35s ease' }}>
