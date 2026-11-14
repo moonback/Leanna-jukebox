@@ -121,9 +121,8 @@ export function SimpleModePage() {
                       style={{ width: '100%', aspectRatio: '16 / 9', objectFit: 'cover', borderRadius: 12 }}
                     />
                   ) : (
-                    <Illustration name={song.illustration} style={{ width: 56, height: 56, flex: '0 0 auto' }} />
+                    <Illustration name={song.illustration} style={{ width: '100%', aspectRatio: '16 / 9', objectFit: 'cover' }} />
                   )}
-                  <span className="simple-row__title">{song.title}</span>
                 </button>
               );
             })}
