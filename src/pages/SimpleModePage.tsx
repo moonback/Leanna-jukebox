@@ -92,7 +92,7 @@ export function SimpleModePage() {
           <EmptyState illustration="cloud" title="Pas encore de chansons" description="Un parent peut ajouter des chansons." />
         </div>
       ) : (
-        <div className="simple-layout">
+        <div className={current ? 'simple-layout' : 'simple-layout simple-layout--list-only'}>
           {/* Gauche : les titres. */}
           <div className="simple-list" role="list">
             {songs.map((song) => {
@@ -130,8 +130,8 @@ export function SimpleModePage() {
           </div>
 
           {/* Droite : la vidéo, lancée automatiquement au choix d'un titre. */}
+          {current && (
           <div className="simple-player-column">
-            {current ? (
               <SimplePlayer
                 key={current.id}
                 song={current}
@@ -147,12 +147,8 @@ export function SimpleModePage() {
                 onPrevious={index > 0 ? () => choose(songs[index - 1].id) : undefined}
                 onNext={index < songs.length - 1 ? () => choose(songs[index + 1].id) : undefined}
               />
-            ) : (
-              <div className="glass simple-placeholder">
-                <p style={{ margin: 0, fontWeight: 900, fontSize: '1.2rem' }}>Choisis une chanson à gauche</p>
-              </div>
-            )}
           </div>
+          )}
         </div>
       )}
     </AppShell>

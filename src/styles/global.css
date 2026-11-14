@@ -136,6 +136,15 @@ svg {
   margin-top: 16px;
 }
 
+.simple-layout--list-only {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+/* Sans lecteur, la liste occupe toute la largeur : 6 chansons par ligne. */
+.simple-layout--list-only .simple-list {
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+}
+
 .simple-list {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
