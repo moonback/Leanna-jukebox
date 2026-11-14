@@ -1,4 +1,4 @@
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+﻿import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { JukeboxDatabase } from './database';
 import { ensureSeeded } from './seed';
 import { addSong, listSongs } from './songRepository';
@@ -35,7 +35,7 @@ describe('sauvegarde locale', () => {
     const json = JSON.stringify(backup);
 
     expect(backup.format).toBe(BACKUP_FORMAT);
-    expect(backup.songs.length).toBe(4);
+    expect(backup.songs.length).toBe(3);
     expect(json).not.toContain('SECRET-HASH');
     expect(json).not.toContain('SECRET-SALT');
     expect(json).not.toContain('pinHash');
@@ -60,7 +60,7 @@ describe('sauvegarde locale', () => {
     const settings = await getSettings(database);
     expect(settings.pinHash).toBeUndefined();
     expect(settings.childMode).toBe(false);
-    expect(await database.songs.count()).toBe(3);
+    expect(await database.songs.count()).toBe(2);
     expect(await database.categories.count()).toBe(7);
   });
 });

@@ -1,4 +1,4 @@
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+﻿import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { JukeboxDatabase } from './database';
 import { ensureSeeded, DEFAULT_CATEGORIES } from './seed';
 import {
@@ -32,18 +32,18 @@ afterEach(async () => {
 const base = { youtubeVideoId: VIDEO, categoryId: 'cat-comptines', illustration: 'bunny' as const };
 
 describe('amorçage de la base', () => {
-  it('crée les catégories par défaut et les chansons de démonstration marquées fictives', async () => {
+  it('crée les catégories par défaut et les chansons d’exemple jouables', async () => {
     const categories = await listCategories(database);
     expect(categories.map((c) => c.title)).toEqual(DEFAULT_CATEGORIES.map((c) => c.title));
     const songs = await listSongs(database);
-    expect(songs.length).toBe(3);
-    expect(songs.every((s) => s.isDemo === true && s.youtubeVideoId === '')).toBe(true);
+    expect(songs.length).toBe(2);
+    expect(songs.every((s) => !s.isDemo && s.youtubeVideoId.length === 11)).toBe(true);
   });
 
   it('est idempotent : un second amorçage ne duplique rien', async () => {
     await ensureSeeded(database);
     expect(await database.categories.count()).toBe(DEFAULT_CATEGORIES.length);
-    expect(await database.songs.count()).toBe(3);
+    expect(await database.songs.count()).toBe(2);
   });
 });
 

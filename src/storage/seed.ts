@@ -1,4 +1,4 @@
-import type { JukeboxDatabase } from './database';
+﻿import type { JukeboxDatabase } from './database';
 import type { Category } from '../types/category';
 import type { Song } from '../types/song';
 import { CURRENT_SCHEMA_VERSION, type ParentSettings } from '../types/settings';
@@ -13,16 +13,11 @@ export const DEFAULT_CATEGORIES: Category[] = [
   { id: 'cat-histoires', title: 'Histoires musicales', illustration: 'cloud', sortOrder: 6 },
 ];
 
-/**
- * Chansons FICTIVES de démonstration. Elles n'ont pas de vidéo : elles ne sont jamais présentées
- * comme de vraies chansons jouables. Le parent les remplace par ses propres liens YouTube.
- */
-export const DEMO_SONGS: Array<Pick<Song, 'title' | 'categoryId' | 'illustration'>> = [
-  { title: 'Démo : Le lapin malin', categoryId: 'cat-comptines', illustration: 'bunny' },
-  { title: 'Démo : L’ourson qui danse', categoryId: 'cat-danse', illustration: 'bear' },
-  { title: 'Démo : Le renard et les étoiles', categoryId: 'cat-histoires', illustration: 'fox' },
+/** Chansons d'exemple fournies au premier lancement (vraies vidéos YouTube, jouables). */
+export const DEMO_SONGS: Array<Pick<Song, 'title' | 'youtubeVideoId' | 'categoryId' | 'illustration'>> = [
+  { title: 'Waka Waka (This Time for Africa)', youtubeVideoId: 'pRpeEdMmmQ0', categoryId: 'cat-danse', illustration: 'sun' },
+  { title: 'Dai Dai', youtubeVideoId: 'fcnDmrtj6Sk', categoryId: 'cat-danse', illustration: 'star' },
 ];
-
 export function defaultSettings(): ParentSettings {
   return {
     key: 'parent',
@@ -44,16 +39,15 @@ export async function ensureSeeded(database: JukeboxDatabase, now = Date.now()):
       await database.categories.bulkAdd(DEFAULT_CATEGORIES);
       await database.songs.bulkAdd(
         DEMO_SONGS.map((demo, index) => ({
-          id: `demo-${index + 1}`,
+          id: `sample-${index + 1}`,
           title: demo.title,
-          youtubeVideoId: '',
+          youtubeVideoId: demo.youtubeVideoId,
           categoryId: demo.categoryId,
           illustration: demo.illustration,
           favorite: false,
           sortOrder: index,
           createdAt: now,
           updatedAt: now,
-          isDemo: true,
         })),
       );
     }
