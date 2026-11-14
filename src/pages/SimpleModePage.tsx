@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Lock } from 'lucide-react';
 import { AppShell } from '../components/layout/AppShell';
@@ -27,6 +27,13 @@ export function SimpleModePage() {
   const [exitOpen, setExitOpen] = useState(false);
   const auth = useParentAuth();
   const navigate = useNavigate();
+
+  // Désactive le clic droit (menu contextuel) tant que le mode simple est affiché.
+  useEffect(() => {
+    const block = (e: Event) => e.preventDefault();
+    document.addEventListener('contextmenu', block);
+    return () => document.removeEventListener('contextmenu', block);
+  }, []);
 
   if (!library.ready) return <AppShell><LoadingState /></AppShell>;
 
