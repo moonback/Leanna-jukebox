@@ -770,52 +770,31 @@ body {
 .imagier-tint--nature    { --tint: #ddeee9; --tint-deep: #4f9a87; }
 
 .imagier-hero {
-  position: relative;
   display: flex;
   align-items: center;
-  gap: 14px;
-  padding: 14px 16px;
-  border-radius: var(--radius-xl);
-  background:
-    radial-gradient(circle at 85% 20%, rgba(255,255,255,.7) 0 40px, transparent 41px),
-    radial-gradient(circle at 70% 110%, rgba(255,255,255,.45) 0 60px, transparent 61px),
-    linear-gradient(120deg, #fbd3e3, #e3dbf7 55%, #d5ecf0);
-  box-shadow: var(--shadow-soft);
-  overflow: hidden;
+  gap: 12px;
+  padding: 4px 4px;
 }
 .imagier-hero__back { flex: 0 0 auto; }
-.imagier-hero__mascot { width: 68px; height: 68px; flex: 0 0 auto; }
 .imagier-hero__text { flex: 1 1 auto; min-width: 0; }
-.imagier-hero__text h1 { margin: 0; font-size: clamp(1.5rem, 5vw, 2.3rem); font-weight: 900; line-height: 1.05; }
-.imagier-hero__text p { margin: 2px 0 0; color: var(--color-ink-soft); font-weight: 700; }
+.imagier-hero__text h1 { margin: 0; font-size: clamp(1.4rem, 4.5vw, 1.9rem); font-weight: 900; line-height: 1.1; }
 .imagier-surprise {
   flex: 0 0 auto;
   display: grid;
-  justify-items: center;
-  gap: 2px;
-  min-width: 84px;
-  min-height: 72px;
-  padding: 8px 12px;
+  place-items: center;
+  width: 52px;
+  height: 52px;
+  padding: 0;
   border: 0;
-  border-radius: 22px;
+  border-radius: 50%;
   background: #fff;
-  color: var(--color-lavender-deep);
   font: inherit;
-  font-weight: 900;
   box-shadow: var(--shadow-press);
   cursor: pointer;
   touch-action: manipulation;
 }
-.imagier-surprise__dice { font-size: 2rem; line-height: 1; transition: transform .4s ease; }
+.imagier-surprise__dice { font-size: 1.6rem; line-height: 1; transition: transform .4s ease; }
 .imagier-surprise:active .imagier-surprise__dice { transform: rotate(180deg) scale(1.2); }
-@media (max-width: 560px) {
-  .imagier-hero { flex-wrap: wrap; gap: 10px; }
-  .imagier-hero__mascot { width: 52px; height: 52px; }
-  .imagier-hero__text { flex-basis: calc(100% - 140px); }
-  .imagier-surprise { width: 100%; grid-auto-flow: column; justify-content: center; align-items: center; gap: 10px; min-height: 52px; }
-  .imagier-surprise__dice { font-size: 1.5rem; }
-}
-
 .imagier-toolbar {
   position: sticky;
   top: calc(var(--safe-top) + 8px);

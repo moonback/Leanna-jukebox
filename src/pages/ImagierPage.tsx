@@ -2,7 +2,6 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ChevronLeft, Volume2 } from 'lucide-react';
 import { AppShell } from '../components/layout/AppShell';
-import { Illustration } from '../illustrations/Illustration';
 import { IMAGIER_CATEGORIES, IMAGIER_ITEMS, groupByLetter, initialOf, letterPhrase, spokenWord, type ImagierCategory, type ImagierItem } from '../data/imagier';
 import { speakFrench } from '../services/speech';
 
@@ -49,14 +48,11 @@ export function ImagierPage() {
         <Link to="/" aria-label="Retour à l’accueil" className="btn btn--secondary btn--icon imagier-hero__back" style={{ textDecoration: 'none' }}>
           <ChevronLeft size={28} />
         </Link>
-        <Illustration name="bunny" className="anim-float imagier-hero__mascot" />
         <div className="imagier-hero__text">
           <h1>Mon imagier</h1>
-          <p>Touche une image pour entendre son nom</p>
         </div>
-        <button type="button" className="imagier-surprise" onClick={surprise}>
+        <button type="button" className="imagier-surprise" onClick={surprise} aria-label="Surprise : une image au hasard">
           <span aria-hidden="true" className="imagier-surprise__dice">🎲</span>
-          Surprise
         </button>
       </header>
 
