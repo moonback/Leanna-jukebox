@@ -16,6 +16,7 @@ export function ImagierPage() {
   const [category, setCategory] = useState<ImagierCategory | 'tout'>('tout');
   // `tap` change à chaque toucher pour relancer l'animation, même sur la même carte.
   const [active, setActive] = useState<{ id: string; tap: number } | null>(null);
+  const [zoom, setZoom] = useState<ImagierItem | null>(null);
   const timers = useRef<number[]>([]);
   const groups = useMemo(() => groupByLetter(IMAGIER_ITEMS, category), [category]);
   const visible = useMemo(() => groups.flatMap((g) => g.items), [groups]);
@@ -26,10 +27,18 @@ export function ImagierPage() {
   };
   useEffect(() => clearTimers, []);
 
+  useEffect(() => {
+    if (!zoom) return;
+    const onKey = (e: KeyboardEvent) => e.key === 'Escape' && setZoom(null);
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [zoom]);
+
   const say = (item: ImagierItem) => {
     clearTimers();
     speakFrench(letterPhrase(item));
     setActive((prev) => ({ id: item.id, tap: (prev?.tap ?? 0) + 1 }));
+    setZoom(item);
     timers.current.push(window.setTimeout(() => setActive(null), 2500));
   };
 
@@ -112,6 +121,36 @@ export function ImagierPage() {
       <p className="imagier-end">
         <span aria-hidden="true">🎉</span> Bravo, tu as vu les {visible.length} images&nbsp;!
       </p>
+
+      {zoom && (
+        // Toucher n'importe où ferme ; toucher l'image la fait redire.
+        <div className="modal-backdrop imagier-zoom" onClick={() => setZoom(null)}>
+          <div
+            key={zoom.id}
+            role="dialog"
+            aria-modal="true"
+            aria-label={spokenWord(zoom)}
+            className={`imagier-zoom__card imagier-tint--${zoom.category}`}
+          >
+            <span className="imagier-zoom__sparkles" aria-hidden="true">✨</span>
+            <button
+              type="button"
+              className="imagier-zoom__picture"
+              aria-label={`Redire ${spokenWord(zoom)}`}
+              onClick={(e) => {
+                e.stopPropagation();
+                speakFrench(letterPhrase(zoom));
+              }}
+            >
+              <EmojiPicture emoji={zoom.emoji} />
+            </button>
+            <span className="imagier-zoom__shadow" aria-hidden="true" />
+            <p className="imagier-zoom__name">
+              <span className="imagier-card__initial">{initialOf(zoom.name)}</span> comme {zoom.name}
+            </p>
+          </div>
+        </div>
+      )}
     </AppShell>
   );
 }

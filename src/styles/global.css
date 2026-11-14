@@ -1008,7 +1008,104 @@ body {
 }
 @keyframes imagier-pulse { 50% { opacity: .4; } }
 
+/* ----- Imagier : grande image animée de l'objet choisi ----- */
+.imagier-zoom { animation: imagier-fade .2s ease both; cursor: pointer; }
+.imagier-zoom__card {
+  position: relative;
+  display: grid;
+  justify-items: center;
+  gap: 12px;
+  width: min(360px, 100%);
+  padding: 28px 20px 24px;
+  border: 4px solid #fff;
+  border-radius: var(--radius-xl);
+  background: linear-gradient(180deg, var(--tint), color-mix(in srgb, var(--tint) 60%, #fff));
+  box-shadow: var(--shadow-soft);
+  animation: imagier-zoom-in .55s cubic-bezier(.34, 1.56, .64, 1) both;
+}
+.imagier-zoom__picture {
+  display: grid;
+  place-items: center;
+  width: 200px;
+  height: 200px;
+  border: 0;
+  background: none;
+  font-size: 9rem;
+  line-height: 1;
+  cursor: pointer;
+  transform-origin: 50% 100%; /* l'écrasement part du sol, comme un vrai rebond */
+  filter: drop-shadow(0 10px 10px rgba(0,0,0,.18));
+  animation: imagier-drop 1s linear both, imagier-hover 3.2s ease-in-out 1s infinite;
+}
+.imagier-zoom__shadow {
+  width: 130px;
+  height: 18px;
+  margin-top: -18px;
+  border-radius: 50%;
+  background: radial-gradient(closest-side, rgba(0,0,0,.28), transparent);
+  animation: imagier-shadow-drop 1s linear both, imagier-shadow-hover 3.2s ease-in-out 1s infinite;
+}
+.imagier-zoom__name {
+  margin: 0;
+  padding: 6px 18px;
+  border-radius: 999px;
+  background: var(--tint-deep);
+  color: #fff;
+  font-weight: 900;
+  font-size: 1.6rem;
+  animation: pop-in .35s ease .35s both;
+}
+.imagier-zoom__name .imagier-card__initial { color: #fff; }
+.imagier-zoom__sparkles {
+  position: absolute;
+  top: 10px;
+  right: 16px;
+  font-size: 2.2rem;
+  animation: imagier-twinkle 1.2s ease-in-out infinite;
+}
+
+@keyframes imagier-fade { from { opacity: 0; } }
+@keyframes imagier-zoom-in { from { transform: scale(.3); opacity: 0; } }
+/* Chute avec gravité (accélère en tombant, ralentit en montant), écrasement à l'impact, rebonds qui s'amortissent. */
+@keyframes imagier-drop {
+  0%   { transform: translateY(-260px) scale(.9, 1.1); opacity: 0; animation-timing-function: cubic-bezier(.55, 0, 1, .45); }
+  8%   { opacity: 1; }
+  40%  { transform: translateY(0) scale(1.18, .8); animation-timing-function: cubic-bezier(0, .55, .45, 1); }
+  58%  { transform: translateY(-60px) scale(.96, 1.05); animation-timing-function: cubic-bezier(.55, 0, 1, .45); }
+  74%  { transform: translateY(0) scale(1.08, .92); animation-timing-function: cubic-bezier(0, .55, .45, 1); }
+  85%  { transform: translateY(-16px) scale(1); animation-timing-function: cubic-bezier(.55, 0, 1, .45); }
+  94%  { transform: translateY(0) scale(1.03, .97); }
+  100% { transform: translateY(0) scale(1); }
+}
+/* Ensuite l'objet flotte doucement et tourne un peu sur lui-même, en 3D. */
+@keyframes imagier-hover {
+  0%, 100% { transform: perspective(600px) translateY(0) rotateY(0); }
+  25% { transform: perspective(600px) translateY(-10px) rotateY(14deg); }
+  50% { transform: perspective(600px) translateY(-16px) rotateY(0); }
+  75% { transform: perspective(600px) translateY(-10px) rotateY(-14deg); }
+}
+/* L'ombre grandit quand l'objet touche le sol, rétrécit quand il monte. */
+@keyframes imagier-shadow-drop {
+  0%   { transform: scale(.2); opacity: 0; animation-timing-function: cubic-bezier(.55, 0, 1, .45); }
+  40%  { transform: scale(1.1); opacity: 1; animation-timing-function: cubic-bezier(0, .55, .45, 1); }
+  58%  { transform: scale(.7); opacity: .6; animation-timing-function: cubic-bezier(.55, 0, 1, .45); }
+  74%  { transform: scale(1.05); opacity: 1; }
+  85%  { transform: scale(.9); }
+  100% { transform: scale(1); opacity: 1; }
+}
+@keyframes imagier-shadow-hover {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(.8); opacity: .65; }
+}
+@keyframes imagier-twinkle { 50% { transform: scale(1.3) rotate(20deg); opacity: .6; } }
+
 @media (prefers-reduced-motion: reduce) {
+  .imagier-zoom,
+  .imagier-zoom__card,
+  .imagier-zoom__picture,
+  .imagier-zoom__shadow,
+  .imagier-zoom__name,
+  .imagier-zoom__sparkles,
   .imagier-card.is-entering,
   .imagier-card.is-speaking,
   .imagier-card.is-speaking .imagier-card__emoji,
