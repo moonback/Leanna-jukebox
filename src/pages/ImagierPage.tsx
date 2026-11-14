@@ -2,12 +2,14 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ChevronLeft, Volume2 } from 'lucide-react';
 import { AppShell } from '../components/layout/AppShell';
-import { Illustration } from '../illustrations/Illustration';
-import { IMAGIER_CATEGORIES, IMAGIER_ITEMS, groupByLetter, initialOf, letterPhrase, spokenWord, type ImagierCategory, type ImagierItem } from '../data/imagier';
+import { IMAGIER_CATEGORIES, IMAGIER_ITEMS, emojiImage, groupByLetter, initialOf, letterPhrase, spokenWord, type ImagierCategory, type ImagierItem } from '../data/imagier';
 import { speakFrench } from '../services/speech';
 
-const countFor = (id: ImagierCategory | 'tout') =>
-  id === 'tout' ? IMAGIER_ITEMS.length : IMAGIER_ITEMS.filter((i) => i.category === id).length;
+/** Illustration 3D de l'emoji, avec l'emoji texte en secours. */
+function EmojiPicture({ emoji }: { emoji: string }) {
+  const src = emojiImage(emoji);
+  return src ? <img src={src} alt="" draggable={false} className="imagier-picture" /> : <>{emoji}</>;
+}
 
 /** Imagier : animaux, fruits, légumes… rangés de A à Z. Toucher une image dit son nom à voix haute. */
 export function ImagierPage() {
@@ -40,27 +42,18 @@ export function ImagierPage() {
     timers.current.push(window.setTimeout(() => say(item), 550));
   };
 
-  const jumpTo = (letter: string) =>
-    document.getElementById(`lettre-${letter}`)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-
   return (
     <AppShell>
-      <header className="imagier-hero">
+      <header className="imagier-hero glass">
         <Link to="/" aria-label="Retour à l’accueil" className="btn btn--secondary btn--icon imagier-hero__back" style={{ textDecoration: 'none' }}>
           <ChevronLeft size={28} />
         </Link>
-        <Illustration name="bunny" className="anim-float imagier-hero__mascot" />
         <div className="imagier-hero__text">
           <h1>Mon imagier</h1>
-          <p>Touche une image pour entendre son nom</p>
         </div>
-        <button type="button" className="imagier-surprise" onClick={surprise}>
+        <button type="button" className="imagier-surprise" onClick={surprise} aria-label="Surprise : une image au hasard">
           <span aria-hidden="true" className="imagier-surprise__dice">🎲</span>
-          Surprise
         </button>
-      </header>
-
-      <div className="imagier-toolbar glass">
         <div className="chip-scroll" role="tablist" aria-label="Catégories">
           {IMAGIER_CATEGORIES.map((c) => (
             <button
@@ -68,41 +61,21 @@ export function ImagierPage() {
               type="button"
               role="tab"
               aria-selected={category === c.id}
+              aria-label={c.label}
+              title={c.label}
               className={`imagier-tab imagier-tint--${c.id}${category === c.id ? ' is-active' : ''}`}
               onClick={() => setCategory(c.id)}
             >
-              <span className="imagier-tab__emoji" aria-hidden="true">{c.emoji}</span>
-              {c.label}
-              <span className="imagier-tab__count">{countFor(c.id)}</span>
+              <span className="imagier-tab__emoji" aria-hidden="true"><EmojiPicture emoji={c.emoji} /></span>
             </button>
           ))}
         </div>
-        <nav aria-label="Lettres" className="imagier-letters">
-          {groups.map((g) => (
-            <button key={g.letter} type="button" onClick={() => jumpTo(g.letter)} aria-label={`Aller à la lettre ${g.letter}`}>
-              {g.letter}
-            </button>
-          ))}
-        </nav>
-      </div>
+      </header>
 
       {/* La clé change avec la catégorie : les cartes réapparaissent avec leur petite animation. */}
       <div key={category}>
-        {groups.map((g, gi) => (
-          <section key={g.letter} id={`lettre-${g.letter}`} aria-label={`Lettre ${g.letter}`} className="imagier-section">
-            <h2 className="imagier-letter">
-              <span className="imagier-letter__badge">
-                {g.letter}
-                <small aria-hidden="true">{g.letter.toLowerCase()}</small>
-              </span>
-              {g.items[0] && (
-                <span className="imagier-letter__example">
-                  comme <span aria-hidden="true">{g.items[0].emoji}</span> <strong>{g.items[0].name}</strong>
-                </span>
-              )}
-            </h2>
-            <div className="imagier-grid">
-              {g.items.map((item, i) => {
+        <div className="imagier-grid">
+              {visible.map((item, i) => {
                 const isActive = active?.id === item.id;
                 return (
                   <button
@@ -110,12 +83,12 @@ export function ImagierPage() {
                     id={`carte-${item.id}`}
                     type="button"
                     className={`imagier-card imagier-tint--${item.category}${isActive ? ' is-speaking' : ' is-entering'}`}
-                    style={{ animationDelay: isActive ? undefined : `${Math.min(gi * 40 + i * 30, 400)}ms` }}
+                    style={{ animationDelay: isActive ? undefined : `${Math.min(i * 30, 400)}ms` }}
                     onClick={() => say(item)}
                     aria-label={spokenWord(item)}
                   >
                     <span className="imagier-card__bubble" aria-hidden="true">
-                      <span className="imagier-card__emoji">{item.emoji}</span>
+                      <span className="imagier-card__emoji"><EmojiPicture emoji={item.emoji} /></span>
                     </span>
                     <span className="imagier-card__name">
                       {isActive ? (
@@ -133,9 +106,7 @@ export function ImagierPage() {
                   </button>
                 );
               })}
-            </div>
-          </section>
-        ))}
+        </div>
       </div>
 
       <p className="imagier-end">

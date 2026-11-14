@@ -132,6 +132,15 @@ export const IMAGIER_ITEMS: ImagierItem[] = raw.map(([name, article, emoji, cate
   category,
 }));
 
+// Illustrations 3D Fluent Emoji (Microsoft, licence MIT), nommées par code Unicode sans FE0F : « 1f41d.webp ».
+const IMAGES = import.meta.glob<string>('../assets/imagier/*.webp', { eager: true, query: '?url', import: 'default' });
+
+/** Image 3D réaliste d'un emoji, ou `undefined` si absente (on affiche alors l'emoji texte). */
+export function emojiImage(emoji: string): string | undefined {
+  const code = [...emoji].map((c) => c.codePointAt(0)!.toString(16).padStart(4, '0')).filter((c) => c !== 'fe0f').join('-');
+  return IMAGES[`../assets/imagier/${code}.webp`];
+}
+
 const collator = new Intl.Collator('fr', { sensitivity: 'base' });
 
 /** Lettre de regroupement sans accent : « éléphant » → « E ». */
