@@ -104,12 +104,14 @@ export function SimpleModePage() {
                   role="listitem"
                   aria-pressed={selected}
                   aria-label={`Écouter ${song.title}`}
-                  className="simple-row"
+                  className={selected ? 'simple-row simple-row--selected' : 'simple-row'}
                   onClick={() => choose(song.id)}
-                  style={{
-                    background: selected ? 'linear-gradient(135deg, #ffc2d6, #d9ccf6)' : 'var(--color-surface-strong)',
-                  }}
                 >
+                  {selected && (
+                    <span className="simple-row__eq" aria-hidden="true">
+                      <i /><i /><i />
+                    </span>
+                  )}
                   {song.youtubeVideoId ? (
                     <img
                       src={youtubeThumbnailUrl(song.youtubeVideoId)}
@@ -142,6 +144,8 @@ export function SimpleModePage() {
                   if (next) setSelectedId(next.id);
                 }}
                 onClose={() => setSelectedId(null)}
+                onPrevious={index > 0 ? () => choose(songs[index - 1].id) : undefined}
+                onNext={index < songs.length - 1 ? () => choose(songs[index + 1].id) : undefined}
               />
             ) : (
               <div className="glass simple-placeholder">

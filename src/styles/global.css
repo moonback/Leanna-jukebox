@@ -156,11 +156,95 @@ svg {
   border: 2px solid var(--color-border);
   text-align: center;
   min-width: 0;
-  transition: transform 0.15s ease;
+  position: relative;
+  background: var(--color-surface-strong);
+  transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.2s ease, border-color 0.2s ease, opacity 0.2s ease;
+  animation: simple-pop-in 0.4s ease backwards;
+}
+
+.simple-row:nth-child(3n + 2) { animation-delay: 0.05s; }
+.simple-row:nth-child(3n + 3) { animation-delay: 0.1s; }
+
+.simple-row:hover {
+  transform: translateY(-3px) scale(1.03);
 }
 
 .simple-row:active {
-  transform: scale(0.98);
+  transform: scale(0.94);
+}
+
+/* Chanson sélectionnée : bien visible, agrandie, avec halo pulsé. Les autres sont légèrement estompées. */
+.simple-row--selected {
+  background: linear-gradient(135deg, #ffc2d6, #d9ccf6);
+  border-color: #ff5c93;
+  border-width: 4px;
+  transform: scale(1.06);
+  z-index: 1;
+  animation: simple-pop-in 0.4s ease backwards, simple-glow 1.6s ease-in-out infinite;
+}
+
+.simple-row--selected:hover {
+  transform: scale(1.08);
+}
+
+.simple-list:has(.simple-row--selected) .simple-row:not(.simple-row--selected) {
+  opacity: 0.6;
+}
+
+.simple-list:has(.simple-row--selected) .simple-row:not(.simple-row--selected):hover {
+  opacity: 1;
+}
+
+/* Petit égaliseur animé sur la chanson en cours. */
+.simple-row__eq {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  display: flex;
+  align-items: flex-end;
+  gap: 3px;
+  height: 20px;
+  padding: 4px 6px;
+  border-radius: 10px;
+  background: #ff5c93;
+}
+
+.simple-row__eq i {
+  display: block;
+  width: 4px;
+  height: 100%;
+  border-radius: 2px;
+  background: #fff;
+  transform-origin: bottom;
+  animation: simple-eq 0.9s ease-in-out infinite;
+}
+
+.simple-row__eq i:nth-child(2) { animation-delay: 0.2s; }
+.simple-row__eq i:nth-child(3) { animation-delay: 0.4s; }
+
+@keyframes simple-pop-in {
+  from { opacity: 0; transform: translateY(12px) scale(0.9); }
+}
+
+@keyframes simple-glow {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(255, 92, 147, 0.55), var(--shadow-soft); }
+  50% { box-shadow: 0 0 0 10px rgba(255, 92, 147, 0), var(--shadow-soft); }
+}
+
+@keyframes simple-eq {
+  0%, 100% { transform: scaleY(0.25); }
+  50% { transform: scaleY(1); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .simple-row,
+  .simple-row--selected,
+  .simple-row__eq i {
+    animation: none;
+  }
+  .simple-row:hover {
+    transform: none;
+  }
 }
 
 .simple-row__title {
