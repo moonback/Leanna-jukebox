@@ -1,7 +1,16 @@
 import { describe, expect, it } from 'vitest';
-import { IMAGIER_CATEGORIES, IMAGIER_ITEMS, emojiImage, groupByLetter, initialOf, pickRound, spokenWord } from './imagier';
+import { IMAGIER_CATEGORIES, IMAGIER_ITEMS, emojiImage, groupByLetter, initialOf, memoryDeck, pickRound, spokenWord } from './imagier';
 
 describe('imagier', () => {
+  it('mémoire : chaque image apparaît exactement deux fois', () => {
+    const deck = memoryDeck(IMAGIER_ITEMS, 6);
+    expect(deck).toHaveLength(12);
+    expect(new Set(deck.map((c) => c.key)).size).toBe(12);
+    const counts = new Map<string, number>();
+    deck.forEach((c) => counts.set(c.item.id, (counts.get(c.item.id) ?? 0) + 1));
+    expect([...counts.values()]).toEqual(Array(6).fill(2));
+  });
+
   it('cherche et trouve : 4 images différentes dont la cible', () => {
     for (let i = 0; i < 50; i++) {
       const { choices, target } = pickRound(IMAGIER_ITEMS, 4);

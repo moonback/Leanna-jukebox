@@ -1008,6 +1008,66 @@ body {
 }
 @keyframes imagier-pulse { 50% { opacity: .4; } }
 
+/* ----- Mémoire : cartes qui se retournent en 3D ----- */
+.memo-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 150px));
+  justify-content: center;
+  gap: 12px;
+  margin-top: 16px;
+}
+@media (min-width: 700px) { .memo-grid { grid-template-columns: repeat(4, minmax(0, 150px)); } }
+.memo-card {
+  aspect-ratio: 1;
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  cursor: pointer;
+  perspective: 700px;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  animation: pop-in .35s ease both;
+}
+.memo-card__inner {
+  position: relative;
+  display: block;
+  width: 100%;
+  height: 100%;
+  transform-style: preserve-3d;
+  transition: transform .5s cubic-bezier(.4, .2, .2, 1);
+}
+.memo-card.is-open .memo-card__inner { transform: rotateY(180deg); }
+.memo-card__face {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  border: 3px solid rgba(255,255,255,.9);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-soft);
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+.memo-card__back {
+  background: linear-gradient(135deg, #ffc2d6, #d9ccf6);
+  font-size: clamp(2rem, 9vw, 3rem);
+}
+.memo-card__front {
+  transform: rotateY(180deg);
+  background: linear-gradient(180deg, var(--tint), color-mix(in srgb, var(--tint) 70%, #fff));
+}
+.memo-card__front .imagier-card__emoji { font-size: clamp(3rem, 15vw, 5rem); }
+.memo-card.is-matched .memo-card__front { border-color: var(--tint-deep); animation: memo-match .6s ease .45s; }
+.memo-win { display: grid; justify-items: center; margin-top: 20px; text-align: center; animation: pop-in .35s ease both; }
+.memo-win p { margin: 0; font-weight: 900; font-size: 1.8rem; }
+.memo-win .cherche-question { width: auto; padding-inline: 28px; }
+@keyframes memo-match {
+  0%, 100% { scale: 1; }
+  40% { scale: 1.12; }
+  70% { scale: .97; }
+}
+
 /* ----- Cherche et trouve ----- */
 .cherche-stars { flex: 0 0 auto; font-weight: 900; font-size: 1.3rem; }
 .cherche-question {
@@ -1163,6 +1223,9 @@ body {
   .cherche-card.is-found,
   .cherche-card.is-found .imagier-card__emoji,
   .cherche-bravo,
+  .memo-card,
+  .memo-card.is-matched .memo-card__front,
+  .memo-win,
   .imagier-card.is-entering,
   .imagier-card.is-speaking,
   .imagier-card.is-speaking .imagier-card__emoji,

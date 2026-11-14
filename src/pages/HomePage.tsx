@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { Smile, Images, Search } from 'lucide-react';
+import { Smile, Images, Search, Brain } from 'lucide-react';
 import { AppShell } from '../components/layout/AppShell';
 import { ParentAccessButton } from '../components/parental/ParentAccessButton';
 import { Illustration } from '../illustrations/Illustration';
@@ -10,6 +10,7 @@ const TILES = [
   { to: '/simple', label: 'Musique', hint: 'Écouter une chanson', icon: Smile, color: '#e0ecdf' },
   { to: '/imagier', label: 'Imagier', hint: 'Découvrir les images', icon: Images, color: '#f1dce8' },
   { to: '/cherche', label: 'Cherche et trouve', hint: 'Trouver la bonne image', icon: Search, color: '#dceaf3' },
+  { to: '/memoire', label: 'Mémoire', hint: 'Retrouver les paires', icon: Brain, color: '#f6edcf' },
 ] as const;
 
 const MUSIC_BG = [
@@ -66,7 +67,7 @@ export function HomePage() {
         <nav
           aria-label="Choix"
           className="quick-tiles"
-          style={{ width: '100%', marginTop: 8, gridTemplateColumns: `repeat(${TILES.length}, minmax(0, 240px))`, justifyContent: 'center' }}
+          style={{ width: '100%', marginTop: 8, gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 220px))' /* 4 en ligne, 2 × 2 sur téléphone */, justifyContent: 'center' }}
         >
           {TILES.map(({ to, label, hint, icon: Icon, color }) => (
             <Link
