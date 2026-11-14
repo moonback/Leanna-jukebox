@@ -26,7 +26,7 @@ export function ParentDashboard() {
   const [tab, setTab] = useState<Tab>('songs');
   return (
     <div className="stack" style={{ width: '100%' }}>
-      <nav aria-label="Sections parents" className="row-wrap" style={{ gap: 8 }}>
+      <nav aria-label="Sections parents" className="row-wrap parent-tabs" style={{ gap: 8 }}>
         {TABS.map((item) => (
           <Button
             key={item.key}
