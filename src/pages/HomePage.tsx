@@ -11,15 +11,33 @@ const TILES = [
   { to: '/cherche', label: 'Cherche et trouve', hint: 'Trouver la bonne image', icon: Search, color: '#dceaf3' },
 ] as const;
 
-/** Accueil enfant : mascotte, message de bienvenue et deux grands choix centrés. */
+const MUSIC_BG = [
+  { e: '🎵', top: '6%', left: '8%', d: 0 },
+  { e: '🎸', top: '14%', left: '78%', d: 1 },
+  { e: '🥁', top: '30%', left: '88%', d: 2 },
+  { e: '🎹', top: '38%', left: '4%', d: 3 },
+  { e: '🎤', top: '58%', left: '82%', d: 0.5 },
+  { e: '🎶', top: '66%', left: '10%', d: 1.5 },
+  { e: '🎺', top: '80%', left: '70%', d: 2.5 },
+  { e: '🎻', top: '86%', left: '24%', d: 3.5 },
+  { e: '🎷', top: '48%', left: '46%', d: 4 },
+  { e: '🎼', top: '4%', left: '44%', d: 2 },
+] as const;
+
+/** Accueil enfant : mascotte, message de bienvenue et deux grands choix centrés, sur un fond d'images musicales. */
 export function HomePage() {
   return (
     <AppShell showNavigation={false}>
-      <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+      <div className="home-music-bg" aria-hidden="true">
+        {MUSIC_BG.map(({ e, top, left, d }) => (
+          <span key={e} style={{ top, left, animationDelay: `${d}s` }}>{e}</span>
+        ))}
+      </div>
+      <div className="home-content" style={{ display: 'flex', justifyContent: 'flex-end' }}>
         <ParentAccessButton />
       </div>
 
-      <main style={{ display: 'grid', justifyItems: 'center', gap: 16, textAlign: 'center', marginTop: 8 }}>
+      <main className="home-content" style={{ display: 'grid', justifyItems: 'center', gap: 16, textAlign: 'center', marginTop: 8 }}>
         <Illustration name="cat" className="anim-float brand-mascot" style={{ width: 120, height: 120 }} />
         <div>
           <h1 style={{ margin: 0, fontSize: 'clamp(2rem, 7vw, 3rem)', fontWeight: 900, lineHeight: 1.05 }}>Leanna Jukebox</h1>

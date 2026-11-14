@@ -1168,3 +1168,26 @@ body {
   .imagier-card.is-speaking .imagier-card__emoji,
   .imagier-card__sound { animation: none; }
 }
+
+/* ----- Accueil : fond d'images musicales ----- */
+.home-music-bg {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+.home-music-bg span {
+  position: absolute;
+  font-size: clamp(2rem, 7vw, 4rem);
+  opacity: 0.22;
+  animation: home-music-float 7s ease-in-out infinite;
+}
+.home-content { position: relative; z-index: 1; }
+@keyframes home-music-float {
+  0%, 100% { transform: translateY(0) rotate(-6deg); }
+  50% { transform: translateY(-14px) rotate(6deg); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .home-music-bg span { animation: none; }
+}
