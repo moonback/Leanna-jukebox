@@ -11,10 +11,10 @@ import { useMusicLibrary } from '../hooks/useMusicLibrary';
 import { useSettings } from '../hooks/useSettings';
 
 const TILES = [
-  { to: '/list/favorites', label: 'Favoris', icon: Heart, color: '#ffc2d6' },
-  { to: '/library', label: 'Playlists', icon: ListMusic, color: '#d9ccf6' },
-  { to: '/list/recent', label: 'Dernières', icon: Clock, color: '#cfe8ff' },
-  { to: '/simple', label: 'Simple', icon: Smile, color: '#c8f2e0' },
+  { to: '/list/favorites', label: 'Favoris', icon: Heart, color: '#f1dce8' },
+  { to: '/library', label: 'Playlists', icon: ListMusic, color: '#e2def0' },
+  { to: '/list/recent', label: 'Dernières', icon: Clock, color: '#deeaed' },
+  { to: '/simple', label: 'Simple', icon: Smile, color: '#e0ecdf' },
 ] as const;
 
 /** Accueil enfant : écran principal, sans texte inutile, cartes illustrées et grandes cibles. */
