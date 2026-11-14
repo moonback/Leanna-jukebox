@@ -613,3 +613,19 @@ body {
   .song-card__play { width: 46px; height: 46px; }
   .song-card__play svg { width: 22px; height: 22px; }
 }
+
+/* Masquer le logo YouTube en bas à droite du lecteur */
+.yt-mount {
+  position: relative;
+}
+
+.yt-mount::after {
+  content: '';
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  width: 40px;
+  height: 25px;
+  background: rgba(0, 0, 0, 0.1);
+  pointer-events: none;
+}
