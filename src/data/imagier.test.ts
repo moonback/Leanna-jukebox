@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { IMAGIER_ITEMS, groupByLetter, initialOf, spokenWord } from './imagier';
+import { IMAGIER_CATEGORIES, IMAGIER_ITEMS, emojiImage, groupByLetter, initialOf, spokenWord } from './imagier';
 
 describe('imagier', () => {
   it('range les mots par ordre alphabétique, accents compris', () => {
@@ -29,5 +29,10 @@ describe('imagier', () => {
   it('n’a pas de doublon', () => {
     const ids = IMAGIER_ITEMS.map((i) => i.id);
     expect(new Set(ids).size).toBe(ids.length);
+  });
+
+  it('a une illustration 3D pour chaque mot et chaque catégorie', () => {
+    const missing = [...IMAGIER_ITEMS, ...IMAGIER_CATEGORIES].filter((x) => !emojiImage(x.emoji)).map((x) => x.emoji);
+    expect(missing).toEqual([]);
   });
 });
