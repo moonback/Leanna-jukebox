@@ -1011,12 +1011,14 @@ body {
 /* ----- Mémoire : cartes qui se retournent en 3D ----- */
 .memo-grid {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 150px));
-  justify-content: center;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 12px;
+  width: 100%;
   margin-top: 16px;
 }
-@media (min-width: 700px) { .memo-grid { grid-template-columns: repeat(4, minmax(0, 150px)); } }
+/* Pleine largeur : 3 colonnes sur téléphone, 4 sur tablette, 6 (2 rangées) sur grand écran. */
+@media (min-width: 700px) { .memo-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+@media (min-width: 1000px) { .memo-grid { grid-template-columns: repeat(6, minmax(0, 1fr)); } }
 .memo-card {
   aspect-ratio: 1;
   padding: 0;
@@ -1057,7 +1059,7 @@ body {
   transform: rotateY(180deg);
   background: linear-gradient(180deg, var(--tint), color-mix(in srgb, var(--tint) 70%, #fff));
 }
-.memo-card__front .imagier-card__emoji { font-size: clamp(3rem, 15vw, 5rem); }
+.memo-card__front .imagier-card__emoji { font-size: clamp(3rem, 12vw, 8rem); }
 .memo-card.is-matched .memo-card__front { border-color: var(--tint-deep); animation: memo-match .6s ease .45s; }
 .memo-win { display: grid; justify-items: center; margin-top: 20px; text-align: center; animation: pop-in .35s ease both; }
 .memo-win p { margin: 0; font-weight: 900; font-size: 1.8rem; }
