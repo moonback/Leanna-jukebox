@@ -128,6 +128,11 @@ export async function createYouTubePlayer(
       playerVars: {
         playsinline: 1,
         rel: 0,
+        modestbranding: 1,
+        controls: 0,
+        fs: 0,
+        disablekb: 1,
+        iv_load_policy: 3,
         enablejsapi: 1,
         ...(origin ? { origin } : {}),
       },
