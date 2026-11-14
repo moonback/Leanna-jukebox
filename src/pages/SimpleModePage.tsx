@@ -144,8 +144,8 @@ export function SimpleModePage() {
                   if (next) setSelectedId(next.id);
                 }}
                 onClose={() => setSelectedId(null)}
-                onPrevious={index > 0 ? () => choose(songs[index - 1].id) : undefined}
-                onNext={index < songs.length - 1 ? () => choose(songs[index + 1].id) : undefined}
+                onPrevious={index > 0 ? () => choose(songs[index - 1]!.id) : undefined}
+                onNext={index < songs.length - 1 ? () => choose(songs[index + 1]!.id) : undefined}
               />
           </div>
           )}
