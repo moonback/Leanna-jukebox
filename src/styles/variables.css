@@ -1,23 +1,23 @@
 :root {
-  --color-cream: #fff8ef;
-  --color-peach: #ffd8c2;
-  --color-pink: #ffc2d6;
-  --color-pink-deep: #e96d97;
-  --color-lavender: #d9ccf6;
-  --color-lavender-deep: #7d62c4;
-  --color-sky: #cfe8ff;
-  --color-sky-deep: #3f86c9;
-  --color-mint: #c8f2e0;
-  --color-mint-deep: #2f9e74;
-  --color-ink: #3f3350;
-  --color-ink-soft: #6e6283;
+  --color-cream: #fffaf3;
+  --color-peach: #f8d9bd;
+  --color-pink: #f3d9e8;
+  --color-pink-deep: #d985ad;
+  --color-lavender: #dcd8f2;
+  --color-lavender-deep: #776b9f;
+  --color-sky: #d9e9ed;
+  --color-sky-deep: #638b9a;
+  --color-mint: #dcebdd;
+  --color-mint-deep: #658d73;
+  --color-ink: #393447;
+  --color-ink-soft: #777184;
   --color-surface: rgba(255, 255, 255, 0.72);
   --color-surface-strong: rgba(255, 255, 255, 0.92);
   --color-border: rgba(255, 255, 255, 0.9);
   --color-danger: #c2415d;
-  --color-focus: #7d62c4;
+  --color-focus: #776b9f;
 
-  --shadow-soft: 0 10px 30px rgba(120, 90, 160, 0.18);
+  --shadow-soft: 0 10px 30px rgba(102, 91, 130, 0.18);
   --shadow-press: 0 4px 12px rgba(120, 90, 160, 0.2);
   --radius-xl: 32px;
   --radius-lg: 24px;
