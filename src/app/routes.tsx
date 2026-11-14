@@ -5,6 +5,7 @@ import { SongListPage } from '../pages/SongListPage';
 import { PlayerPage } from '../pages/PlayerPage';
 import { ParentPage } from '../pages/ParentPage';
 import { SimpleModePage } from '../pages/SimpleModePage';
+import { ImagierPage } from '../pages/ImagierPage';
 
 /** Routes de l'application (HashRouter : fonctionne depuis un fichier local, donc aussi dans Capacitor). */
 export function AppRoutes() {
@@ -14,6 +15,7 @@ export function AppRoutes() {
       <Route path="/library" element={<LibraryPage />} />
       <Route path="/list/:source" element={<SongListPage />} />
       <Route path="/play/:songId" element={<PlayerPage />} />
+      <Route path="/imagier" element={<ImagierPage />} />
       <Route path="/simple" element={<SimpleModePage />} />
       <Route path="/parents" element={<ParentPage />} />
       <Route path="*" element={<Navigate to="/" replace />} />
