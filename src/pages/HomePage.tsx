@@ -4,6 +4,7 @@ import { AppShell } from '../components/layout/AppShell';
 import { ParentAccessButton } from '../components/parental/ParentAccessButton';
 import { Illustration } from '../illustrations/Illustration';
 import { speakFrench } from '../services/speech';
+import { useMusicLibrary } from '../hooks/useMusicLibrary';
 
 const TILES = [
   { to: '/simple', label: 'Musique', hint: 'Écouter une chanson', icon: Smile, color: '#e0ecdf' },
@@ -26,12 +27,27 @@ const MUSIC_BG = [
 
 /** Accueil enfant : mascotte, message de bienvenue et deux grands choix centrés, sur un fond d'images musicales. */
 export function HomePage() {
+  const library = useMusicLibrary();
+  // Miniatures des chansons enregistrées (les chansons de démonstration n'ont pas de vidéo).
+  const covers = library.songs.filter((s) => s.youtubeVideoId).map((s) => s.youtubeVideoId);
+
   return (
     <AppShell showNavigation={false}>
       <div className="home-music-bg" aria-hidden="true">
-        {MUSIC_BG.map(({ e, top, left, d }) => (
-          <span key={e} style={{ top, left, animationDelay: `${d}s` }}>{e}</span>
-        ))}
+        {MUSIC_BG.map(({ e, top, left, d }, i) =>
+          covers.length > 0 ? (
+            <img
+              key={e}
+              className="home-music-bg__cover"
+              src={`https://img.youtube.com/vi/${encodeURIComponent(covers[i % covers.length] ?? '')}/hqdefault.jpg`}
+              alt=""
+              loading="lazy"
+              style={{ top, left, animationDelay: `${d}s` }}
+            />
+          ) : (
+            <span key={e} style={{ top, left, animationDelay: `${d}s` }}>{e}</span>
+          ),
+        )}
       </div>
       <div className="home-content" style={{ display: 'flex', justifyContent: 'flex-end' }}>
         <ParentAccessButton />

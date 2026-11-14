@@ -1191,3 +1191,16 @@ body {
 @media (prefers-reduced-motion: reduce) {
   .home-music-bg span { animation: none; }
 }
+.home-music-bg__cover {
+  position: absolute;
+  width: clamp(90px, 16vw, 170px);
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+  border-radius: 18px;
+  opacity: 0.35;
+  box-shadow: var(--shadow-soft);
+  animation: home-music-float 7s ease-in-out infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .home-music-bg__cover { animation: none; }
+}
