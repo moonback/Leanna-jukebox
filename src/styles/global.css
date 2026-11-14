@@ -437,3 +437,113 @@ svg {
   padding: 24px;
   box-shadow: var(--shadow-soft);
 }
+
+
+/* ===== CAT WORLD — responsive mobile-first ===== */
+body {
+  background:
+    radial-gradient(ellipse at 8% 0%, rgba(243, 217, 232, .9), transparent 38%),
+    radial-gradient(ellipse at 100% 18%, rgba(217, 233, 237, .9), transparent 38%),
+    radial-gradient(ellipse at 50% 100%, rgba(220, 235, 221, .72), transparent 42%),
+    linear-gradient(155deg, #fffaf3 0%, #f2edf7 54%, #e9eef3 100%);
+  background-attachment: fixed;
+}
+.app-shell {
+  width: min(100%, 1440px);
+  padding-top: calc(var(--safe-top) + 16px);
+}
+.brand-mascot {
+  filter: drop-shadow(0 8px 12px rgba(91, 76, 112, .14));
+}
+.glass {
+  border: 1.5px solid rgba(255,255,255,.94);
+  box-shadow: 0 8px 24px rgba(80, 69, 105, .10);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+}
+.song-card {
+  align-content: start;
+  min-height: 0;
+  border-radius: 24px;
+  padding: 12px !important;
+}
+.song-card > div:first-child {
+  overflow: hidden;
+  border-radius: 19px !important;
+}
+.song-card > div:last-child { align-items: center; }
+.section-title {
+  letter-spacing: -.025em;
+  font-size: clamp(1.15rem, 2.4vw, 1.45rem);
+}
+.quick-tiles > a {
+  min-height: 104px;
+  border-radius: 22px;
+  padding: 12px 8px;
+}
+.grid-tiles { gap: 12px; }
+.grid-songs { gap: 12px; }
+.btn--primary {
+  background: linear-gradient(135deg, #d985ad, #9185b7);
+}
+.btn--secondary {
+  border: 1px solid rgba(119,107,159,.12);
+}
+.parent-layout { min-width: 0; }
+.parent-tabs {
+  display: flex;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  scrollbar-width: none;
+  padding: 2px 2px 8px;
+}
+.parent-tabs::-webkit-scrollbar { display: none; }
+.item-row {
+  flex-wrap: wrap;
+  border: 1px solid rgba(119,107,159,.10);
+  box-shadow: 0 5px 16px rgba(80,69,105,.06);
+}
+.item-row > .row-wrap {
+  width: 100%;
+  justify-content: flex-end;
+}
+.modal {
+  border: 1px solid rgba(255,255,255,.9);
+  box-shadow: 0 24px 70px rgba(48,39,68,.22);
+}
+@media (max-width: 600px) {
+  .app-shell {
+    padding-left: calc(var(--safe-left) + 12px);
+    padding-right: calc(var(--safe-right) + 12px);
+    padding-bottom: calc(var(--safe-bottom) + 104px);
+  }
+  .quick-tiles { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 9px; }
+  .quick-tiles > a { min-height: 88px; }
+  .quick-tiles svg { width: 30px; height: 30px; }
+  .grid-tiles { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+  .grid-songs { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+  .song-card { padding: 9px !important; border-radius: 20px; gap: 9px !important; }
+  .song-card > div:first-child { padding: 5px !important; border-radius: 16px !important; }
+  .song-card > div:last-child { align-items: flex-start; gap: 6px !important; }
+  .song-card > div:last-child > span:first-child { font-size: .88rem !important; line-height: 1.22 !important; }
+  .song-card > div:last-child > span:last-child { width: 42px !important; height: 42px !important; min-width: 42px !important; }
+  .song-card > div:last-child > span:last-child svg { width: 20px; height: 20px; }
+  .section-title { margin: 22px 2px 10px; }
+  .parent-tabs > button { flex: 0 0 auto; }
+  .item-row { gap: 9px; padding: 10px; }
+  .item-row > .row-wrap { justify-content: flex-start; gap: 5px; }
+  .item-row > .row-wrap .btn { min-width: 42px; min-height: 42px; padding: 8px; }
+  .modal-backdrop { align-items: flex-end; padding: 8px; }
+  .modal { width: 100%; max-height: min(92dvh, 900px); border-radius: 26px 26px 16px 16px; padding: 18px; }
+  .simple-layout { grid-template-columns: minmax(0,1fr); }
+  .simple-layout--list-only .simple-list { grid-template-columns: repeat(2,minmax(0,1fr)); }
+  .simple-list { grid-template-columns: repeat(2,minmax(0,1fr)); }
+}
+@media (min-width: 601px) and (max-width: 900px) {
+  .grid-songs { grid-template-columns: repeat(3, minmax(0,1fr)); }
+  .grid-tiles { grid-template-columns: repeat(3, minmax(0,1fr)); }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { scroll-behavior: auto !important; }
+}
