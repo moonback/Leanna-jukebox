@@ -3,6 +3,7 @@ import { Smile, Images } from 'lucide-react';
 import { AppShell } from '../components/layout/AppShell';
 import { ParentAccessButton } from '../components/parental/ParentAccessButton';
 import { Illustration } from '../illustrations/Illustration';
+import { speakFrench } from '../services/speech';
 
 const TILES = [
   { to: '/simple', label: 'Musique', hint: 'Écouter une chanson', icon: Smile, color: '#e0ecdf' },
@@ -37,6 +38,7 @@ export function HomePage() {
               key={to}
               to={to}
               aria-label={label}
+              onClick={() => speakFrench(label)}
               className="glass"
               style={{ minHeight: 150, display: 'grid', placeItems: 'center', alignContent: 'center', gap: 6, textDecoration: 'none', color: 'inherit', background: color }}
             >
