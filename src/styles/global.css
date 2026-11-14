@@ -1144,6 +1144,20 @@ body {
   100% { scale: 1.9; opacity: 0; }
 }
 
+/* Page Jeux : âge conseillé */
+.jeux-age {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: var(--tint-deep);
+  color: #fff;
+  font-weight: 900;
+  font-size: .8rem;
+  white-space: nowrap;
+}
+
 /* Compter jusqu'à 3 */
 .compter-total {
   display: grid;
