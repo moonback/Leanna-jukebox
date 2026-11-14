@@ -5,9 +5,6 @@ import { AppShell } from '../components/layout/AppShell';
 import { IMAGIER_CATEGORIES, IMAGIER_ITEMS, groupByLetter, initialOf, letterPhrase, spokenWord, type ImagierCategory, type ImagierItem } from '../data/imagier';
 import { speakFrench } from '../services/speech';
 
-const countFor = (id: ImagierCategory | 'tout') =>
-  id === 'tout' ? IMAGIER_ITEMS.length : IMAGIER_ITEMS.filter((i) => i.category === id).length;
-
 /** Imagier : animaux, fruits, légumes… rangés de A à Z. Toucher une image dit son nom à voix haute. */
 export function ImagierPage() {
   const [category, setCategory] = useState<ImagierCategory | 'tout'>('tout');
@@ -41,7 +38,7 @@ export function ImagierPage() {
 
   return (
     <AppShell>
-      <header className="imagier-hero">
+      <header className="imagier-hero glass">
         <Link to="/" aria-label="Retour à l’accueil" className="btn btn--secondary btn--icon imagier-hero__back" style={{ textDecoration: 'none' }}>
           <ChevronLeft size={28} />
         </Link>
@@ -51,9 +48,6 @@ export function ImagierPage() {
         <button type="button" className="imagier-surprise" onClick={surprise} aria-label="Surprise : une image au hasard">
           <span aria-hidden="true" className="imagier-surprise__dice">🎲</span>
         </button>
-      </header>
-
-      <div className="imagier-toolbar glass">
         <div className="chip-scroll" role="tablist" aria-label="Catégories">
           {IMAGIER_CATEGORIES.map((c) => (
             <button
@@ -61,16 +55,16 @@ export function ImagierPage() {
               type="button"
               role="tab"
               aria-selected={category === c.id}
+              aria-label={c.label}
+              title={c.label}
               className={`imagier-tab imagier-tint--${c.id}${category === c.id ? ' is-active' : ''}`}
               onClick={() => setCategory(c.id)}
             >
               <span className="imagier-tab__emoji" aria-hidden="true">{c.emoji}</span>
-              {c.label}
-              <span className="imagier-tab__count">{countFor(c.id)}</span>
             </button>
           ))}
         </div>
-      </div>
+      </header>
 
       {/* La clé change avec la catégorie : les cartes réapparaissent avec leur petite animation. */}
       <div key={category}>
