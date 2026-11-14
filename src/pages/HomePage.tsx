@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { Smile, Images, Search, Brain } from 'lucide-react';
+import { Smile, Images, Gamepad2, Sticker } from 'lucide-react';
 import { AppShell } from '../components/layout/AppShell';
 import { ParentAccessButton } from '../components/parental/ParentAccessButton';
 import { Illustration } from '../illustrations/Illustration';
@@ -9,8 +9,8 @@ import { useMusicLibrary } from '../hooks/useMusicLibrary';
 const TILES = [
   { to: '/simple', label: 'Musique', hint: 'Écouter une chanson', icon: Smile, color: '#e0ecdf' },
   { to: '/imagier', label: 'Imagier', hint: 'Découvrir les images', icon: Images, color: '#f1dce8' },
-  { to: '/cherche', label: 'Cherche et trouve', hint: 'Trouver la bonne image', icon: Search, color: '#dceaf3' },
-  { to: '/memoire', label: 'Mémoire', hint: 'Retrouver les paires', icon: Brain, color: '#f6edcf' },
+  { to: '/jeux', label: 'Jeux', hint: 'Ballons, piano, puzzle…', icon: Gamepad2, color: '#dceaf3' },
+  { to: '/autocollants', label: 'Autocollants', hint: 'Mes récompenses', icon: Sticker, color: '#f6edcf' },
 ] as const;
 
 const MUSIC_BG = [

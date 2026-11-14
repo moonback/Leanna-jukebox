@@ -1,10 +1,11 @@
 import { useEffect, useRef, useState } from 'react';
-import { Link } from 'react-router-dom';
-import { ChevronLeft, Volume2 } from 'lucide-react';
+import { Volume2 } from 'lucide-react';
 import { AppShell } from '../components/layout/AppShell';
+import { GameHeader } from '../components/games/GameHeader';
+import { useCelebration } from '../components/games/Celebration';
+import { EmojiPicture } from '../components/ui/EmojiPicture';
 import { IMAGIER_ITEMS, pickRound, spokenWord, type ImagierItem } from '../data/imagier';
 import { speakFrench } from '../services/speech';
-import { EmojiPicture } from './ImagierPage';
 
 const CHOICES = 4;
 
@@ -15,6 +16,7 @@ export function ChercheTrouvePage() {
   const [found, setFound] = useState(false);
   const [stars, setStars] = useState(0);
   const timer = useRef<number | undefined>(undefined);
+  const { celebrate, celebration } = useCelebration(5);
 
   const ask = (target: ImagierItem) => speakFrench(`Où est ${spokenWord(target)} ?`);
 
@@ -29,6 +31,7 @@ export function ChercheTrouvePage() {
       setFound(true);
       setStars((s) => s + 1);
       speakFrench(`Bravo ! C'est ${spokenWord(item)} !`);
+      celebrate();
       timer.current = window.setTimeout(() => {
         setFound(false);
         setWrong(null);
@@ -43,15 +46,9 @@ export function ChercheTrouvePage() {
 
   return (
     <AppShell showNavigation={false}>
-      <header className="imagier-hero glass">
-        <Link to="/" aria-label="Retour à l’accueil" className="btn btn--secondary btn--icon imagier-hero__back" style={{ textDecoration: 'none' }}>
-          <ChevronLeft size={28} />
-        </Link>
-        <div className="imagier-hero__text">
-          <h1>Cherche et trouve</h1>
-        </div>
+      <GameHeader title="Cherche et trouve">
         <span className="cherche-stars" aria-label={`${stars} étoiles`}>⭐ {stars}</span>
-      </header>
+      </GameHeader>
 
       <button type="button" className="cherche-question" onClick={() => ask(round.target)}>
         <Volume2 size={26} aria-hidden="true" className="imagier-card__sound" />
@@ -79,6 +76,7 @@ export function ChercheTrouvePage() {
       </div>
 
       {found && <p className="cherche-bravo" aria-live="polite">🎉 Bravo !</p>}
+      {celebration}
     </AppShell>
   );
 }

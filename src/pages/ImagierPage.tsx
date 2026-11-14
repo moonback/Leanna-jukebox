@@ -2,14 +2,10 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ChevronLeft, Volume2 } from 'lucide-react';
 import { AppShell } from '../components/layout/AppShell';
-import { IMAGIER_CATEGORIES, IMAGIER_ITEMS, emojiImage, groupByLetter, initialOf, letterPhrase, spokenWord, type ImagierCategory, type ImagierItem } from '../data/imagier';
+import { IMAGIER_CATEGORIES, IMAGIER_ITEMS, groupByLetter, initialOf, letterPhrase, spokenWord, type ImagierCategory, type ImagierItem } from '../data/imagier';
 import { speakFrench } from '../services/speech';
+import { EmojiPicture } from '../components/ui/EmojiPicture';
 
-/** Illustration 3D de l'emoji, avec l'emoji texte en secours. */
-export function EmojiPicture({ emoji }: { emoji: string }) {
-  const src = emojiImage(emoji);
-  return src ? <img src={src} alt="" draggable={false} className="imagier-picture" /> : <>{emoji}</>;
-}
 
 /** Imagier : animaux, fruits, légumes… rangés de A à Z. Toucher une image dit son nom à voix haute. */
 export function ImagierPage() {

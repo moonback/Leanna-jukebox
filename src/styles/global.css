@@ -1008,6 +1008,178 @@ body {
 }
 @keyframes imagier-pulse { 50% { opacity: .4; } }
 
+/* ===== Mini-jeux 3 ans ===== */
+.game-hint { margin: 16px 0 8px; text-align: center; font-weight: 900; font-size: clamp(1.2rem, 4.5vw, 1.6rem); }
+
+/* Célébration : confettis + chat qui saute + autocollant gagné */
+.celebration { position: fixed; inset: 0; z-index: 60; pointer-events: none; overflow: hidden; }
+.celebration__confetti {
+  position: absolute;
+  top: -20px;
+  width: 12px;
+  height: 18px;
+  border-radius: 3px;
+  animation: confetti-fall 1.8s cubic-bezier(.3, .6, .5, 1) both;
+}
+.celebration__cat {
+  position: absolute;
+  left: 50%;
+  bottom: 12px;
+  width: 110px;
+  height: 110px;
+  margin-left: -55px;
+  animation: cat-jump 1.6s ease both;
+}
+.celebration__sticker {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  display: grid;
+  justify-items: center;
+  gap: 8px;
+  padding: 18px 26px;
+  border: 4px solid #fff;
+  border-radius: var(--radius-xl);
+  background: #fff7d6;
+  box-shadow: var(--shadow-soft);
+  font-size: 1.3rem;
+  animation: sticker-show 2.6s ease both;
+}
+.celebration__sticker .imagier-card__emoji { font-size: 5rem; }
+@keyframes confetti-fall {
+  0% { transform: translate(0, 0) rotate(0); opacity: 1; }
+  100% { transform: translate(var(--drift), 105vh) rotate(var(--spin)); opacity: .2; }
+}
+@keyframes cat-jump {
+  0% { transform: translateY(140%); }
+  20% { transform: translateY(-40%) rotate(-8deg); }
+  35% { transform: translateY(0) scale(1.1, .9); }
+  50% { transform: translateY(-25%) rotate(8deg); }
+  65% { transform: translateY(0); }
+  85% { transform: translateY(0); opacity: 1; }
+  100% { transform: translateY(140%); opacity: 0; }
+}
+@keyframes sticker-show {
+  0% { transform: translate(-50%, -50%) scale(0) rotate(-30deg); opacity: 0; }
+  15% { transform: translate(-50%, -50%) scale(1.15) rotate(6deg); opacity: 1; }
+  25%, 80% { transform: translate(-50%, -50%) scale(1) rotate(0); opacity: 1; }
+  100% { transform: translate(-50%, -50%) scale(.6); opacity: 0; }
+}
+
+/* Sans animation, confettis et chat resteraient figés à l'écran : on ne garde que l'autocollant. */
+@media (prefers-reduced-motion: reduce) {
+  .celebration__confetti, .celebration__cat { display: none; }
+}
+
+/* Ballons */
+.ballons-sky {
+  position: relative;
+  height: min(72dvh, 640px);
+  margin-top: 16px;
+  overflow: hidden;
+  border-radius: var(--radius-xl);
+  background: linear-gradient(180deg, #cfe6fb, #eef6ff);
+}
+.ballon {
+  position: absolute;
+  bottom: -150px;
+  width: 92px;
+  height: 112px;
+  padding: 0;
+  border: 0;
+  border-radius: 50% 50% 48% 48% / 55% 55% 45% 45%;
+  background: radial-gradient(circle at 32% 28%, rgba(255,255,255,.75), transparent 28%), var(--color);
+  box-shadow: inset -8px -10px 0 rgba(0,0,0,.08);
+  cursor: pointer;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  animation: ballon-rise linear forwards;
+}
+.ballon::after {
+  content: '';
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  width: 2px;
+  height: 46px;
+  background: rgba(0,0,0,.25);
+}
+.ballon.is-popped { animation: ballon-pop .35s ease-out forwards; }
+@keyframes ballon-rise {
+  0% { transform: translate(0, 0); }
+  25% { transform: translate(14px, calc(min(72dvh, 640px) * -0.3)); }
+  50% { transform: translate(-10px, calc(min(72dvh, 640px) * -0.6)); }
+  75% { transform: translate(12px, calc(min(72dvh, 640px) * -0.9)); }
+  100% { transform: translate(0, calc(min(72dvh, 640px) * -1 - 170px)); }
+}
+@keyframes ballon-pop {
+  0% { scale: 1; opacity: 1; }
+  40% { scale: 1.4; opacity: .9; }
+  100% { scale: 1.9; opacity: 0; }
+}
+
+/* Ombres */
+.ombres-model { display: grid; place-items: center; margin: 12px 0; font-size: clamp(6rem, 28vw, 9rem); animation: pop-in .4s ease both; }
+.ombres-grid { grid-template-columns: repeat(3, minmax(0, 200px)); }
+.ombres-shadow img { filter: brightness(0) opacity(.75); transition: filter .5s ease; }
+.ombres-card.is-found .ombres-shadow img { filter: none; }
+
+/* Piano des animaux */
+.piano { display: flex; gap: 6px; height: min(64dvh, 560px); margin-top: 16px; }
+.piano-key {
+  position: relative;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 2px 14px;
+  border: 0;
+  border-radius: 0 0 20px 20px;
+  background: linear-gradient(180deg, color-mix(in srgb, var(--key) 55%, #fff), var(--key));
+  box-shadow: inset 0 -10px 0 rgba(0,0,0,.12), var(--shadow-soft);
+  color: #fff;
+  font: inherit;
+  cursor: pointer;
+  touch-action: manipulation;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+.piano-key__animal { font-size: clamp(1.8rem, 8vw, 3.5rem); }
+.piano-key__note { font-weight: 900; font-size: clamp(1rem, 4vw, 1.5rem); text-shadow: 0 1px 2px rgba(0,0,0,.3); }
+.piano-key.is-pressed { animation: piano-press .3s ease; }
+.piano-key.is-pressed .piano-key__animal { animation: piano-dance .7s ease; }
+@keyframes piano-press { 40% { transform: translateY(6px); box-shadow: inset 0 -3px 0 rgba(0,0,0,.12); } }
+@keyframes piano-dance {
+  0%, 100% { transform: translateY(0) rotate(0); }
+  25% { transform: translateY(-22px) rotate(-12deg) scale(1.2); }
+  50% { transform: translateY(0) rotate(0); }
+  75% { transform: translateY(-10px) rotate(10deg) scale(1.1); }
+}
+
+/* Autocollants */
+.stickers-album {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
+  gap: 14px;
+  margin-top: 16px;
+  padding: 16px;
+  border-radius: var(--radius-xl);
+  background: #fff7d6;
+  box-shadow: var(--shadow-soft);
+}
+.sticker {
+  display: grid;
+  place-items: center;
+  aspect-ratio: 1;
+  border: 4px solid #fff;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 4px 10px rgba(0,0,0,.12);
+  font-size: 3.4rem;
+  animation: pop-in .35s ease both;
+}
+
 /* ----- Mémoire : cartes qui se retournent en 3D ----- */
 .memo-grid {
   display: grid;
@@ -1227,6 +1399,9 @@ body {
   .cherche-bravo,
   .memo-card,
   .memo-card.is-matched .memo-card__front,
+  .piano-key.is-pressed,
+  .piano-key.is-pressed .piano-key__animal,
+  .sticker,
   .memo-win,
   .imagier-card.is-entering,
   .imagier-card.is-speaking,

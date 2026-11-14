@@ -179,12 +179,17 @@ export function pickRound(items: ImagierItem[], count: number, random = Math.ran
 /** Jeu de mémoire : `pairs` images distinctes, chacune en double, mélangées. */
 export function memoryDeck(items: ImagierItem[], pairs: number, random = Math.random): { key: string; item: ImagierItem }[] {
   const { choices } = pickRound(items, pairs, random);
-  const deck = choices.flatMap((item) => [{ key: `${item.id}-a`, item }, { key: `${item.id}-b`, item }]);
-  for (let i = deck.length - 1; i > 0; i--) {
+  return shuffle(choices.flatMap((item) => [{ key: `${item.id}-a`, item }, { key: `${item.id}-b`, item }]), random);
+}
+
+/** Mélange de Fisher-Yates (renvoie une copie). */
+export function shuffle<T>(list: T[], random = Math.random): T[] {
+  const out = [...list];
+  for (let i = out.length - 1; i > 0; i--) {
     const j = Math.floor(random() * (i + 1));
-    [deck[i], deck[j]] = [deck[j]!, deck[i]!];
+    [out[i], out[j]] = [out[j]!, out[i]!];
   }
-  return deck;
+  return out;
 }
 
 /** Filtre par catégorie puis regroupe par lettre, dans l'ordre alphabétique français. */

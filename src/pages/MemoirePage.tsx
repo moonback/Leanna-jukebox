@@ -1,10 +1,11 @@
 import { useEffect, useRef, useState } from 'react';
-import { Link } from 'react-router-dom';
-import { ChevronLeft, RotateCcw } from 'lucide-react';
+import { RotateCcw } from 'lucide-react';
 import { AppShell } from '../components/layout/AppShell';
+import { GameHeader } from '../components/games/GameHeader';
+import { useCelebration } from '../components/games/Celebration';
+import { EmojiPicture } from '../components/ui/EmojiPicture';
 import { IMAGIER_ITEMS, memoryDeck, spokenWord } from '../data/imagier';
 import { speakFrench } from '../services/speech';
-import { EmojiPicture } from './ImagierPage';
 
 const PAIRS = 6;
 
@@ -15,6 +16,7 @@ export function MemoirePage() {
   const [matched, setMatched] = useState<Set<string>>(new Set());
   const timer = useRef<number | undefined>(undefined);
   const won = matched.size === PAIRS;
+  const { celebrate, celebration } = useCelebration(0);
 
   useEffect(() => () => window.clearTimeout(timer.current), []);
 
@@ -32,6 +34,7 @@ export function MemoirePage() {
       const done = new Set(matched).add(card.item.id);
       setMatched(done);
       setOpen([]);
+      celebrate(done.size === PAIRS); // confettis à chaque paire, autocollant à la victoire
       speakFrench(done.size === PAIRS ? 'Bravo ! Tu as trouvé toutes les paires !' : `Bravo ! Deux fois ${spokenWord(card.item)} !`);
     } else {
       speakFrench(spokenWord(card.item));
@@ -48,17 +51,11 @@ export function MemoirePage() {
 
   return (
     <AppShell showNavigation={false}>
-      <header className="imagier-hero glass">
-        <Link to="/" aria-label="Retour à l’accueil" className="btn btn--secondary btn--icon imagier-hero__back" style={{ textDecoration: 'none' }}>
-          <ChevronLeft size={28} />
-        </Link>
-        <div className="imagier-hero__text">
-          <h1>Mémoire</h1>
-        </div>
+      <GameHeader title="Mémoire">
         <button type="button" className="btn btn--secondary btn--icon" onClick={restart} aria-label="Nouvelle partie">
           <RotateCcw size={24} />
         </button>
-      </header>
+      </GameHeader>
 
       <div className="memo-grid">
         {deck.map(({ key, item }, i) => {
@@ -92,6 +89,7 @@ export function MemoirePage() {
           </button>
         </div>
       )}
+      {celebration}
     </AppShell>
   );
 }
