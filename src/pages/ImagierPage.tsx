@@ -39,9 +39,6 @@ export function ImagierPage() {
     timers.current.push(window.setTimeout(() => say(item), 550));
   };
 
-  const jumpTo = (letter: string) =>
-    document.getElementById(`lettre-${letter}`)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-
   return (
     <AppShell>
       <header className="imagier-hero">
@@ -73,32 +70,12 @@ export function ImagierPage() {
             </button>
           ))}
         </div>
-        <nav aria-label="Lettres" className="imagier-letters">
-          {groups.map((g) => (
-            <button key={g.letter} type="button" onClick={() => jumpTo(g.letter)} aria-label={`Aller à la lettre ${g.letter}`}>
-              {g.letter}
-            </button>
-          ))}
-        </nav>
       </div>
 
       {/* La clé change avec la catégorie : les cartes réapparaissent avec leur petite animation. */}
       <div key={category}>
-        {groups.map((g, gi) => (
-          <section key={g.letter} id={`lettre-${g.letter}`} aria-label={`Lettre ${g.letter}`} className="imagier-section">
-            <h2 className="imagier-letter">
-              <span className="imagier-letter__badge">
-                {g.letter}
-                <small aria-hidden="true">{g.letter.toLowerCase()}</small>
-              </span>
-              {g.items[0] && (
-                <span className="imagier-letter__example">
-                  comme <span aria-hidden="true">{g.items[0].emoji}</span> <strong>{g.items[0].name}</strong>
-                </span>
-              )}
-            </h2>
-            <div className="imagier-grid">
-              {g.items.map((item, i) => {
+        <div className="imagier-grid">
+              {visible.map((item, i) => {
                 const isActive = active?.id === item.id;
                 return (
                   <button
@@ -106,7 +83,7 @@ export function ImagierPage() {
                     id={`carte-${item.id}`}
                     type="button"
                     className={`imagier-card imagier-tint--${item.category}${isActive ? ' is-speaking' : ' is-entering'}`}
-                    style={{ animationDelay: isActive ? undefined : `${Math.min(gi * 40 + i * 30, 400)}ms` }}
+                    style={{ animationDelay: isActive ? undefined : `${Math.min(i * 30, 400)}ms` }}
                     onClick={() => say(item)}
                     aria-label={spokenWord(item)}
                   >
@@ -129,9 +106,7 @@ export function ImagierPage() {
                   </button>
                 );
               })}
-            </div>
-          </section>
-        ))}
+        </div>
       </div>
 
       <p className="imagier-end">
