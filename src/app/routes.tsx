@@ -12,6 +12,7 @@ import { JeuxPage } from '../pages/JeuxPage';
 import { AutocollantsPage } from '../pages/AutocollantsPage';
 import { BallonsPage } from '../pages/BallonsPage';
 import { OmbresPage } from '../pages/OmbresPage';
+import { CompterPage } from '../pages/CompterPage';
 import { PianoPage } from '../pages/PianoPage';
 
 /** Routes de l'application (HashRouter : fonctionne depuis un fichier local, donc aussi dans Capacitor). */
@@ -29,6 +30,7 @@ export function AppRoutes() {
       <Route path="/autocollants" element={<AutocollantsPage />} />
       <Route path="/ballons" element={<BallonsPage />} />
       <Route path="/ombres" element={<OmbresPage />} />
+      <Route path="/compter" element={<CompterPage />} />
       <Route path="/piano" element={<PianoPage />} />
       <Route path="/simple" element={<SimpleModePage />} />
       <Route path="/parents" element={<ParentPage />} />

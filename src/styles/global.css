@@ -1144,6 +1144,62 @@ body {
   100% { scale: 1.9; opacity: 0; }
 }
 
+/* Compter jusqu'à 3 */
+.compter-total {
+  display: grid;
+  justify-items: center;
+  margin: 8px 0 0;
+  font-weight: 900;
+  font-size: clamp(4rem, 20vw, 7rem);
+  line-height: 1;
+  color: var(--color-lavender-deep);
+}
+.compter-total.is-done { animation: imagier-bounce .6s ease; }
+.compter-dots { font-size: 1.6rem; letter-spacing: 6px; }
+.compter-row { display: flex; flex-wrap: wrap; justify-content: center; gap: 16px; margin-top: 16px; }
+.compter-item {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: clamp(100px, 27vw, 170px);
+  aspect-ratio: 1;
+  border: 3px solid rgba(255,255,255,.9);
+  border-radius: 50%;
+  background: rgba(255,255,255,.75);
+  box-shadow: var(--shadow-soft);
+  font-size: clamp(4rem, 17vw, 7rem);
+  cursor: pointer;
+  touch-action: manipulation;
+  animation: pop-in .35s ease both;
+}
+.compter-item.is-counted { background: #fff3c4; animation: compter-hop .5s ease; }
+.compter-badge {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  display: grid;
+  place-items: center;
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  background: var(--color-lavender-deep);
+  color: #fff;
+  font-weight: 900;
+  font-size: 1.6rem;
+  animation: pop-in .25s ease both;
+}
+.compter-groups { display: grid; grid-template-columns: repeat(3, minmax(0, 240px)); justify-content: center; gap: 12px; margin-top: 16px; }
+.compter-group { min-height: 0; aspect-ratio: 1; }
+.compter-group__items { display: flex; flex-wrap: wrap; justify-content: center; gap: 4px; }
+/* Plus spécifique que .cherche-card .imagier-card__emoji : 3 objets doivent tenir sur une ligne. */
+.compter-group .compter-group__items .imagier-card__emoji { font-size: clamp(1.6rem, 6.5vw, 3.2rem); }
+.compter-badge--group { top: 6px; right: 6px; }
+@keyframes compter-hop {
+  0%, 100% { transform: translateY(0); }
+  40% { transform: translateY(-26px) scale(1.08); }
+  70% { transform: translateY(0) scale(1.05, .95); }
+}
+
 /* Ombres */
 .ombres-model { display: grid; place-items: center; margin: 12px 0; font-size: clamp(6rem, 28vw, 9rem); animation: pop-in .4s ease both; }
 .ombres-grid { grid-template-columns: repeat(3, minmax(0, 200px)); }
@@ -1425,6 +1481,9 @@ body {
   .cherche-bravo,
   .memo-card,
   .memo-card.is-matched .memo-card__front,
+  .compter-item,
+  .compter-item.is-counted,
+  .compter-total.is-done,
   .piano-key.is-pressed,
   .piano-key.is-pressed .piano-key__animal,
   .sticker,

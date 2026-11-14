@@ -1,4 +1,36 @@
 /** Données des mini-jeux pour les tout-petits (3 ans). */
+import { IMAGIER_ITEMS, shuffle, type ImagierItem } from './imagier';
+
+export const NUMBER_WORDS = ['zéro', 'un', 'deux', 'trois', 'quatre', 'cinq'];
+
+// Article « le / la » obligatoire pour dire « un lapin » / « une pomme » sans se tromper de genre.
+const COUNTABLE = IMAGIER_ITEMS.filter(
+  (i) => ['fruits', 'legumes', 'animaux'].includes(i.category) && (i.article === 'le' || i.article === 'la') && !i.name.includes(' '),
+);
+
+/** Pluriel simple : « pomme » → « pommes », « cheval » → « chevaux », « souris » ne change pas. */
+export function plural(name: string): string {
+  if (/[sxz]$/.test(name)) return name;
+  if (/al$/.test(name)) return `${name.slice(0, -2)}aux`;
+  if (name === 'hibou') return 'hiboux';
+  return `${name}s`;
+}
+
+/** « une pomme », « deux lapins », « trois chevaux ». */
+export function quantity(item: ImagierItem, count: number): string {
+  if (count === 1) return `${item.article === 'la' ? 'une' : 'un'} ${item.name}`;
+  return `${NUMBER_WORDS[count]} ${plural(item.name)}`;
+}
+
+/** Un objet et un nombre entre 1 et `max`. */
+export function countingRound(max = 3, random = Math.random): { item: ImagierItem; count: number } {
+  return { item: COUNTABLE[Math.floor(random() * COUNTABLE.length)]!, count: 1 + Math.floor(random() * max) };
+}
+
+/** Les groupes 1, 2, 3… mélangés, pour « Où il y a deux lapins ? ». */
+export function groupChoices(max = 3, random = Math.random): number[] {
+  return shuffle(Array.from({ length: max }, (_, i) => i + 1), random);
+}
 
 export const BALLOON_COLORS = [
   { name: 'rouge', hex: '#ef5b5b' },

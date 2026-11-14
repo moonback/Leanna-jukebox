@@ -5,6 +5,7 @@ import { EmojiPicture } from '../components/ui/EmojiPicture';
 import { speakFrench } from '../services/speech';
 
 const GAMES = [
+  { to: '/compter', label: 'Compter jusqu’à 3', emoji: '🍎', tint: 'legumes' },
   { to: '/ballons', label: 'Ballons', emoji: '🎈', tint: 'fruits' },
   { to: '/piano', label: 'Piano', emoji: '🎹', tint: 'vehicules' },
   { to: '/cherche', label: 'Cherche et trouve', emoji: '🔍', tint: 'maison' },
