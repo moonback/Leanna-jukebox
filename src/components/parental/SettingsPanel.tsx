@@ -3,6 +3,7 @@ import { Download, Upload } from 'lucide-react';
 import { useSettings } from '../../hooks/useSettings';
 import { Button } from '../ui/Button';
 import { PinPad } from './PinPad';
+import { CloudSyncCard } from './CloudSyncCard';
 import { updateSettings } from '../../storage/settingsRepository';
 import { buildBackup, deleteAllData, parseBackup, restoreBackup } from '../../storage/backup';
 import { db } from '../../storage/database';
@@ -144,6 +145,7 @@ export function SettingsPanel() {
       </div>
 
       <div className="stack">
+        <CloudSyncCard />
         {error && <p className="error-text" role="alert">{error}</p>}
         {message && <p role="status" style={{ fontWeight: 800, color: 'var(--color-mint-deep)' }}>{message}</p>}
 

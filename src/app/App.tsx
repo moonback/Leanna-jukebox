@@ -5,6 +5,7 @@ import { ensureSeeded } from '../storage/seed';
 import { db } from '../storage/database';
 import { LoadingState } from '../components/ui/LoadingState';
 import { ErrorBoundary } from '../components/layout/ErrorBoundary';
+import { AuthGate } from '../components/layout/AuthGate';
 import { toUserMessage } from '../services/errors';
 
 export function App() {
@@ -33,9 +34,11 @@ export function App() {
 
   return (
     <ErrorBoundary>
-      <HashRouter>
-        <AppRoutes />
-      </HashRouter>
+      <AuthGate>
+        <HashRouter>
+          <AppRoutes />
+        </HashRouter>
+      </AuthGate>
     </ErrorBoundary>
   );
 }
