@@ -1,7 +1,16 @@
 import { describe, expect, it } from 'vitest';
-import { IMAGIER_CATEGORIES, IMAGIER_ITEMS, emojiImage, groupByLetter, initialOf, spokenWord } from './imagier';
+import { IMAGIER_CATEGORIES, IMAGIER_ITEMS, emojiImage, groupByLetter, initialOf, pickRound, spokenWord } from './imagier';
 
 describe('imagier', () => {
+  it('cherche et trouve : 4 images différentes dont la cible', () => {
+    for (let i = 0; i < 50; i++) {
+      const { choices, target } = pickRound(IMAGIER_ITEMS, 4);
+      expect(choices).toHaveLength(4);
+      expect(new Set(choices.map((c) => c.emoji)).size).toBe(4);
+      expect(choices).toContain(target);
+    }
+  });
+
   it('range les mots par ordre alphabétique, accents compris', () => {
     const names = groupByLetter(IMAGIER_ITEMS, 'animaux').flatMap((g) => g.items.map((i) => i.name));
     expect(names.slice(0, 2)).toEqual(['abeille', 'âne']);

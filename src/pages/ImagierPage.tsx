@@ -6,7 +6,7 @@ import { IMAGIER_CATEGORIES, IMAGIER_ITEMS, emojiImage, groupByLetter, initialOf
 import { speakFrench } from '../services/speech';
 
 /** Illustration 3D de l'emoji, avec l'emoji texte en secours. */
-function EmojiPicture({ emoji }: { emoji: string }) {
+export function EmojiPicture({ emoji }: { emoji: string }) {
   const src = emojiImage(emoji);
   return src ? <img src={src} alt="" draggable={false} className="imagier-picture" /> : <>{emoji}</>;
 }

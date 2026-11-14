@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { Smile, Images } from 'lucide-react';
+import { Smile, Images, Search } from 'lucide-react';
 import { AppShell } from '../components/layout/AppShell';
 import { ParentAccessButton } from '../components/parental/ParentAccessButton';
 import { Illustration } from '../illustrations/Illustration';
@@ -8,6 +8,7 @@ import { speakFrench } from '../services/speech';
 const TILES = [
   { to: '/simple', label: 'Musique', hint: 'Écouter une chanson', icon: Smile, color: '#e0ecdf' },
   { to: '/imagier', label: 'Imagier', hint: 'Découvrir les images', icon: Images, color: '#f1dce8' },
+  { to: '/cherche', label: 'Cherche et trouve', hint: 'Trouver la bonne image', icon: Search, color: '#dceaf3' },
 ] as const;
 
 /** Accueil enfant : mascotte, message de bienvenue et deux grands choix centrés. */
@@ -31,7 +32,7 @@ export function HomePage() {
         <nav
           aria-label="Choix"
           className="quick-tiles"
-          style={{ width: '100%', marginTop: 8, gridTemplateColumns: 'repeat(2, minmax(0, 280px))', justifyContent: 'center' }}
+          style={{ width: '100%', marginTop: 8, gridTemplateColumns: `repeat(${TILES.length}, minmax(0, 240px))`, justifyContent: 'center' }}
         >
           {TILES.map(({ to, label, hint, icon: Icon, color }) => (
             <Link

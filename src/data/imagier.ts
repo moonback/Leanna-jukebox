@@ -165,6 +165,17 @@ export function letterPhrase(item: ImagierItem): string {
   return `${LETTER_NAMES[letter] ?? letter}, comme ${item.name}`;
 }
 
+/** Cherche et trouve : `count` images aux emoji distincts, dont une à trouver. */
+export function pickRound(items: ImagierItem[], count: number, random = Math.random): { choices: ImagierItem[]; target: ImagierItem } {
+  const pool = [...items];
+  const choices: ImagierItem[] = [];
+  while (choices.length < count && pool.length) {
+    const item = pool.splice(Math.floor(random() * pool.length), 1)[0]!;
+    if (!choices.some((c) => c.emoji === item.emoji)) choices.push(item);
+  }
+  return { choices, target: choices[Math.floor(random() * choices.length)]! };
+}
+
 /** Filtre par catégorie puis regroupe par lettre, dans l'ordre alphabétique français. */
 export function groupByLetter(items: ImagierItem[], category: ImagierCategory | 'tout'): { letter: string; items: ImagierItem[] }[] {
   const sorted = items

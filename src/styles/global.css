@@ -1008,6 +1008,59 @@ body {
 }
 @keyframes imagier-pulse { 50% { opacity: .4; } }
 
+/* ----- Cherche et trouve ----- */
+.cherche-stars { flex: 0 0 auto; font-weight: 900; font-size: 1.3rem; }
+.cherche-question {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: 100%;
+  margin: 16px 0;
+  padding: 14px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--color-surface-strong);
+  box-shadow: var(--shadow-soft);
+  font: inherit;
+  font-weight: 900;
+  font-size: clamp(1.3rem, 5vw, 1.8rem);
+  color: var(--color-ink);
+  cursor: pointer;
+}
+.cherche-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 220px));
+  justify-content: center;
+  gap: 16px;
+}
+.cherche-card { min-height: 0; aspect-ratio: 1; }
+.cherche-card .imagier-card__emoji { font-size: clamp(4.5rem, 22vw, 7.5rem); }
+.cherche-card.is-wrong { animation: cherche-shake .45s ease; }
+.cherche-card.is-found { border-color: var(--tint-deep); animation: cherche-win .9s ease both; z-index: 1; }
+.cherche-card.is-found .imagier-card__emoji { animation: imagier-wiggle .6s ease .3s; }
+.cherche-card.is-faded { opacity: .3; transform: scale(.92); transition: opacity .3s, transform .3s; }
+.cherche-bravo {
+  margin: 20px 0 0;
+  text-align: center;
+  font-weight: 900;
+  font-size: 2rem;
+  animation: pop-in .35s ease both;
+}
+@keyframes cherche-shake {
+  0%, 100% { transform: translateX(0); }
+  20% { transform: translateX(-12px) rotate(-3deg); }
+  40% { transform: translateX(10px) rotate(3deg); }
+  60% { transform: translateX(-6px); }
+  80% { transform: translateX(4px); }
+}
+@keyframes cherche-win {
+  0% { transform: scale(1); }
+  40% { transform: scale(1.15) rotate(-3deg); }
+  70% { transform: scale(1.08) rotate(2deg); }
+  100% { transform: scale(1.1); }
+}
+
 /* ----- Imagier : grande image animée de l'objet choisi ----- */
 .imagier-zoom { animation: imagier-fade .2s ease both; cursor: pointer; }
 .imagier-zoom__card {
@@ -1106,6 +1159,10 @@ body {
   .imagier-zoom__shadow,
   .imagier-zoom__name,
   .imagier-zoom__sparkles,
+  .cherche-card.is-wrong,
+  .cherche-card.is-found,
+  .cherche-card.is-found .imagier-card__emoji,
+  .cherche-bravo,
   .imagier-card.is-entering,
   .imagier-card.is-speaking,
   .imagier-card.is-speaking .imagier-card__emoji,
