@@ -769,6 +769,53 @@ body {
 .imagier-tint--maison    { --tint: #f6edcf; --tint-deep: #b8953a; }
 .imagier-tint--nature    { --tint: #ddeee9; --tint-deep: #4f9a87; }
 
+.imagier-hero {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 16px;
+  border-radius: var(--radius-xl);
+  background:
+    radial-gradient(circle at 85% 20%, rgba(255,255,255,.7) 0 40px, transparent 41px),
+    radial-gradient(circle at 70% 110%, rgba(255,255,255,.45) 0 60px, transparent 61px),
+    linear-gradient(120deg, #fbd3e3, #e3dbf7 55%, #d5ecf0);
+  box-shadow: var(--shadow-soft);
+  overflow: hidden;
+}
+.imagier-hero__back { flex: 0 0 auto; }
+.imagier-hero__mascot { width: 68px; height: 68px; flex: 0 0 auto; }
+.imagier-hero__text { flex: 1 1 auto; min-width: 0; }
+.imagier-hero__text h1 { margin: 0; font-size: clamp(1.5rem, 5vw, 2.3rem); font-weight: 900; line-height: 1.05; }
+.imagier-hero__text p { margin: 2px 0 0; color: var(--color-ink-soft); font-weight: 700; }
+.imagier-surprise {
+  flex: 0 0 auto;
+  display: grid;
+  justify-items: center;
+  gap: 2px;
+  min-width: 84px;
+  min-height: 72px;
+  padding: 8px 12px;
+  border: 0;
+  border-radius: 22px;
+  background: #fff;
+  color: var(--color-lavender-deep);
+  font: inherit;
+  font-weight: 900;
+  box-shadow: var(--shadow-press);
+  cursor: pointer;
+  touch-action: manipulation;
+}
+.imagier-surprise__dice { font-size: 2rem; line-height: 1; transition: transform .4s ease; }
+.imagier-surprise:active .imagier-surprise__dice { transform: rotate(180deg) scale(1.2); }
+@media (max-width: 560px) {
+  .imagier-hero { flex-wrap: wrap; gap: 10px; }
+  .imagier-hero__mascot { width: 52px; height: 52px; }
+  .imagier-hero__text { flex-basis: calc(100% - 140px); }
+  .imagier-surprise { width: 100%; grid-auto-flow: column; justify-content: center; align-items: center; gap: 10px; min-height: 52px; }
+  .imagier-surprise__dice { font-size: 1.5rem; }
+}
+
 .imagier-toolbar {
   position: sticky;
   top: calc(var(--safe-top) + 8px);
@@ -807,6 +854,15 @@ body {
   background: rgba(255,255,255,.85);
   font-size: 1.3rem;
 }
+.imagier-tab__count {
+  min-width: 26px;
+  padding: 1px 7px;
+  border-radius: 999px;
+  background: rgba(255,255,255,.75);
+  color: var(--tint-deep);
+  font-size: .8rem;
+  text-align: center;
+}
 .imagier-tab.is-active {
   border-color: var(--tint-deep);
   box-shadow: 0 6px 16px rgba(102, 91, 130, .22);
@@ -838,24 +894,49 @@ body {
 .imagier-section { scroll-margin-top: calc(var(--safe-top) + 150px); }
 .imagier-letter {
   display: flex;
-  align-items: baseline;
-  gap: 8px;
-  margin: 28px 4px 12px;
+  align-items: center;
+  gap: 12px;
+  margin: 30px 4px 12px;
+  font-size: 1rem;
 }
 .imagier-letter__badge {
+  position: relative;
   display: grid;
   place-items: center;
-  width: 56px;
-  height: 56px;
-  border-radius: 18px;
+  width: 60px;
+  height: 60px;
+  border-radius: 20px;
   background: linear-gradient(135deg, #f0a6c4, #a99be0);
   color: #fff;
-  font-size: 2rem;
+  font-size: 2.1rem;
   font-weight: 900;
   box-shadow: var(--shadow-press);
-  align-self: center;
+  transform: rotate(-4deg);
 }
-.imagier-letter__lower { font-size: 1.8rem; font-weight: 900; color: var(--color-ink-soft); opacity: .6; }
+.imagier-letter__badge small {
+  position: absolute;
+  right: -8px;
+  bottom: -8px;
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: #fff;
+  color: var(--color-pink-deep);
+  font-size: 1.1rem;
+  box-shadow: var(--shadow-press);
+  transform: rotate(4deg);
+}
+.imagier-letter__example {
+  padding: 6px 14px;
+  border-radius: 999px;
+  background: var(--color-surface-strong);
+  color: var(--color-ink-soft);
+  font-weight: 700;
+  font-size: 1.05rem;
+}
+.imagier-letter__example strong { color: var(--color-ink); font-weight: 900; }
 
 .imagier-grid {
   display: grid;
@@ -903,6 +984,8 @@ body {
   font-size: 1.1rem;
   text-align: center;
 }
+.imagier-card__initial { color: var(--tint-deep); font-size: 1.25em; }
+.imagier-card.is-entering { animation: pop-in .35s ease both; }
 .imagier-card.is-speaking {
   border-color: var(--tint-deep);
   animation: imagier-bounce .5s ease;
@@ -914,6 +997,14 @@ body {
   animation: pop-in .25s ease;
 }
 .imagier-card__sound { animation: imagier-pulse .8s ease-in-out infinite; }
+
+.imagier-end {
+  margin: 32px 0 8px;
+  text-align: center;
+  font-weight: 900;
+  font-size: 1.2rem;
+  color: var(--color-lavender-deep);
+}
 
 @keyframes imagier-bounce {
   0% { transform: scale(1); }
@@ -930,6 +1021,7 @@ body {
 @keyframes imagier-pulse { 50% { opacity: .4; } }
 
 @media (prefers-reduced-motion: reduce) {
+  .imagier-card.is-entering,
   .imagier-card.is-speaking,
   .imagier-card.is-speaking .imagier-card__emoji,
   .imagier-card__sound { animation: none; }

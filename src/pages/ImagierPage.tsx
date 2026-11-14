@@ -2,24 +2,42 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ChevronLeft, Volume2 } from 'lucide-react';
 import { AppShell } from '../components/layout/AppShell';
+import { Illustration } from '../illustrations/Illustration';
 import { IMAGIER_CATEGORIES, IMAGIER_ITEMS, groupByLetter, spokenWord, type ImagierCategory, type ImagierItem } from '../data/imagier';
 import { speakFrench } from '../services/speech';
+
+const countFor = (id: ImagierCategory | 'tout') =>
+  id === 'tout' ? IMAGIER_ITEMS.length : IMAGIER_ITEMS.filter((i) => i.category === id).length;
 
 /** Imagier : animaux, fruits, légumes… rangés de A à Z. Toucher une image dit son nom à voix haute. */
 export function ImagierPage() {
   const [category, setCategory] = useState<ImagierCategory | 'tout'>('tout');
   // `tap` change à chaque toucher pour relancer l'animation, même sur la même carte.
   const [active, setActive] = useState<{ id: string; tap: number } | null>(null);
-  const timer = useRef<number | undefined>(undefined);
+  const timers = useRef<number[]>([]);
   const groups = useMemo(() => groupByLetter(IMAGIER_ITEMS, category), [category]);
+  const visible = useMemo(() => groups.flatMap((g) => g.items), [groups]);
 
-  useEffect(() => () => window.clearTimeout(timer.current), []);
+  const clearTimers = () => {
+    timers.current.forEach((t) => window.clearTimeout(t));
+    timers.current = [];
+  };
+  useEffect(() => clearTimers, []);
 
   const say = (item: ImagierItem) => {
+    clearTimers();
     speakFrench(spokenWord(item));
     setActive((prev) => ({ id: item.id, tap: (prev?.tap ?? 0) + 1 }));
-    window.clearTimeout(timer.current);
-    timer.current = window.setTimeout(() => setActive(null), 2500);
+    timers.current.push(window.setTimeout(() => setActive(null), 2500));
+  };
+
+  /** Bouton surprise : va jusqu'à une image au hasard puis la dit. */
+  const surprise = () => {
+    const item = visible[Math.floor(Math.random() * visible.length)];
+    if (!item) return;
+    clearTimers();
+    document.getElementById(`carte-${item.id}`)?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    timers.current.push(window.setTimeout(() => say(item), 550));
   };
 
   const jumpTo = (letter: string) =>
@@ -27,14 +45,19 @@ export function ImagierPage() {
 
   return (
     <AppShell>
-      <header className="row-wrap" style={{ gap: 12 }}>
-        <Link to="/" aria-label="Retour à l’accueil" className="btn btn--secondary btn--icon" style={{ textDecoration: 'none' }}>
+      <header className="imagier-hero">
+        <Link to="/" aria-label="Retour à l’accueil" className="btn btn--secondary btn--icon imagier-hero__back" style={{ textDecoration: 'none' }}>
           <ChevronLeft size={28} />
         </Link>
-        <div>
-          <h1 style={{ margin: 0, fontSize: 'clamp(1.5rem, 5vw, 2.2rem)', fontWeight: 900, lineHeight: 1.05 }}>Mon imagier</h1>
-          <p className="muted" style={{ margin: 0 }}>Touche une image pour entendre son nom</p>
+        <Illustration name="bunny" className="anim-float imagier-hero__mascot" />
+        <div className="imagier-hero__text">
+          <h1>Mon imagier</h1>
+          <p>Touche une image pour entendre son nom</p>
         </div>
+        <button type="button" className="imagier-surprise" onClick={surprise}>
+          <span aria-hidden="true" className="imagier-surprise__dice">🎲</span>
+          Surprise
+        </button>
       </header>
 
       <div className="imagier-toolbar glass">
@@ -50,6 +73,7 @@ export function ImagierPage() {
             >
               <span className="imagier-tab__emoji" aria-hidden="true">{c.emoji}</span>
               {c.label}
+              <span className="imagier-tab__count">{countFor(c.id)}</span>
             </button>
           ))}
         </div>
@@ -62,36 +86,61 @@ export function ImagierPage() {
         </nav>
       </div>
 
-      {groups.map((g) => (
-        <section key={g.letter} id={`lettre-${g.letter}`} aria-label={`Lettre ${g.letter}`} className="imagier-section">
-          <h2 className="imagier-letter">
-            <span className="imagier-letter__badge">{g.letter}</span>
-            <span className="imagier-letter__lower" aria-hidden="true">{g.letter.toLowerCase()}</span>
-          </h2>
-          <div className="imagier-grid">
-            {g.items.map((item) => {
-              const isActive = active?.id === item.id;
-              return (
-                <button
-                  key={isActive ? `${item.id}-${active.tap}` : item.id}
-                  type="button"
-                  className={`imagier-card imagier-tint--${item.category}${isActive ? ' is-speaking' : ''}`}
-                  onClick={() => say(item)}
-                  aria-label={spokenWord(item)}
-                >
-                  <span className="imagier-card__bubble" aria-hidden="true">
-                    <span className="imagier-card__emoji">{item.emoji}</span>
-                  </span>
-                  <span className="imagier-card__name">
-                    {isActive && <Volume2 size={18} aria-hidden="true" className="imagier-card__sound" />}
-                    {isActive ? spokenWord(item) : item.name}
-                  </span>
-                </button>
-              );
-            })}
-          </div>
-        </section>
-      ))}
+      {/* La clé change avec la catégorie : les cartes réapparaissent avec leur petite animation. */}
+      <div key={category}>
+        {groups.map((g, gi) => (
+          <section key={g.letter} id={`lettre-${g.letter}`} aria-label={`Lettre ${g.letter}`} className="imagier-section">
+            <h2 className="imagier-letter">
+              <span className="imagier-letter__badge">
+                {g.letter}
+                <small aria-hidden="true">{g.letter.toLowerCase()}</small>
+              </span>
+              {g.items[0] && (
+                <span className="imagier-letter__example">
+                  comme <span aria-hidden="true">{g.items[0].emoji}</span> <strong>{g.items[0].name}</strong>
+                </span>
+              )}
+            </h2>
+            <div className="imagier-grid">
+              {g.items.map((item, i) => {
+                const isActive = active?.id === item.id;
+                return (
+                  <button
+                    key={isActive ? `${item.id}-${active.tap}` : item.id}
+                    id={`carte-${item.id}`}
+                    type="button"
+                    className={`imagier-card imagier-tint--${item.category}${isActive ? ' is-speaking' : ' is-entering'}`}
+                    style={{ animationDelay: isActive ? undefined : `${Math.min(gi * 40 + i * 30, 400)}ms` }}
+                    onClick={() => say(item)}
+                    aria-label={spokenWord(item)}
+                  >
+                    <span className="imagier-card__bubble" aria-hidden="true">
+                      <span className="imagier-card__emoji">{item.emoji}</span>
+                    </span>
+                    <span className="imagier-card__name">
+                      {isActive ? (
+                        <>
+                          <Volume2 size={18} aria-hidden="true" className="imagier-card__sound" />
+                          {spokenWord(item)}
+                        </>
+                      ) : (
+                        <span>
+                          <span className="imagier-card__initial">{item.name.charAt(0)}</span>
+                          {item.name.slice(1)}
+                        </span>
+                      )}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+          </section>
+        ))}
+      </div>
+
+      <p className="imagier-end">
+        <span aria-hidden="true">🎉</span> Bravo, tu as vu les {visible.length} images&nbsp;!
+      </p>
     </AppShell>
   );
 }
