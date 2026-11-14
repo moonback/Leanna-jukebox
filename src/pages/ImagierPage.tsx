@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { ChevronLeft, Volume2 } from 'lucide-react';
 import { AppShell } from '../components/layout/AppShell';
 import { Illustration } from '../illustrations/Illustration';
-import { IMAGIER_CATEGORIES, IMAGIER_ITEMS, groupByLetter, spokenWord, type ImagierCategory, type ImagierItem } from '../data/imagier';
+import { IMAGIER_CATEGORIES, IMAGIER_ITEMS, groupByLetter, initialOf, letterPhrase, spokenWord, type ImagierCategory, type ImagierItem } from '../data/imagier';
 import { speakFrench } from '../services/speech';
 
 const countFor = (id: ImagierCategory | 'tout') =>
@@ -26,7 +26,7 @@ export function ImagierPage() {
 
   const say = (item: ImagierItem) => {
     clearTimers();
-    speakFrench(spokenWord(item));
+    speakFrench(letterPhrase(item));
     setActive((prev) => ({ id: item.id, tap: (prev?.tap ?? 0) + 1 }));
     timers.current.push(window.setTimeout(() => setActive(null), 2500));
   };
@@ -121,7 +121,7 @@ export function ImagierPage() {
                       {isActive ? (
                         <>
                           <Volume2 size={18} aria-hidden="true" className="imagier-card__sound" />
-                          {spokenWord(item)}
+                          {initialOf(item.name)} comme {item.name}
                         </>
                       ) : (
                         <span>

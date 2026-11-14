@@ -144,6 +144,18 @@ export function spokenWord(item: ImagierItem): string {
   return item.article.endsWith('’') ? `${item.article}${item.name}` : `${item.article} ${item.name}`;
 }
 
+/** Nom des lettres, écrit pour que la synthèse vocale les prononce comme à l'école. */
+const LETTER_NAMES: Record<string, string> = {
+  A: 'a', B: 'bé', C: 'cé', D: 'dé', E: 'eu', F: 'èf', G: 'gé', H: 'hache', I: 'i', J: 'ji', K: 'ka', L: 'èl', M: 'èm',
+  N: 'èn', O: 'o', P: 'pé', Q: 'ku', R: 'èr', S: 'èss', T: 'té', U: 'u', V: 'vé', W: 'double vé', X: 'iks', Y: 'i grec', Z: 'zèd',
+};
+
+/** Phrase d'apprentissage prononcée au toucher : « B comme ballon ». */
+export function letterPhrase(item: ImagierItem): string {
+  const letter = initialOf(item.name);
+  return `${LETTER_NAMES[letter] ?? letter}, comme ${item.name}`;
+}
+
 /** Filtre par catégorie puis regroupe par lettre, dans l'ordre alphabétique français. */
 export function groupByLetter(items: ImagierItem[], category: ImagierCategory | 'tout'): { letter: string; items: ImagierItem[] }[] {
   const sorted = items
