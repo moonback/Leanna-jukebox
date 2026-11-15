@@ -21,6 +21,7 @@ export type SyncEntityType = 'song' | 'playlist' | 'category' | 'settings' | 'st
 export interface SyncOutboxRecord {
   id?: number;
   operationId: string;
+  ownerUserId?: string | null;
   entityType: SyncEntityType;
   entityId: string;
   operation: 'upsert' | 'delete';
@@ -58,7 +59,7 @@ export class JukeboxDatabase extends Dexie {
       settings: 'key',
       stickers: 'id, createdAt',
       gameProgress: 'gameId, lastPlayedAt',
-      syncOutbox: '++id, operationId, createdAt, entityType, entityId',
+      syncOutbox: '++id, operationId, ownerUserId, createdAt, entityType, entityId, [entityType+entityId]',
       syncMeta: 'key',
     });
   }
