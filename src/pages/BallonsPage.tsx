@@ -50,7 +50,10 @@ export function BallonsPage() {
   const popped = useRef(0);
   const celebrateEvery5 = () => {
     popped.current += 1;
-    if (popped.current % 5 === 0) celebrate();
+    if (popped.current % 5 === 0) {
+      celebrate();
+      void recordGameRound('ballons');
+    }
   };
 
   return (
