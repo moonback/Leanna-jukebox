@@ -19,6 +19,8 @@ export async function enqueueSyncOperation(
     ? Object.fromEntries(Object.entries(patch).filter(([key]) => !DEVICE_ONLY_SETTINGS.has(key)))
     : patch;
 
+  if (operation === 'upsert' && Object.keys(safePatch).length === 0) return;
+
   await database.syncOutbox.add({
     operationId: operationId(),
     entityType,
