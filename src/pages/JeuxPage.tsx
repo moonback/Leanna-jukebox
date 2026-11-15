@@ -12,6 +12,11 @@ const GAMES = [
   { to: '/compter', label: 'Compter jusqu’à 3', emoji: '🍎', tint: 'legumes', minAge: 3 },
   { to: '/ombres', label: 'Ombres', emoji: '🐘', tint: 'animaux', minAge: 3 },
   { to: '/memoire', label: 'Mémoire', emoji: '🃏', tint: 'nature', minAge: 4 },
+  { to: '/mini/couleurs', label: 'Les couleurs', emoji: '🎨', tint: 'fruits', minAge: 2 },
+  { to: '/mini/formes', label: 'Les formes', emoji: '🔺', tint: 'nature', minAge: 2 },
+  { to: '/mini/puzzle', label: 'Puzzle 4 pièces', emoji: '🧩', tint: 'maison', minAge: 3 },
+  { to: '/mini/tailles', label: 'Grand ou petit ?', emoji: '🐘', tint: 'animaux', minAge: 2 },
+  { to: '/mini/cris', label: 'Cris des animaux', emoji: '🐮', tint: 'animaux', minAge: 2 },
 ] as const;
 
 /** Tous les jeux, avec l'âge conseillé. */
