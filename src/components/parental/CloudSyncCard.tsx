@@ -2,7 +2,7 @@ import { useState, useSyncExternalStore, type FormEvent } from 'react';
 import { Cloud, LogOut, RefreshCw, Radio, Wifi, WifiOff } from 'lucide-react';
 import { Button } from '../ui/Button';
 import { supabase } from '../../storage/cloud/supabaseClient';
-import { getSyncStatus, restoreFromCloud, subscribeSync, syncNow } from '../../storage/cloud/sync';
+import { confirmPendingDeletions, getSyncStatus, restoreFromCloud, subscribeSync, syncNow } from '../../storage/cloud/sync';
 import { toUserMessage } from '../../services/errors';
 
 const STATE_LABEL = { idle: 'À jour', syncing: 'Synchronisation…', error: 'Erreur de synchronisation' } as const;
@@ -80,6 +80,18 @@ export function CloudSyncCard() {
             {status.realtime === 'connected' ? 'Temps réel actif · les autres appareils sont écoutés' : status.realtime === 'connecting' ? 'Connexion au canal temps réel…' : 'Temps réel indisponible · mode local conservé'}
           </p>
           {(status.error || error) && <p className="error-text" role="alert">{status.error ?? error}</p>}
+          {status.confirmationRequired && (
+            <div className="glass stack" role="alert" style={{ padding: 14 }}>
+              <strong>Confirmation parentale requise</strong>
+              <p style={{ margin: 0 }}>Cette synchronisation contient {status.pendingDeleteCount} suppressions et retirerait plus de 30 % d’au moins une catégorie d’éléments du cloud. Vérifie que ces suppressions sont volontaires avant de continuer.</p>
+              <Button variant="danger" disabled={status.state === 'syncing'} onClick={() => run(async () => {
+                confirmPendingDeletions();
+                await syncNow();
+              })}>
+                Confirmer les suppressions
+              </Button>
+            </div>
+          )}
           <Button variant="primary" icon={<Cloud size={20} />} disabled={status.state === 'syncing'} onClick={() => run(syncNow)}>
             Synchroniser maintenant
           </Button>
