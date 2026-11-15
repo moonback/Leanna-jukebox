@@ -7,6 +7,7 @@ import { LoadingState } from '../components/ui/LoadingState';
 import { ErrorBoundary } from '../components/layout/ErrorBoundary';
 import { SpeechNotice } from '../components/ui/SpeechNotice';
 import { OfflineStatus } from '../components/layout/OfflineStatus';
+import { AndroidBackButton } from '../components/layout/AndroidBackButton';
 import { CloudSessionBootstrap } from '../components/layout/CloudSessionBootstrap';
 import { toUserMessage } from '../services/errors';
 
@@ -40,6 +41,7 @@ export function App() {
     <ErrorBoundary>
       <HashRouter>
         <CloudSessionBootstrap />
+        <AndroidBackButton />
         <SpeechNotice />
         <OfflineStatus />
         <AppRoutes />
