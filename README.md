@@ -67,16 +67,28 @@ La synchronisation est optionnelle. Dexie reste la source de données locale uti
 3. Activer l'authentification e-mail/mot de passe dans Supabase Auth et configurer la confirmation d'adresse selon le besoin.
 4. Déployer sur HTTPS pour les essais multi-appareils.
 
-Appliquer les deux migrations versionnées dans l’ordre chronologique :
+Appliquer les trois migrations versionnées dans l’ordre chronologique :
 
-1. `supabase/migrations/20261114000000_init_jukebox.sql` crée le schéma initial des catégories, chansons, playlists, liaisons et réglages, avec les politiques RLS.
-2. `supabase/migrations/202611150001_family_realtime_sync.sql` complète le schéma pour la synchronisation familiale, renforce les politiques RLS et active la publication Realtime.
+1. `supabase/migrations/20261114000000_init_jukebox.sql` — schéma initial et politiques RLS.
+2. `supabase/migrations/202611150001_family_realtime_sync.sql` — synchronisation familiale historique et publication Realtime.
+3. `supabase/migrations/202611160001_sync_outbox_lww.sql` — journal canonique `sync_records`, reçus idempotents, fonction serveur `merge_sync_record`, tombstones et reprise des bibliothèques déjà présentes.
 
-Le fichier initial est bien présent dans `supabase/migrations/` sous un nom horodaté ; il n’existe simplement pas de script séparé à la racine nommé `init_jukebox.sql`. Pour un projet Supabase déjà existant, inspecter les migrations appliquées, les tables, contraintes, politiques et publications avant toute intervention. Ne pas réinitialiser les tables à l’aveugle.
+Pour un projet Supabase déjà existant, inspecter les migrations appliquées, les tables, contraintes, politiques et publications avant toute intervention. Ne pas réinitialiser les tables à l’aveugle. La troisième migration doit être appliquée après les deux premières ; elle reprend les données des tables historiques dans le journal canonique sans supprimer les anciennes tables.
 
-### Limites actuelles de la synchronisation
+### Garanties de synchronisation Phase 2
 
-La synchronisation actuelle déclenche une réconciliation de la bibliothèque et n'est pas encore une réplication transactionnelle complète : pas d'outbox durable ni de tombstones pour toutes les suppressions, et pas de résolution LWW champ par champ garantie. Une modification concurrente ou un appareil local incomplet peut donc présenter un risque de perte de données. Ne pas considérer cette version comme une synchronisation multi-appareils à garanties fortes avant la Phase 2 de la roadmap.
+- Les modifications locales sont inscrites dans une outbox Dexie persistante dans la même transaction IndexedDB que les entités concernées.
+- Chaque opération possède un UUID et un reçu serveur unique : une reprise après interruption ne réapplique pas une opération déjà acceptée.
+- Les suppressions deviennent des tombstones `deleted_at` ; aucune suppression distante n'est déduite d'une liste locale incomplète.
+- La fonction serveur fusionne uniquement les champs présents dans chaque opération et leur attribue une version/heure serveur. En cas de conflit, la dernière opération reçue par le serveur gagne champ par champ.
+- Les changements Realtime sont appliqués à l'entité concernée ; une réconciliation complète est conservée pour le démarrage et le rattrapage après reconnexion.
+- Une opération en attente reste locale hors ligne. Les opérations sont isolées par compte familial ; un changement de compte est bloqué si l'ancienne famille a encore des opérations non envoyées.
+- Une synchronisation qui dépasserait 30 % de suppressions dans une catégorie d'entités exige une confirmation parentale depuis les réglages.
+- Les autocollants et le compteur de manches réussies des jeux sont maintenant conservés dans IndexedDB et synchronisés. Le PIN, ses compteurs d'échec et le verrouillage restent propres à l'appareil.
+
+**Sémantique LWW :** l'horloge de référence est celle du serveur Supabase au moment où l'opération arrive. Une modification réalisée hors ligne est donc arbitrée lors de sa réception, et non à partir de l'heure locale potentiellement décalée de l'appareil.
+
+**Validation restante :** exécuter les migrations sur un projet Supabase de test et couvrir deux appareils réels/émulés (hors ligne, reconnexion, suppressions concurrentes, changement de compte, cache vide/partiel). Tant que ces scénarios n'ont pas passé les tests d'intégration, ne pas considérer la Phase 2 comme validée en production.
 
 ## Données et sauvegardes
 
