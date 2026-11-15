@@ -104,8 +104,10 @@ function safeSettings(settings: Awaited<ReturnType<typeof getSettings>>): Record
 }
 
 async function queueInitialSnapshot(database: JukeboxDatabase, userId: string): Promise<void> {
-  await database.transaction('rw', database.songs, database.playlists, database.categories,
-    database.settings, database.stickers, database.gameProgress, database.syncOutbox, async () => {
+  await database.transaction('rw', [
+    database.songs, database.playlists, database.categories, database.settings,
+    database.stickers, database.gameProgress, database.syncOutbox,
+  ], async () => {
       const [categories, songs, playlists, settings, stickers, progress] = await Promise.all([
         database.categories.toArray(), database.songs.toArray(), database.playlists.toArray(),
         getSettings(database), database.stickers.toArray(), database.gameProgress.toArray(),
