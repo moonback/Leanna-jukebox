@@ -30,7 +30,7 @@ Vite démarre normalement sur `http://localhost:5173`. Sur une tablette Android 
 - Mode musique simplifié et lecteur YouTube intégré.
 - Miniatures YouTube cliquables ; la lecture ne démarre qu'après une action explicite de l'enfant.
 - Navigation entre les chansons en conservant la liste d'origine.
-- Imagier illustré et prononcé en français, organisé par catégories.
+- Imagier illustré et prononcé en français, organisé par catégories : animaux, fruits, légumes, véhicules, maison, nature, vêtements, corps et objets du quotidien.
 - Jeux existants : Ballons, Piano, Cherche et trouve, Compter, Ombres et Mémoire.
 - Cinq mini-jeux éducatifs dès 3 ans : couleurs, formes, puzzle à 4 pièces, grand/petit et cris des animaux ; consignes vocales, grandes zones tactiles, sans chronomètre ni pénalité.
 - Album d'autocollants gagnés dans les jeux.
