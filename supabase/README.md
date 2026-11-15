@@ -2,17 +2,18 @@
 
 ## Schéma de synchronisation familiale
 
-Le schéma de référence actuel est :
+Appliquer les migrations versionnées dans l’ordre chronologique :
 
-`migrations/202611150001_family_realtime_sync.sql`
+1. `migrations/20261114000000_init_jukebox.sql` — crée les tables de base (`categories`, `songs`, `playlists`, `playlist_songs`, `settings`) et leurs politiques RLS.
+2. `migrations/202611150001_family_realtime_sync.sql` — complète le schéma pour la synchronisation familiale, renforce les politiques RLS et active Realtime sur les tables concernées.
 
-Appliquer ce fichier une fois dans le SQL Editor du projet Supabase (ou via la CLI Supabase après configuration du projet). Il crée les tables de bibliothèque, les politiques RLS et leur publication Realtime.
+Utiliser le SQL Editor Supabase ou la CLI Supabase configurée sur le bon projet. Sur un projet neuf, appliquer les deux migrations une seule fois et dans cet ordre.
 
-## Ancien script init_jukebox.sql
+## À propos de `init_jukebox.sql`
 
-Aucun fichier `init_jukebox.sql` n'est présent dans cette version du dépôt. La migration versionnée ci-dessus est la source de vérité à utiliser pour une nouvelle installation. Ne pas chercher à exécuter un script homonyme externe ou historique en plus de cette migration.
+Le script initial existe dans ce dépôt sous son nom de migration horodaté : `migrations/20261114000000_init_jukebox.sql`. Il n’existe pas de script distinct à la racine du dépôt nommé simplement `init_jukebox.sql`.
 
-Pour un projet Supabase déjà existant, inspecter les tables, contraintes, politiques et publications avant d'appliquer la migration. Ne pas supprimer les données existantes et ne pas exécuter de scripts de réinitialisation sans sauvegarde et revue du schéma.
+Pour un projet Supabase déjà existant, inspecter les migrations déjà appliquées, les tables, colonnes, contraintes, politiques RLS et publications avant toute intervention. Ne pas rejouer un ancien script externe, supprimer les tables ou réinitialiser les données sans sauvegarde et revue du schéma.
 
 ## Sécurité
 
