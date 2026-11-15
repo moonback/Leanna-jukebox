@@ -30,8 +30,8 @@ Vite démarre normalement sur `http://localhost:5173`. Sur une tablette Android 
 - Mode musique simplifié et lecteur YouTube intégré.
 - Miniatures YouTube cliquables ; la lecture ne démarre qu'après une action explicite de l'enfant.
 - Navigation entre les chansons en conservant la liste d'origine.
-- Imagier illustré et prononcé en français, organisé par catégories.
-- Six jeux courts : Ballons, Piano, Cherche et trouve, Compter, Ombres et Mémoire.
+- Imagier illustré et prononcé en français, organisé par catégories : animaux, fruits, légumes, véhicules, maison, nature, vêtements, corps et objets du quotidien.
+- Onze jeux courts : Ballons, Piano, Cherche et trouve, Compter, Ombres, Mémoire, Couleurs, Formes, Puzzle 4 pièces, Grand/Petit et Cris des animaux.
 - Album d'autocollants gagnés dans les jeux.
 
 ### Espace parents
