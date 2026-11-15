@@ -1,8 +1,8 @@
-import { useEffect, useState, useSyncExternalStore, type FormEvent } from 'react';
+import { useState, useSyncExternalStore, type FormEvent } from 'react';
 import { Cloud, LogOut, RefreshCw, Radio, Wifi, WifiOff } from 'lucide-react';
 import { Button } from '../ui/Button';
 import { supabase } from '../../storage/cloud/supabaseClient';
-import { getSyncStatus, restoreFromCloud, startSync, stopSync, subscribeSync, syncNow } from '../../storage/cloud/sync';
+import { getSyncStatus, restoreFromCloud, subscribeSync, syncNow } from '../../storage/cloud/sync';
 import { toUserMessage } from '../../services/errors';
 
 const STATE_LABEL = { idle: 'À jour', syncing: 'Synchronisation…', error: 'Erreur de synchronisation' } as const;
@@ -18,29 +18,6 @@ export function CloudSyncCard() {
   const [mode, setMode] = useState<'signin' | 'signup'>('signin');
   const [busy, setBusy] = useState(false);
   const [dismissed, setDismissed] = useState(() => localStorage.getItem(SKIP_KEY) === '1');
-
-  useEffect(() => {
-    const client = supabase;
-    if (!client) return;
-    let active = true;
-    const { data } = client.auth.onAuthStateChange((event) => {
-      if (event === 'SIGNED_OUT') stopSync();
-    });
-    void client.auth.getSession().then(async ({ data: sessionData, error: sessionError }) => {
-      if (!active) return;
-      if (sessionError) {
-        setError(toUserMessage(sessionError));
-        return;
-      }
-      const userId = sessionData.session?.user.id;
-      if (userId) await startSync(userId);
-      else stopSync();
-    });
-    return () => {
-      active = false;
-      data.subscription.unsubscribe();
-    };
-  }, []);
 
   if (!supabase) {
     return (
@@ -69,7 +46,7 @@ export function CloudSyncCard() {
         if (data.user) {
           localStorage.removeItem(SKIP_KEY);
           setDismissed(false);
-          await startSync(data.user.id);
+          setInfo('Connexion réussie. La synchronisation démarre en arrière-plan.');
         }
       } else {
         const { data, error: authError } = await client.auth.signUp({ email: email.trim(), password });
@@ -77,7 +54,7 @@ export function CloudSyncCard() {
         if (data.session?.user) {
           localStorage.removeItem(SKIP_KEY);
           setDismissed(false);
-          await startSync(data.session.user.id);
+          setInfo('Compte créé et connecté. La synchronisation démarre en arrière-plan.');
         } else {
           setInfo('Compte créé. Confirme ton adresse e-mail, puis connecte-toi depuis cet espace.');
         }
