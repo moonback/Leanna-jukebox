@@ -34,7 +34,7 @@ export function App() {
   if (!ready) return <LoadingState label="Préparation du jukebox…" />;
 
   // L'authentification cloud n'est jamais un prérequis au parcours enfant.
-  // La session Supabase est restaurée depuis l'espace parents, sans bloquer l'accueil.
+  // La session Supabase est restaurée en tâche de fond, sans bloquer l'accueil.
   return (
     <ErrorBoundary>
       <HashRouter>
