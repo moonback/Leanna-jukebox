@@ -12,19 +12,27 @@ class MockUtterance {
 describe('synthèse vocale française', () => {
   let synth: { cancel: ReturnType<typeof vi.fn>; getVoices: ReturnType<typeof vi.fn>; speak: ReturnType<typeof vi.fn> };
   let notices: string[];
+  let onNotice: EventListener;
+  let speechDescriptor: PropertyDescriptor | undefined;
+  let utteranceDescriptor: PropertyDescriptor | undefined;
 
   beforeEach(() => {
     notices = [];
+    speechDescriptor = Object.getOwnPropertyDescriptor(window, 'speechSynthesis');
+    utteranceDescriptor = Object.getOwnPropertyDescriptor(globalThis, 'SpeechSynthesisUtterance');
     synth = { cancel: vi.fn(), getVoices: vi.fn(() => []), speak: vi.fn() };
     Object.defineProperty(window, 'speechSynthesis', { configurable: true, value: synth });
     Object.defineProperty(globalThis, 'SpeechSynthesisUtterance', { configurable: true, value: MockUtterance });
-    window.addEventListener('leanna:speech-notice', ((event: CustomEvent<string>) => notices.push(event.detail)) as EventListener);
+    onNotice = ((event: CustomEvent<string>) => notices.push(event.detail)) as EventListener;
+    window.addEventListener('leanna:speech-notice', onNotice);
   });
 
   afterEach(() => {
-    window.removeEventListener('leanna:speech-notice', ((event: CustomEvent<string>) => notices.push(event.detail)) as EventListener);
-    delete (window as Window & { speechSynthesis?: SpeechSynthesis }).speechSynthesis;
-    delete (globalThis as typeof globalThis & { SpeechSynthesisUtterance?: typeof SpeechSynthesisUtterance }).SpeechSynthesisUtterance;
+    window.removeEventListener('leanna:speech-notice', onNotice);
+    if (speechDescriptor) Object.defineProperty(window, 'speechSynthesis', speechDescriptor);
+    else Reflect.deleteProperty(window, 'speechSynthesis');
+    if (utteranceDescriptor) Object.defineProperty(globalThis, 'SpeechSynthesisUtterance', utteranceDescriptor);
+    else Reflect.deleteProperty(globalThis, 'SpeechSynthesisUtterance');
   });
 
   it('utilise la voix système et prévient si aucune voix française est installée', () => {
