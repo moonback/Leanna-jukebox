@@ -205,10 +205,19 @@ export async function pullAll(client: SupabaseClient, userId: string, database: 
     await database.stickers.clear();
     await database.gameProgress.clear();
   });
+  const settingsRecord = records.find((row) => row.entity_type === 'settings');
+  if (settingsRecord) {
+    await applyRecord(settingsRecord, database);
+  } else {
+    const current = await getSettings(database);
+    await database.settings.put({
+      ...defaultSettings(),
+      pinHash: current.pinHash, pinSalt: current.pinSalt, pinIterations: current.pinIterations,
+      failedAttempts: current.failedAttempts, lockedUntil: current.lockedUntil,
+    });
+  }
   for (const row of records) {
-    if (row.entity_type === 'settings' || row.entity_type === 'sticker' || row.entity_type === 'game_progress') {
-      await applyRecord(row, database);
-    }
+    if (row.entity_type === 'sticker' || row.entity_type === 'game_progress') await applyRecord(row, database);
   }
 
   // Les tombstones sont appliqués après restauration pour les entités supprimées.
