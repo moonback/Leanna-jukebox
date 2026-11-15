@@ -1,5 +1,5 @@
 /** Imagier : mots illustrés (emoji) prononcés en français quand l'enfant touche la carte. */
-export type ImagierCategory = 'animaux' | 'fruits' | 'legumes' | 'vehicules' | 'maison' | 'nature';
+export type ImagierCategory = 'animaux' | 'fruits' | 'legumes' | 'vehicules' | 'maison' | 'nature' | 'vetements' | 'corps' | 'quotidien';
 
 export interface ImagierItem {
   id: string;
@@ -19,6 +19,9 @@ export const IMAGIER_CATEGORIES: { id: ImagierCategory | 'tout'; label: string; 
   { id: 'vehicules', label: 'Véhicules', emoji: '🚗' },
   { id: 'maison', label: 'Maison', emoji: '🏠' },
   { id: 'nature', label: 'Nature', emoji: '🌳' },
+  { id: 'vetements', label: 'Vêtements', emoji: '👕' },
+  { id: 'corps', label: 'Corps', emoji: '🧍' },
+  { id: 'quotidien', label: 'Objets', emoji: '🧸' },
 ];
 
 const raw: [string, string, string, ImagierCategory][] = [
@@ -111,6 +114,23 @@ const raw: [string, string, string, ImagierCategory][] = [
   ['nounours', 'le', '🧸', 'maison'],
   ['parapluie', 'le', '☂️', 'maison'],
   ['téléphone', 'le', '📱', 'maison'],
+  // Vêtements
+  ['anorak', 'l’', '🧥', 'vetements'], ['bottes', 'les', '🥾', 'vetements'], ['bonnet', 'le', '🧢', 'vetements'],
+  ['chaussures', 'les', '👟', 'vetements'], ['chaussettes', 'les', '🧦', 'vetements'], ['chemise', 'la', '👔', 'vetements'],
+  ['écharpe', 'l’', '🧣', 'vetements'], ['jupe', 'la', '👗', 'vetements'], ['manteau', 'le', '🧥', 'vetements'],
+  ['pantalon', 'le', '👖', 'vetements'], ['pyjama', 'le', '🥻', 'vetements'], ['robe', 'la', '👗', 'vetements'],
+  ['tee-shirt', 'le', '👕', 'vetements'],
+  // Corps
+  ['bras', 'le', '💪', 'corps'], ['bouche', 'la', '👄', 'corps'], ['cheveux', 'les', '💇', 'corps'],
+  ['dents', 'les', '🦷', 'corps'], ['doigt', 'le', '☝️', 'corps'], ['dos', 'le', '🧍', 'corps'],
+  ['épaule', 'l’', '🫱', 'corps'], ['jambe', 'la', '🦵', 'corps'], ['main', 'la', '✋', 'corps'],
+  ['nez', 'le', '👃', 'corps'], ['œil', 'l’', '👁️', 'corps'], ['oreille', 'l’', '👂', 'corps'],
+  ['pied', 'le', '🦶', 'corps'], ['tête', 'la', '🗣️', 'corps'],
+  // Objets du quotidien
+  ['assiette', 'l’', '🍽️', 'quotidien'], ['biberon', 'le', '🍼', 'quotidien'], ['bol', 'le', '🥣', 'quotidien'],
+  ['casserole', 'la', '🍲', 'quotidien'], ['cuillère', 'la', '🥄', 'quotidien'], ['fourchette', 'la', '🍴', 'quotidien'],
+  ['lampe', 'la', '💡', 'quotidien'], ['mouchoir', 'le', '🤧', 'quotidien'], ['peigne', 'le', '🪮', 'quotidien'],
+  ['savon', 'le', '🧼', 'quotidien'], ['verre', 'le', '🥛', 'quotidien'],
   // Nature
   ['arbre', 'l’', '🌳', 'nature'],
   ['arc-en-ciel', 'l’', '🌈', 'nature'],
