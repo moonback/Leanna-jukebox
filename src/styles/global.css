@@ -135,6 +135,12 @@ svg {
   gap: 12px;
 }
 
+/* Mode simple : zoom tactile désactivé (défilement conservé). */
+html.no-touch-zoom,
+html.no-touch-zoom body {
+  touch-action: pan-x pan-y;
+}
+
 /* Mode simple : titres à gauche, vidéo à droite. */
 .simple-layout {
   display: grid;

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Lock } from 'lucide-react';
 import { AppShell } from '../components/layout/AppShell';
@@ -27,6 +27,24 @@ export function SimpleModePage() {
   const [exitOpen, setExitOpen] = useState(false);
   const auth = useParentAuth();
   const navigate = useNavigate();
+
+  // Mode simple : pas de zoom tactile (pincement, double tap).
+  useEffect(() => {
+    document.documentElement.classList.add('no-touch-zoom');
+    const blockMultiTouch = (e: TouchEvent) => {
+      if (e.touches.length > 1) e.preventDefault();
+    };
+    const blockGesture = (e: Event) => e.preventDefault();
+    document.addEventListener('touchmove', blockMultiTouch, { passive: false });
+    document.addEventListener('gesturestart', blockGesture);
+    document.addEventListener('gesturechange', blockGesture);
+    return () => {
+      document.documentElement.classList.remove('no-touch-zoom');
+      document.removeEventListener('touchmove', blockMultiTouch);
+      document.removeEventListener('gesturestart', blockGesture);
+      document.removeEventListener('gesturechange', blockGesture);
+    };
+  }, []);
 
   if (!library.ready) return <AppShell><LoadingState /></AppShell>;
 
