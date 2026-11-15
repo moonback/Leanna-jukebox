@@ -180,7 +180,10 @@ export async function pullAll(client: SupabaseClient, userId: string, database: 
   const songsById = activePayload(records, 'song');
   const playlistsById = activePayload(records, 'playlist');
   const categories = Object.values(categoriesById);
-  const songs = Object.values(songsById);
+  const categoryIds = new Set(categories.map((row) => String(row.id)));
+  // Une chanson isolée par une suppression concurrente de sa catégorie reste au cloud,
+  // mais n'est pas injectée dans la bibliothèque locale tant que sa catégorie manque.
+  const songs = Object.values(songsById).filter((row) => categoryIds.has(String(row.categoryId)));
   const playlists = Object.values(playlistsById);
   if (categories.length === 0) {
     throw new Error('La bibliothèque cloud ne contient aucune catégorie active. Les données locales ont été conservées.');
@@ -320,7 +323,7 @@ export async function startSync(userId: string, database: JukeboxDatabase = defa
     const remoteEmpty = remoteCategories === 0;
     const pending = await database.syncOutbox.count();
     if (previousOwner && previousOwner !== userId && pending > 0) {
-      throw new Error('Des opérations locales de la famille précédente sont encore en attente. Reconnecte-toi à cet ancien compte pour les envoyer, ou exporte la bibliothèque avant de changer de famille.');
+      throw new Error('Des opérations locales de la famille précédente sont encore en attente. Reconnecte-toi à cet ancien compte et synchronise-les avant de changer de famille.');
     }
     if (!previousOwner || previousOwner === userId) {
       await database.syncOutbox.filter((entry) => !entry.ownerUserId).modify({ ownerUserId: userId });
@@ -348,6 +351,7 @@ export async function startSync(userId: string, database: JukeboxDatabase = defa
     setStatus({ state: 'idle', lastSyncedAt: Date.now(), error: null });
     connectRealtime(client, userId);
     installOnlineListener();
+    if (await database.syncOutbox.where('ownerUserId').equals(userId).count()) scheduleFlush();
   } catch (error) {
     setStatus({ state: 'error', error: messageOf(error), realtime: 'disconnected' });
     if (status.confirmationRequired) {
