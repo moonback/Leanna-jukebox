@@ -56,7 +56,7 @@ export function OfflineStatus() {
         boxShadow: '0 4px 18px rgba(50,30,50,.16)', color: '#493b49', fontWeight: 800,
       }}
     >
-      {!online && <><WifiOff size={18} aria-hidden="true" /><span>Mode hors ligne — tes activités enregistrées restent disponibles.</span></>}
+      {!online && <><WifiOff size={18} aria-hidden="true" /><span>Mode hors ligne — tes jeux et images enregistrés restent disponibles. YouTube nécessite Internet.</span></>}
       {online && installPrompt && !installed && (
         <button type="button" className="btn btn--primary" onClick={() => void install()}>
           <Download size={18} aria-hidden="true" /> Installer Leanna
