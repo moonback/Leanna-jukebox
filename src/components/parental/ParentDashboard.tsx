@@ -1,5 +1,5 @@
 ﻿import { useState } from 'react';
-import { ArrowDown, ArrowUp, Pencil, Plus, Star, Trash2 } from 'lucide-react';
+import { ArrowDown, ArrowUp, FolderOpen, ListMusic, Music, Pencil, Plus, Search, Settings, Star, Trash2, type LucideIcon } from 'lucide-react';
 import { useMusicLibrary } from '../../hooks/useMusicLibrary';
 import { Illustration } from '../../illustrations/Illustration';
 import { Button } from '../ui/Button';
@@ -15,24 +15,25 @@ import type { Song } from '../../types/song';
 
 type Tab = 'songs' | 'playlists' | 'categories' | 'settings';
 
-const TABS: Array<{ key: Tab; label: string }> = [
-  { key: 'songs', label: 'Chansons' },
-  { key: 'playlists', label: 'Playlists' },
-  { key: 'categories', label: 'Catégories' },
-  { key: 'settings', label: 'Réglages' },
+const TABS: Array<{ key: Tab; label: string; Icon: LucideIcon }> = [
+  { key: 'songs', label: 'Chansons', Icon: Music },
+  { key: 'playlists', label: 'Playlists', Icon: ListMusic },
+  { key: 'categories', label: 'Catégories', Icon: FolderOpen },
+  { key: 'settings', label: 'Réglages', Icon: Settings },
 ];
 
 /** Espace parents (une fois déverrouillé) : onglets chansons, playlists, catégories, réglages. */
 export function ParentDashboard() {
   const [tab, setTab] = useState<Tab>('songs');
   return (
-    <div className="stack" style={{ width: '100%' }}>
-      <nav aria-label="Sections parents" className="row-wrap parent-tabs" style={{ gap: 8 }}>
+    <div className="stack parent-dashboard">
+      <nav aria-label="Sections parents" className="parent-tabs">
         {TABS.map((item) => (
           <Button
             key={item.key}
             variant={tab === item.key ? 'primary' : 'secondary'}
             aria-pressed={tab === item.key}
+            icon={<item.Icon size={18} />}
             onClick={() => setTab(item.key)}
           >
             {item.label}
@@ -54,7 +55,16 @@ function SongsTab() {
   const [filter, setFilter] = useState<string>('all');
   const [error, setError] = useState<string | null>(null);
   const categoryTitle = (id: string) => categories.find((c) => c.id === id)?.title ?? '—';
-  const visible = filter === 'all' ? songs : songs.filter((s) => s.categoryId === filter);
+  const [query, setQuery] = useState('');
+  const favCount = songs.filter((s) => s.favorite).length;
+  const needle = query.trim().toLowerCase();
+  const activeFilter = filter === 'fav' && favCount === 0 ? 'all' : filter;
+  const visible = songs.filter(
+    (s) =>
+      (activeFilter === 'all' || (activeFilter === 'fav' ? s.favorite : s.categoryId === activeFilter)) &&
+      (!needle || s.title.toLowerCase().includes(needle)),
+  );
+  const reorderable = activeFilter === 'all' && !needle;
 
   const run = async (action: () => Promise<unknown>) => {
     setError(null);
@@ -79,11 +89,27 @@ function SongsTab() {
         </Button>
       </div>
 
-      {categories.length > 1 && (
+      <label className="songs-search">
+        <Search size={18} aria-hidden="true" />
+        <input
+          type="search"
+          value={query}
+          placeholder="Rechercher une chanson…"
+          aria-label="Rechercher une chanson"
+          onChange={(e) => setQuery(e.target.value)}
+        />
+      </label>
+
+      {(categories.length > 1 || favCount > 0) && (
         <div className="chip-scroll" role="tablist" aria-label="Filtrer par catégorie">
           <button type="button" className={`chip${filter === 'all' ? ' is-active' : ''}`} onClick={() => setFilter('all')}>
             Toutes
           </button>
+          {favCount > 0 && (
+            <button type="button" className={`chip${filter === 'fav' ? ' is-active' : ''}`} onClick={() => setFilter('fav')}>
+              ★ Favoris ({favCount})
+            </button>
+          )}
           {categories.map((c) => (
             <button key={c.id} type="button" className={`chip${filter === c.id ? ' is-active' : ''}`} onClick={() => setFilter(c.id)}>
               {c.title}
@@ -93,7 +119,11 @@ function SongsTab() {
       )}
 
       {error && <p className="error-text" role="alert">{error}</p>}
-      {visible.length === 0 && <p className="muted">Aucune chanson ici. Colle un lien YouTube pour commencer.</p>}
+      {visible.length === 0 && (
+        <p className="muted">
+          {songs.length === 0 ? 'Aucune chanson ici. Colle un lien YouTube pour commencer.' : 'Aucune chanson ne correspond.'}
+        </p>
+      )}
 
       {visible.map((song) => {
         const index = songs.findIndex((s) => s.id === song.id);
@@ -152,7 +182,7 @@ function SongsTab() {
                   {!song.youtubeVideoId && <span className="muted">pas de vidéo</span>}
                 </div>
               </div>
-              {filter === 'all' && (
+              {reorderable && (
                 <div className="song-row__move">
                   <button type="button" aria-label="Monter" disabled={index === 0} onClick={() => run(() => moveSong(song.id, -1, db))}>
                     <ArrowUp size={18} />

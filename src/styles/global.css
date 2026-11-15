@@ -1651,3 +1651,121 @@ body {
     transition-duration: 0.01ms !important;
   }
 }
+
+/* ===== Espace parents : affichage amélioré ===== */
+.parent-page { width: min(100%, 980px); margin: 0 auto; display: grid; gap: 14px; }
+.parent-header {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 12px 16px;
+  border-radius: 24px;
+  background: rgba(255,255,255,.72);
+}
+.parent-header__title { margin: 0; font-size: clamp(1.3rem, 4.5vw, 1.9rem); font-weight: 900; letter-spacing: -.02em; }
+.parent-header__sub { display: flex; align-items: center; gap: 6px; margin: 2px 0 0; font-size: .9rem; }
+.parent-dashboard { width: 100%; gap: 14px; }
+.parent-tabs {
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  gap: 8px;
+  padding: 8px;
+  border-radius: 22px;
+  background: rgba(255,255,255,.82);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  box-shadow: 0 6px 18px rgba(80,69,105,.08);
+}
+.parent-tabs > button { flex: 1 0 auto; justify-content: center; white-space: nowrap; }
+.songs-admin__head {
+  padding: 4px 4px 0;
+}
+@media (min-width: 900px) {
+  .songs-admin { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); align-items: start; }
+  .songs-admin > :not(.swipe-row) { grid-column: 1 / -1; }
+}
+@media (max-width: 600px) {
+  .parent-header { padding: 10px 12px; border-radius: 20px; gap: 10px; }
+  .parent-tabs { top: calc(var(--safe-top) + 4px); padding: 6px; }
+  .parent-tabs > button { padding-inline: 12px; }
+}
+
+/* Recherche de chansons (espace parents) */
+.songs-search {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 14px;
+  min-height: 46px;
+  border-radius: 999px;
+  border: 1px solid rgba(119,107,159,.16);
+  background: rgba(255,255,255,.9);
+}
+.songs-search input {
+  flex: 1;
+  min-width: 0;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  font: inherit;
+  user-select: text;
+  -webkit-user-select: text;
+}
+.songs-search:focus-within { border-color: #9185b7; box-shadow: 0 0 0 3px rgba(145,133,183,.2); }
+
+/* ===== Espace parents : optimisation mobile ===== */
+.field input,
+.field select,
+.yt-search input {
+  user-select: text;
+  -webkit-user-select: text;
+}
+@media (max-width: 600px) {
+  /* 16px minimum : évite le zoom automatique d'iOS au focus */
+  .field input,
+  .field select,
+  .songs-search input,
+  .yt-search input { font-size: 16px; }
+  .field input[type="checkbox"] { min-height: 0; }
+
+  /* Champ + bouton : le bouton passe sous le champ, pleine largeur */
+  .modal .field > .row-wrap { flex-direction: column; align-items: stretch; flex-wrap: nowrap; }
+  .modal .field > .row-wrap > .btn { width: 100%; justify-content: center; }
+  .modal .field > .row-wrap > input { flex: none !important; width: 100%; }
+
+  /* Résultats YouTube compacts */
+  .yt-results { max-height: 38dvh; }
+  .yt-result { grid-template-columns: 96px 1fr auto; gap: 8px; }
+  .yt-result img { width: 96px; }
+
+  /* Boutons d'action du formulaire toujours visibles */
+  .modal-actions {
+    position: sticky;
+    bottom: -18px;
+    z-index: 2;
+    margin: 0 -18px -18px;
+    padding: 12px 18px calc(var(--safe-bottom) + 12px);
+    flex-wrap: nowrap;
+    background: linear-gradient(to top, var(--color-surface-strong) 75%, transparent);
+  }
+  .modal-actions > .btn { flex: 1; justify-content: center; }
+
+  /* Cibles tactiles confortables */
+  .song-row { gap: 10px; padding: 6px; }
+  .song-row__move button { width: 40px; height: 34px; }
+  .chip { min-height: 44px; }
+  .songs-admin { padding-bottom: 80px; } /* espace sous la liste pour le bouton + flottant */
+  .parent-header__sub { font-size: .8rem; }
+}
+
+/* Correctifs mobile : la grille ne doit pas s'élargir au contenu (onglets sur une ligne, lignes swipe) */
+.parent-page { grid-template-columns: minmax(0, 1fr); }
+.parent-page > *,
+.parent-dashboard > *,
+.songs-admin > * { min-width: 0; }
+.parent-dashboard { min-width: 0; max-width: 100%; }
+@media (max-width: 600px) {
+  .chip--small { min-height: 0; }
+  .songs-admin { grid-template-columns: minmax(0, 1fr); }
+}

@@ -209,7 +209,7 @@ export function SongEditor({ song, categories, defaultCategoryId, onClose }: Son
           <input type="checkbox" checked={favorite} onChange={(e) => setFavorite(e.target.checked)} style={{ width: 26, height: 26 }} />
         </label>
         {error && <p className="error-text" role="alert">{error}</p>}
-        <div className="row-wrap" style={{ justifyContent: 'flex-end' }}>
+        <div className="row-wrap modal-actions" style={{ justifyContent: 'flex-end' }}>
           <Button onClick={onClose}>Annuler</Button>
           <Button ref={saveRef} type="submit" variant="primary" disabled={busy}>
             Enregistrer
