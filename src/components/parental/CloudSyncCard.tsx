@@ -85,7 +85,7 @@ export function CloudSyncCard() {
               <strong>Confirmation parentale requise</strong>
               <p style={{ margin: 0 }}>Cette synchronisation contient {status.pendingDeleteCount} suppressions et retirerait plus de 30 % d’au moins une catégorie d’éléments du cloud. Vérifie que ces suppressions sont volontaires avant de continuer.</p>
               <Button variant="danger" disabled={status.state === 'syncing'} onClick={() => run(async () => {
-                confirmPendingDeletions();
+                await confirmPendingDeletions();
                 await syncNow();
               })}>
                 Confirmer les suppressions
