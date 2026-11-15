@@ -60,10 +60,6 @@ export class JukeboxDatabase extends Dexie {
       gameProgress: 'gameId, lastPlayedAt',
       syncOutbox: '++id, operationId, createdAt, entityType, entityId',
       syncMeta: 'key',
-    }).upgrade(async (transaction) => {
-      // Migrer les autocollants déjà gagnés depuis l'ancien stockage localStorage.
-      // La migration du contenu est aussi relancée sans danger par le service stickers au premier accès.
-      await transaction.table('stickers').clear();
     });
   }
 }
