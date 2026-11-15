@@ -31,7 +31,7 @@ export function ChercheTrouvePage() {
     if (found) return;
     if (item.id === round.target.id) {
       setFound(true);
-      void recordGameRound('cherche-trouve');
+      void recordGameRound('cherche-trouve').catch(() => undefined);
       setStars((s) => s + 1);
       speakFrench(`Bravo ! C'est ${spokenWord(item)} !`);
       celebrate();
