@@ -57,6 +57,14 @@ describe('outbox de synchronisation locale', () => {
     expect(entry?.ownerUserId).toBe('family-a');
   });
 
+  it('ne crée pas de file cloud lorsqu’aucun compte familial n’est lié', async () => {
+    localStorage.removeItem('leanna-cloud-owner');
+    await database.transaction('rw', database.syncOutbox, async () => {
+      await enqueueSyncOperation(database, 'song', 'local-only', 'upsert', { title: 'Local' });
+    });
+    expect(await database.syncOutbox.count()).toBe(0);
+  });
+
   it('ne crée pas d’opération lorsque le patch ne contient que des champs PIN locaux', async () => {
     await database.transaction('rw', database.syncOutbox, async () => {
       await enqueueSyncOperation(database, 'settings', 'parent', 'upsert', { pinHash: 'secret' });
