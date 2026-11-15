@@ -63,7 +63,7 @@ Sans variables Supabase, les données restent locales et l'application n'exige a
 La synchronisation est optionnelle. Dexie reste la source de données locale utilisée par l'interface ; Supabase permet d'associer une bibliothèque à un compte parent.
 
 1. Créer un projet Supabase et configurer `VITE_SUPABASE_URL` et `VITE_SUPABASE_ANON_KEY`.
-2. Dans le SQL Editor Supabase, appliquer les deux migrations dans l’ordre : `20261114000000_init_jukebox.sql`, puis `202611150001_family_realtime_sync.sql`.
+2. Dans le SQL Editor Supabase, appliquer les trois migrations dans l’ordre : schéma initial, Realtime familial, puis journal de synchronisation Phase 2.
 3. Activer l'authentification e-mail/mot de passe dans Supabase Auth et configurer la confirmation d'adresse selon le besoin.
 4. Déployer sur HTTPS pour les essais multi-appareils.
 
@@ -84,7 +84,7 @@ Les chansons, playlists, catégories et réglages sont stockés localement dans 
 
 L'export JSON inclut les chansons, playlists et catégories. Le PIN et les réglages sensibles ne sont pas exportés. L'import valide le fichier avant de remplacer les données dans une transaction.
 
-Les autocollants gagnés sont actuellement stockés dans `localStorage` sur l'appareil ; ils ne sont pas inclus dans la sauvegarde JSON ni dans la synchronisation familiale.
+Les autocollants gagnés sont stockés dans IndexedDB et synchronisés entre appareils. La progression des manches réussies est également synchronisée. L'export JSON manuel reste limité aux chansons, playlists et catégories ; les autocollants, la progression et le PIN n'y sont pas inclus.
 
 ## YouTube et protection de l'enfant
 
