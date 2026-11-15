@@ -6,6 +6,9 @@ const THUMB_CACHE = VERSION + '-youtube-thumbnails';
 const MAX_RUNTIME_ENTRIES = 120;
 const MAX_THUMBNAILS = 80;
 
+// Généré par Vite à partir des fichiers réels du build (chunks JS/CSS et médias).
+try { importScripts('./precache-manifest.js'); } catch { /* mode développement ou build ancien */ }
+
 function shellUrls() {
   const base = self.registration.scope;
   return [
@@ -28,7 +31,10 @@ async function trimCache(cacheName, maxEntries) {
 self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(SHELL_CACHE)
-      .then((cache) => cache.addAll(shellUrls()))
+      .then((cache) => cache.addAll([
+        ...shellUrls(),
+        ...(self.LEANNA_PRECACHE_URLS || []).map((url) => new URL(url, self.registration.scope).href),
+      ]))
       .then(() => self.skipWaiting()),
   );
 });
