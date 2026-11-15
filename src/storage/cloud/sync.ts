@@ -177,7 +177,9 @@ async function applyRecord(row: SyncRecord, database: JukeboxDatabase): Promise<
 
 /** Réconciliation complète explicite, utilisée au démarrage et après reconnexion Realtime. */
 export async function pullAll(client: SupabaseClient, userId: string, database: JukeboxDatabase = activeDb): Promise<void> {
+  if (status.userId !== userId) throw new Error('Le compte a changé. Les données locales n’ont pas été remplacées.');
   const records = await fetchRecords(client, userId);
+  if (status.userId !== userId) throw new Error('Le compte a changé. Les données locales n’ont pas été remplacées.');
   const categoriesById = activePayload(records, 'category');
   const songsById = activePayload(records, 'song');
   const playlistsById = activePayload(records, 'playlist');
@@ -265,6 +267,7 @@ async function drainOutbox(client: SupabaseClient, userId: string, database: Juk
   const queue = await database.syncOutbox.where('ownerUserId').equals(userId).sortBy('createdAt');
   for (const entry of queue) {
     try {
+      if (status.userId !== userId) throw new Error('Le compte a changé. Les opérations en attente sont conservées.');
       const result = await client.rpc('merge_sync_record', {
         p_operation_id: entry.operationId,
         p_entity_type: entry.entityType,
@@ -394,7 +397,7 @@ function connectRealtime(client: SupabaseClient, userId: string): void {
     event: '*', schema: 'public', table: 'sync_records', filter: `user_id=eq.${userId}`,
   }, (payload) => {
     const row = payload.new as SyncRecord | undefined;
-    if (!row || !row.entity_type || row.device_id === deviceId()) return;
+    if (status.userId !== userId || !row || row.user_id !== userId || !row.entity_type || row.device_id === deviceId()) return;
     void applyRealtimeRecord(row, activeDb).catch((error) => {
       setStatus({ state: 'error', error: messageOf(error) });
     });
