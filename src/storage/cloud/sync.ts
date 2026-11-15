@@ -46,6 +46,8 @@ let rerunRequested = false;
 let approvedDeletionSignature = '';
 let activeDb: JukeboxDatabase = defaultDb;
 let onlineListenerInstalled = false;
+let startPromise: Promise<void> | null = null;
+let startingUserId: string | null = null;
 
 function setStatus(patch: Partial<SyncStatus>): void {
   status = { ...status, ...patch };
@@ -311,7 +313,7 @@ export async function pushAll(client: SupabaseClient, userId: string, database: 
   await drainOutbox(client, userId, database);
 }
 
-export async function startSync(userId: string, database: JukeboxDatabase = defaultDb): Promise<void> {
+async function startSyncInternal(userId: string, database: JukeboxDatabase): Promise<void> {
   const client = supabase;
   if (!client) return;
   activeDb = database;
@@ -358,6 +360,19 @@ export async function startSync(userId: string, database: JukeboxDatabase = defa
       connectRealtime(client, userId);
       installOnlineListener();
     }
+  }
+}
+
+export async function startSync(userId: string, database: JukeboxDatabase = defaultDb): Promise<void> {
+  if (startPromise && startingUserId === userId) return startPromise;
+  if (startPromise) await startPromise;
+  startingUserId = userId;
+  startPromise = startSyncInternal(userId, database);
+  try {
+    await startPromise;
+  } finally {
+    startPromise = null;
+    startingUserId = null;
   }
 }
 
