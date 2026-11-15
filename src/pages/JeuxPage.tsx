@@ -6,6 +6,7 @@ import { speakFrench } from '../services/speech';
 
 // Âge minimum conseillé, et ordre d'affichage : du plus simple au plus difficile.
 const GAMES = [
+  { to: '/mini-jeux', label: 'Mes petits jeux', emoji: '🧩', tint: 'nature', minAge: 3 },
   { to: '/ballons', label: 'Ballons', emoji: '🎈', tint: 'fruits', minAge: 2 },
   { to: '/piano', label: 'Piano', emoji: '🎹', tint: 'vehicules', minAge: 2 },
   { to: '/cherche', label: 'Cherche et trouve', emoji: '🔍', tint: 'maison', minAge: 2 },
