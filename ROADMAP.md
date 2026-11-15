@@ -26,9 +26,9 @@ Roadmap remise à niveau le 15 novembre 2026 à partir du dépôt `moonback/Lean
 | 5 | La clé `VITE_YOUTUBE_API_KEY` est embarquée dans le client. Elle doit être déplacée côté serveur avant distribution publique. | Élevée | 5 |
 | 6 | Les autocollants et la progression des jeux ne sont pas dans la sauvegarde ni dans la synchronisation. | Moyenne | 2 |
 | 7 | Pas de PWA/service worker complet ; Capacitor n'est pas installé et le comportement Android n'est pas validé sur tablette. | Moyenne | 3 |
-| 8 | Les jeux, le flux AuthGate et les scénarios de synchronisation nécessitent une couverture de tests dédiée. | Moyenne | 1–2 |
-| 9 | Le fallback de synthèse vocale française dépend des voix installées sur le navigateur. | Faible | 1 |
-| 10 | La durée d'écoute est un rappel et non une coupure automatique de la lecture. | Faible | 1 |
+| 8 | Les jeux et les scénarios de synchronisation nécessitent encore une couverture de tests dédiée ; les parcours principaux de la Phase 1 disposent de garde-fous. | Moyenne | 2 |
+| 9 | La qualité de la synthèse vocale dépend des voix installées ; un fallback explicite est désormais affiché. | Faible | 1 |
+| 10 | La durée maximale d'écoute déclenche désormais une pause réelle avec reprise protégée par PIN. | Résolu | 1 |
 
 ### Vérification d'encodage
 
@@ -54,7 +54,7 @@ Roadmap remise à niveau le 15 novembre 2026 à partir du dépôt `moonback/Lean
 **Objectif :** l'enfant arrive toujours sur l'accueil enfant ; aucun écran de connexion ou réglage parent ne doit interrompre son parcours.
 
 - [x] Retirer le blocage global `AuthGate` : l'accueil et les routes enfant sont accessibles sans compte.
-- [x] Déplacer la connexion Supabase dans la carte « Compte et synchronisation » des réglages parents ; restaurer la session à l’ouverture de cette carte.
+- [x] Déplacer la connexion Supabase dans la carte « Compte et synchronisation » des réglages parents ; restaurer la session Supabase en tâche de fond dès le démarrage, sans bloquer l’accueil.
 - [x] Mémoriser « Continuer sans compte » dans `localStorage` depuis l’espace parents ; la connexion reste réactivable explicitement.
 - [x] Transformer la durée de session en vraie pause du lecteur, avec écran de repos et reprise via le PIN parental.
 - [x] Signaler les limites de synthèse vocale : utiliser la voix système si aucune voix française n’est installée et afficher une information accessible ; informer si l’API est absente.
