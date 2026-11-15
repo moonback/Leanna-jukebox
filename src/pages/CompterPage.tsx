@@ -7,6 +7,7 @@ import { EmojiPicture } from '../components/ui/EmojiPicture';
 import { NUMBER_WORDS, countingRound, groupChoices, quantity } from '../data/games';
 import { speakFrench } from '../services/speech';
 import { playWrong } from '../services/sound';
+import { recordGameRound } from '../services/gameProgress';
 
 const MAX = 3; // On apprend jusqu'à 3 pour l'instant : changer ici pour aller plus loin.
 
@@ -61,6 +62,7 @@ export function CompterPage() {
       return;
     }
     speakFrench(`${NUMBER_WORDS[list.length]} ! Il y a ${quantity(round.item, round.count)}. Bravo !`);
+    void recordGameRound('compter');
     celebrate();
     next();
   };
@@ -69,6 +71,7 @@ export function CompterPage() {
     if (done) return;
     if (group === round.count) {
       setFound(true);
+      void recordGameRound('compter');
       speakFrench(`Oui ! ${quantity(round.item, group)}. Bravo !`);
       celebrate();
       next();
