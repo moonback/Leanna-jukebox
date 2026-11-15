@@ -2,6 +2,7 @@ import { useRef, useState, type CSSProperties } from 'react';
 import { Illustration } from '../../illustrations/Illustration';
 import { EmojiPicture } from '../ui/EmojiPicture';
 import { awardSticker } from '../../services/stickers';
+import { IMAGIER_ITEMS } from '../../data/imagier';
 import { playApplause, playFirework } from '../../services/sound';
 
 const COLORS = ['#ff4d4d', '#ffd23f', '#4dff88', '#4fb3ff', '#c27bff', '#ff7ad9', '#ffa53c', '#7dfcff'];
@@ -58,7 +59,8 @@ export function useCelebration(stickerEvery: number) {
   const celebrate = (bigWin = false) => {
     wins.current += 1;
     const award = bigWin || (stickerEvery > 0 && wins.current % stickerEvery === 0);
-    const sticker = award ? awardSticker() : null;
+    const sticker = award ? IMAGIER_ITEMS[Math.floor(Math.random() * IMAGIER_ITEMS.length)]!.emoji : null;
+    if (sticker) void awardSticker(sticker);
     const rockets = launchShow();
     // Le son est calé sur l'animation : chaque « boum » tombe au moment où la fusée éclate.
     rockets.forEach((r) => playFirework(r.delay + RISE));
