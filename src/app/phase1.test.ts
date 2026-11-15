@@ -8,6 +8,10 @@ describe('Phase 1 — fiabilité du parcours enfant', () => {
     const app = read('src/app/App.tsx');
     expect(app).toMatch(/<HashRouter>/);
     expect(app).not.toMatch(/AuthGate/);
+    expect(app).toMatch(/CloudSessionBootstrap/);
+    const bootstrap = read('src/components/layout/CloudSessionBootstrap.tsx');
+    expect(bootstrap).toMatch(/getSession\(/);
+    expect(bootstrap).toMatch(/startSync\(/);
   });
 
   it('réserve la connexion Supabase aux réglages parents et mémorise le mode local', () => {
