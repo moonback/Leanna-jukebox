@@ -125,7 +125,11 @@ export function parseBackup(raw: unknown): BackupData {
 }
 
 /** Remplace les chansons, playlists et catégories par celles de la sauvegarde, en une seule transaction. */
-export async function restoreBackup(data: BackupData, database: JukeboxDatabase = defaultDb): Promise<void> {
+export async function restoreBackup(
+  data: BackupData,
+  database: JukeboxDatabase = defaultDb,
+  options: { enqueueSync?: boolean } = {},
+): Promise<void> {
   if (data.categories.length === 0) fail('La sauvegarde doit contenir au moins une catégorie.');
   await database.transaction('rw', database.songs, database.playlists, database.categories, database.syncOutbox, async () => {
     const [oldSongs, oldPlaylists, oldCategories] = await Promise.all([
@@ -135,12 +139,14 @@ export async function restoreBackup(data: BackupData, database: JukeboxDatabase 
     const nextPlaylistIds = new Set(data.playlists.map((row) => row.id));
     const nextCategoryIds = new Set(data.categories.map((row) => row.id));
 
-    for (const row of oldSongs) if (!nextSongIds.has(row.id)) await enqueueSyncOperation(database, 'song', row.id, 'delete');
-    for (const row of oldPlaylists) if (!nextPlaylistIds.has(row.id)) await enqueueSyncOperation(database, 'playlist', row.id, 'delete');
-    for (const row of oldCategories) if (!nextCategoryIds.has(row.id)) await enqueueSyncOperation(database, 'category', row.id, 'delete');
-    for (const row of data.categories) await enqueueSyncOperation(database, 'category', row.id, 'upsert', { ...row });
-    for (const row of data.songs) await enqueueSyncOperation(database, 'song', row.id, 'upsert', { ...row });
-    for (const row of data.playlists) await enqueueSyncOperation(database, 'playlist', row.id, 'upsert', { ...row });
+    if (options.enqueueSync !== false) {
+      for (const row of oldSongs) if (!nextSongIds.has(row.id)) await enqueueSyncOperation(database, 'song', row.id, 'delete');
+      for (const row of oldPlaylists) if (!nextPlaylistIds.has(row.id)) await enqueueSyncOperation(database, 'playlist', row.id, 'delete');
+      for (const row of oldCategories) if (!nextCategoryIds.has(row.id)) await enqueueSyncOperation(database, 'category', row.id, 'delete');
+      for (const row of data.categories) await enqueueSyncOperation(database, 'category', row.id, 'upsert', { ...row });
+      for (const row of data.songs) await enqueueSyncOperation(database, 'song', row.id, 'upsert', { ...row });
+      for (const row of data.playlists) await enqueueSyncOperation(database, 'playlist', row.id, 'upsert', { ...row });
+    }
 
     await database.songs.clear();
     await database.playlists.clear();
