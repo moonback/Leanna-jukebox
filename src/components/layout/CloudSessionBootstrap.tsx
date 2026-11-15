@@ -13,7 +13,7 @@ export function CloudSessionBootstrap() {
       if (!active) return;
       if (event === 'SIGNED_OUT') {
         stopSync();
-      } else if ((event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') && session?.user.id) {
+      } else if (event === 'SIGNED_IN' && session?.user.id) {
         queueMicrotask(() => {
           if (active) void startSync(session.user.id);
         });
