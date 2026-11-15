@@ -111,6 +111,33 @@ L'identifiant doit faire exactement 11 caractères `[A-Za-z0-9_-]`.
   des chansons absentes sont retirées. Taille maximale : 5 Mo, 2 000 éléments par liste.
 - **Suppression** : efface chansons, playlists, catégories et PIN, puis réinitialise les données de démonstration.
 
+## Synchronisation familiale (Supabase)
+
+La synchronisation est facultative : sans variables Supabase, l'application reste entièrement locale.
+
+### Configuration
+
+1. Créer un projet Supabase et renseigner `VITE_SUPABASE_URL` et `VITE_SUPABASE_ANON_KEY` dans `.env.local`.
+2. Exécuter `supabase/migrations/202611150001_family_realtime_sync.sql` dans le SQL Editor Supabase.
+3. Activer l'inscription e-mail/mot de passe dans Supabase Auth et définir les règles de confirmation d'e-mail adaptées.
+4. Déployer l'application sur HTTPS (requis pour certaines API navigateur et recommandé pour l'authentification).
+
+La migration crée les tables familiales, active RLS avec accès limité à `auth.uid() = user_id`, et ajoute les tables à la publication `supabase_realtime`. N'utilisez jamais une clé `service_role` dans le client.
+
+### Comportement
+
+- Dexie reste prioritaire pour l'interface et les usages hors ligne.
+- Les changements locaux sont envoyés avec un anti-rebond ; le navigateur reprend l'envoi lorsqu'il revient en ligne.
+- Un canal Realtime écoute les changements des chansons, playlists, catégories, liens de playlist et réglages du compte connecté.
+- À la reconnexion Realtime, l'appareil réconcilie sa copie locale avec le cloud.
+- Le marqueur de changements en attente est isolé par identifiant de compte.
+- Un changement de compte sur un appareil déjà associé à un autre compte ne pousse jamais automatiquement l'ancien cache local vers le nouveau compte.
+- Le PIN et les compteurs d'échecs restent propres à chaque appareil et ne sont pas envoyés dans Supabase.
+
+### Limites à connaître
+
+Le canal Realtime déclenche une réconciliation de la bibliothèque complète. La stratégie actuelle est adaptée à une petite bibliothèque familiale, mais n'est pas encore un moteur de réplication transactionnel avec journal de suppressions et résolution LWW champ par champ. En cas de modifications simultanées, le dernier état envoyé peut prévaloir sur un état concurrent. Pour des garanties strictes de non-perte, il faut compléter cette version par une outbox durable et des tombstones avant toute mise en production multi-appareils.
+
 ## Responsive
 
 Vérifié dans le navigateur intégré (`scrollWidth` ≤ `innerWidth`, pas de débordement horizontal) :
