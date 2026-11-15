@@ -329,6 +329,7 @@ async function startSyncInternal(userId: string, database: JukeboxDatabase): Pro
     }
     if (!previousOwner || previousOwner === userId) {
       await database.syncOutbox.filter((entry) => !entry.ownerUserId).modify({ ownerUserId: userId });
+      if (!previousOwner) localStorage.setItem(OWNER_KEY, userId);
     }
     const legacyDirty = localStorage.getItem(`${LEGACY_DIRTY_PREFIX}${userId}`) === '1';
 
