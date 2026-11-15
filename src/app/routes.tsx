@@ -12,6 +12,7 @@ const ImagierPage = lazy(() => import('../pages/ImagierPage').then((m) => ({ def
 const ChercheTrouvePage = lazy(() => import('../pages/ChercheTrouvePage').then((m) => ({ default: m.ChercheTrouvePage })));
 const MemoirePage = lazy(() => import('../pages/MemoirePage').then((m) => ({ default: m.MemoirePage })));
 const JeuxPage = lazy(() => import('../pages/JeuxPage').then((m) => ({ default: m.JeuxPage })));
+const MiniJeuxPage = lazy(() => import('../pages/MiniJeuxPage').then((m) => ({ default: m.MiniJeuxPage })));
 const AutocollantsPage = lazy(() => import('../pages/AutocollantsPage').then((m) => ({ default: m.AutocollantsPage })));
 const BallonsPage = lazy(() => import('../pages/BallonsPage').then((m) => ({ default: m.BallonsPage })));
 const OmbresPage = lazy(() => import('../pages/OmbresPage').then((m) => ({ default: m.OmbresPage })));
@@ -30,6 +31,7 @@ export function AppRoutes() {
         <Route path="/cherche" element={<ChercheTrouvePage />} />
         <Route path="/memoire" element={<MemoirePage />} />
         <Route path="/jeux" element={<JeuxPage />} />
+        <Route path="/mini-jeux" element={<MiniJeuxPage />} />
         <Route path="/autocollants" element={<AutocollantsPage />} />
         <Route path="/ballons" element={<BallonsPage />} />
         <Route path="/ombres" element={<OmbresPage />} />
