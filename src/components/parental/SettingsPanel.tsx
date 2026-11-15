@@ -83,9 +83,9 @@ export function SettingsPanel() {
         </div>
 
         <div className="card stack">
-          <h2 style={{ margin: 0 }}>Durée indicative d’écoute</h2>
+          <h2 style={{ margin: 0 }}>Durée maximale d’écoute</h2>
           <label className="field">
-            Pause suggérée après
+            Mettre le lecteur en pause après
             <select value={settings.maxSessionMinutes} onChange={(e) => save({ maxSessionMinutes: Number(e.target.value) })}>
               {SESSION_OPTIONS.map((m) => (
                 <option key={m} value={m}>

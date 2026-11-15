@@ -40,7 +40,7 @@ Vite démarre normalement sur `http://localhost:5173`. Sur une tablette Android 
 - Gestion des chansons, catégories et playlists.
 - Ajout par URL YouTube et recherche YouTube Data API.
 - Réglages de lecture et sauvegarde/restauration JSON.
-- Connexion Supabase facultative pour retrouver la bibliothèque sur plusieurs appareils.
+- Connexion Supabase facultative, accessible uniquement dans « Compte et synchronisation » de l’espace parents. L’accueil enfant reste accessible sans compte et la session cloud est restaurée en arrière-plan.
 
 Le PIN parental, son sel et les compteurs d'échecs restent sur l'appareil. Ils ne sont jamais synchronisés.
 
@@ -63,19 +63,32 @@ Sans variables Supabase, les données restent locales et l'application n'exige a
 La synchronisation est optionnelle. Dexie reste la source de données locale utilisée par l'interface ; Supabase permet d'associer une bibliothèque à un compte parent.
 
 1. Créer un projet Supabase et configurer `VITE_SUPABASE_URL` et `VITE_SUPABASE_ANON_KEY`.
-2. Dans le SQL Editor Supabase, exécuter **une seule fois** `supabase/migrations/202611150001_family_realtime_sync.sql`.
+2. Dans le SQL Editor Supabase, appliquer les trois migrations dans l’ordre : schéma initial, Realtime familial, puis journal de synchronisation Phase 2.
 3. Activer l'authentification e-mail/mot de passe dans Supabase Auth et configurer la confirmation d'adresse selon le besoin.
 4. Déployer sur HTTPS pour les essais multi-appareils.
 
-La migration versionnée crée les tables `categories`, `songs`, `playlists`, `playlist_songs` et `settings`, active RLS avec une politique limitée à `auth.uid() = user_id`, puis ajoute les tables à la publication `supabase_realtime`.
+Appliquer les trois migrations versionnées dans l’ordre chronologique :
 
-### À propos de `init_jukebox.sql`
+1. `supabase/migrations/20261114000000_init_jukebox.sql` — schéma initial et politiques RLS.
+2. `supabase/migrations/202611150001_family_realtime_sync.sql` — synchronisation familiale historique et publication Realtime.
+3. `supabase/migrations/202611160001_sync_outbox_lww.sql` — journal canonique `sync_records`, reçus idempotents, fonction serveur `merge_sync_record`, tombstones et reprise des bibliothèques déjà présentes.
 
-Aucun fichier `init_jukebox.sql` n'est présent dans l'arborescence actuelle du dépôt. Ne cherchez donc pas à exécuter un ancien script portant ce nom en plus de la migration ci-dessus. La migration versionnée `202611150001_family_realtime_sync.sql` est le schéma de référence actuel pour la synchronisation familiale. Si un ancien projet Supabase possède déjà des tables créées par un script historique, inspecter son schéma avant d'appliquer la migration ; ne pas supprimer ni recréer les tables à l'aveugle.
+Pour un projet Supabase déjà existant, inspecter les migrations appliquées, les tables, contraintes, politiques et publications avant toute intervention. Ne pas réinitialiser les tables à l’aveugle. La troisième migration doit être appliquée après les deux premières ; elle reprend les données des tables historiques dans le journal canonique sans supprimer les anciennes tables.
 
-### Limites actuelles de la synchronisation
+### Garanties de synchronisation Phase 2
 
-La synchronisation actuelle déclenche une réconciliation de la bibliothèque et n'est pas encore une réplication transactionnelle complète : pas d'outbox durable ni de tombstones pour toutes les suppressions, et pas de résolution LWW champ par champ garantie. Une modification concurrente ou un appareil local incomplet peut donc présenter un risque de perte de données. Ne pas considérer cette version comme une synchronisation multi-appareils à garanties fortes avant la Phase 2 de la roadmap.
+- Les modifications locales sont inscrites dans une outbox Dexie persistante dans la même transaction IndexedDB que les entités concernées.
+- Chaque opération possède un UUID et un reçu serveur unique : une reprise après interruption ne réapplique pas une opération déjà acceptée.
+- Les suppressions deviennent des tombstones `deleted_at` ; aucune suppression distante n'est déduite d'une liste locale incomplète.
+- La fonction serveur fusionne uniquement les champs présents dans chaque opération et leur attribue une version/heure serveur. En cas de conflit, la dernière opération reçue par le serveur gagne champ par champ.
+- Les changements Realtime sont appliqués à l'entité concernée ; une réconciliation complète est conservée pour le démarrage et le rattrapage après reconnexion.
+- Une opération en attente reste locale hors ligne. Les opérations sont isolées par compte familial ; un changement de compte est bloqué si l'ancienne famille a encore des opérations non envoyées.
+- Une synchronisation qui dépasserait 30 % de suppressions dans une catégorie d'entités exige une confirmation parentale depuis les réglages.
+- Les autocollants et le compteur de manches réussies des jeux sont maintenant conservés dans IndexedDB et synchronisés. Le PIN, ses compteurs d'échec et le verrouillage restent propres à l'appareil.
+
+**Sémantique LWW :** l'horloge de référence est celle du serveur Supabase au moment où l'opération arrive. Une modification réalisée hors ligne est donc arbitrée lors de sa réception, et non à partir de l'heure locale potentiellement décalée de l'appareil.
+
+**Validation restante :** exécuter les migrations sur un projet Supabase de test et couvrir deux appareils réels/émulés (hors ligne, reconnexion, suppressions concurrentes, changement de compte, cache vide/partiel). Tant que ces scénarios n'ont pas passé les tests d'intégration, ne pas considérer la Phase 2 comme validée en production.
 
 ## Données et sauvegardes
 
@@ -83,13 +96,13 @@ Les chansons, playlists, catégories et réglages sont stockés localement dans 
 
 L'export JSON inclut les chansons, playlists et catégories. Le PIN et les réglages sensibles ne sont pas exportés. L'import valide le fichier avant de remplacer les données dans une transaction.
 
-Les autocollants gagnés sont actuellement stockés dans `localStorage` sur l'appareil ; ils ne sont pas inclus dans la sauvegarde JSON ni dans la synchronisation familiale.
+Les autocollants gagnés sont stockés dans IndexedDB et synchronisés entre appareils. La progression des manches réussies est également synchronisée. L'export JSON manuel reste limité aux chansons, playlists et catégories ; les autocollants, la progression et le PIN n'y sont pas inclus.
 
 ## YouTube et protection de l'enfant
 
 - Utilisation du lecteur officiel YouTube IFrame API et de ses contrôles/liens natifs.
 - Aucun téléchargement, aucune extraction de flux, aucune suppression de publicité et aucune lecture en arrière-plan.
-- La lecture est mise en pause lorsque l'application devient masquée.
+- La lecture est mise en pause lorsque l'application devient masquée. Si le parent configure une durée maximale, le lecteur s’arrête à l’échéance et la reprise exige le PIN parental.
 - L'espace enfant ne demande pas de saisie de texte ; l'espace parents est protégé séparément par PIN.
 - Le lecteur YouTube peut traiter des données techniques même avec `youtube-nocookie.com`. Avant toute distribution publique, publier une politique de confidentialité et vérifier les conditions YouTube, les règles applicables aux contenus destinés aux enfants, le RGPD et les obligations relatives aux cookies.
 
@@ -101,6 +114,32 @@ Le PIN de l'application ne verrouille pas Android. Pour un usage enfant, complé
 
 GitHub Actions exécute ces trois contrôles sur les pull requests vers `main` et sur les pushes vers `main`. Le résultat faisant foi est celui du workflow sur le commit concerné ; aucun nombre fixe de tests n'est annoncé ici afin d'éviter une documentation périmée.
 
-## Android
+## Installation PWA et fonctionnement hors ligne
 
-Le projet est préparé pour un routage compatible avec un futur packaging Capacitor (`HashRouter`, `base: './'`, configuration `capacitor.config.json`). Capacitor et la plateforme Android doivent encore être installés et validés sur une tablette réelle avant de produire un APK de distribution.
+Le projet fournit maintenant un manifest installable, des icônes adaptées, un service worker et un indicateur réseau/installation.
+
+- La première ouverture doit être effectuée en ligne sur une origine HTTPS ; le service worker met en cache l'app shell et les ressources chargées.
+- Les fichiers statiques sont conservés dans le cache local ; les miniatures YouTube déjà consultées sont mises en cache avec une limite.
+- Les chansons, catégories, playlists, autocollants et progressions restent dans IndexedDB/Dexie. La synchronisation Supabase se met en pause hors ligne et reprend lorsque le réseau revient.
+- Sur Android Chrome : menu **⋮ → Installer l'application** ou bouton **Installer Leanna** lorsqu'il est proposé.
+- Sur iOS Safari : **Partager → Sur l'écran d'accueil**.
+
+**Limite hors ligne :** les vidéos YouTube ne sont ni téléchargées ni mises en cache. La lecture vidéo exige une connexion Internet. Le cache hors ligne rend l'application, l'imagier, les jeux et les données locales disponibles, pas les flux vidéo YouTube.
+
+## Android natif (APK)
+
+Capacitor 8 est intégré dans `package.json` et `package-lock.json` avec le plugin App pour le bouton Retour natif.
+
+Depuis Windows, avec Node.js 22+ et Android Studio/SDK installés :
+
+```powershell
+npm ci
+npm run android:add
+npm run android:sync
+npm run android:open
+npm run android:apk
+```
+
+L'APK debug est attendu dans `android/app/build/outputs/apk/debug/app-debug.apk`. Le dossier `android/` est généré par Capacitor sur la machine de développement ; il n'est pas encore commité dans cette branche.
+
+Le bouton Retour Android ramène vers l'accueil enfant et minimise l'application depuis l'accueil. L'épinglage d'écran/Lock Task reste une configuration Android à activer par un adulte. Les essais rotation, reprise audio, stockage et démarrage en mode avion restent à faire sur la tablette cible. Voir `docs/INSTALLATION-ANDROID.md`.

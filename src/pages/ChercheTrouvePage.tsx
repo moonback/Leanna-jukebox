@@ -7,6 +7,7 @@ import { EmojiPicture } from '../components/ui/EmojiPicture';
 import { IMAGIER_ITEMS, pickRound, spokenWord, type ImagierItem } from '../data/imagier';
 import { speakFrench } from '../services/speech';
 import { playWrong } from '../services/sound';
+import { recordGameRound } from '../services/gameProgress';
 
 const CHOICES = 4;
 
@@ -30,6 +31,7 @@ export function ChercheTrouvePage() {
     if (found) return;
     if (item.id === round.target.id) {
       setFound(true);
+      void recordGameRound('cherche-trouve').catch(() => undefined);
       setStars((s) => s + 1);
       speakFrench(`Bravo ! C'est ${spokenWord(item)} !`);
       celebrate();

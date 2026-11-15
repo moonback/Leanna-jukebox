@@ -1,23 +1,34 @@
-# Supabase — migrations
+# Supabase — migrations et synchronisation familiale
 
-## Schéma de synchronisation familiale
+## Ordre des migrations
 
-Le schéma de référence actuel est :
+Appliquer les migrations versionnées dans l’ordre chronologique :
 
-`migrations/202611150001_family_realtime_sync.sql`
+1. `migrations/20261114000000_init_jukebox.sql` — tables initiales et politiques RLS.
+2. `migrations/202611150001_family_realtime_sync.sql` — schéma familial historique et publication Realtime.
+3. `migrations/202611160001_sync_outbox_lww.sql` — journal canonique `sync_records`, reçus idempotents, fonction `merge_sync_record`, tombstones et reprise des données historiques.
 
-Appliquer ce fichier une fois dans le SQL Editor du projet Supabase (ou via la CLI Supabase après configuration du projet). Il crée les tables de bibliothèque, les politiques RLS et leur publication Realtime.
+Sur un projet neuf, appliquer les trois migrations une seule fois et dans cet ordre. Pour un projet existant, vérifier l'historique des migrations, les colonnes, contraintes, politiques et publications avant d'intervenir. La troisième migration importe les lignes existantes vers `sync_records` sans supprimer les tables historiques.
 
-## Ancien script init_jukebox.sql
+## Fonctionnement Phase 2
 
-Aucun fichier `init_jukebox.sql` n'est présent dans cette version du dépôt. La migration versionnée ci-dessus est la source de vérité à utiliser pour une nouvelle installation. Ne pas chercher à exécuter un script homonyme externe ou historique en plus de cette migration.
-
-Pour un projet Supabase déjà existant, inspecter les tables, contraintes, politiques et publications avant d'appliquer la migration. Ne pas supprimer les données existantes et ne pas exécuter de scripts de réinitialisation sans sauvegarde et revue du schéma.
+- Les clients n'écrivent plus directement les tables historiques pour synchroniser les changements ; le journal `sync_records` est la source cloud canonique.
+- `sync_operation_receipts` empêche le rejeu d'une même opération UUID après une interruption.
+- `merge_sync_record` fusionne les seuls champs fournis dans le patch et leur associe une horloge serveur. La dernière opération reçue par le serveur gagne champ par champ.
+- Une suppression est conservée comme tombstone via `deleted_at` ; elle n'est pas inférée par comparaison de listes locales.
+- Realtime publie les modifications de `sync_records`. Le client applique l'événement ciblé et fait une réconciliation complète au démarrage/reconnexion.
+- Les suppressions dépassant 30 % d'une catégorie d'entités demandent une confirmation parentale dans l'application.
+- Les opérations hors ligne restent dans l'outbox IndexedDB jusqu'à leur confirmation par le serveur.
 
 ## Sécurité
 
-- Activer l'authentification e-mail/mot de passe selon le parcours parent souhaité.
-- Les tables sont protégées par RLS et les politiques limitent chaque compte à ses propres lignes.
-- Utiliser uniquement la clé publique anon dans l'application cliente.
-- Ne jamais exposer la clé `service_role` au navigateur.
-- Le PIN parental demeure local à l'appareil.
+- Authentification e-mail/mot de passe activée selon le parcours parent souhaité.
+- RLS active sur les tables de synchronisation ; chaque compte ne peut lire/écrire que ses propres lignes.
+- La fonction `merge_sync_record` vérifie `auth.uid()` et limite les types d'entités acceptés.
+- Utiliser uniquement la clé publique anon dans le navigateur.
+- Ne jamais exposer la clé `service_role`.
+- Le PIN parental, son sel, ses paramètres PBKDF2 et les compteurs d'échec restent locaux à chaque appareil.
+
+## Limites de validation
+
+La migration doit être exécutée sur un projet Supabase de test avant production. Valider les scénarios multi-appareils, notamment les opérations concurrentes, les reprises hors ligne et les changements de compte. La résolution « latest » signifie ici dernière opération acceptée par le serveur, et non comparaison d'horloges locales.

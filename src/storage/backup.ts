@@ -5,6 +5,7 @@ import { isIllustrationKey } from '../illustrations/illustrationKeys';
 import type { Song } from '../types/song';
 import type { Playlist } from '../types/playlist';
 import type { Category } from '../types/category';
+import { enqueueSyncOperation } from './syncOutbox';
 
 export const BACKUP_FORMAT = 'leanna-jukebox-backup';
 export const BACKUP_VERSION = 1;
@@ -124,9 +125,29 @@ export function parseBackup(raw: unknown): BackupData {
 }
 
 /** Remplace les chansons, playlists et catégories par celles de la sauvegarde, en une seule transaction. */
-export async function restoreBackup(data: BackupData, database: JukeboxDatabase = defaultDb): Promise<void> {
+export async function restoreBackup(
+  data: BackupData,
+  database: JukeboxDatabase = defaultDb,
+  options: { enqueueSync?: boolean } = {},
+): Promise<void> {
   if (data.categories.length === 0) fail('La sauvegarde doit contenir au moins une catégorie.');
-  await database.transaction('rw', database.songs, database.playlists, database.categories, async () => {
+  await database.transaction('rw', database.songs, database.playlists, database.categories, database.syncOutbox, async () => {
+    const [oldSongs, oldPlaylists, oldCategories] = await Promise.all([
+      database.songs.toArray(), database.playlists.toArray(), database.categories.toArray(),
+    ]);
+    const nextSongIds = new Set(data.songs.map((row) => row.id));
+    const nextPlaylistIds = new Set(data.playlists.map((row) => row.id));
+    const nextCategoryIds = new Set(data.categories.map((row) => row.id));
+
+    if (options.enqueueSync !== false) {
+      for (const row of oldSongs) if (!nextSongIds.has(row.id)) await enqueueSyncOperation(database, 'song', row.id, 'delete');
+      for (const row of oldPlaylists) if (!nextPlaylistIds.has(row.id)) await enqueueSyncOperation(database, 'playlist', row.id, 'delete');
+      for (const row of oldCategories) if (!nextCategoryIds.has(row.id)) await enqueueSyncOperation(database, 'category', row.id, 'delete');
+      for (const row of data.categories) await enqueueSyncOperation(database, 'category', row.id, 'upsert', { ...row });
+      for (const row of data.songs) await enqueueSyncOperation(database, 'song', row.id, 'upsert', { ...row });
+      for (const row of data.playlists) await enqueueSyncOperation(database, 'playlist', row.id, 'upsert', { ...row });
+    }
+
     await database.songs.clear();
     await database.playlists.clear();
     await database.categories.clear();
@@ -138,11 +159,35 @@ export async function restoreBackup(data: BackupData, database: JukeboxDatabase 
 
 /** Supprime toutes les données locales (chansons, playlists, catégories, PIN et réglages), puis réinitialise. */
 export async function deleteAllData(database: JukeboxDatabase = defaultDb): Promise<void> {
-  await database.transaction('rw', database.songs, database.playlists, database.categories, database.settings, async () => {
-    await database.songs.clear();
-    await database.playlists.clear();
-    await database.categories.clear();
-    await database.settings.clear();
-  });
+  await database.transaction('rw', [
+    database.songs, database.playlists, database.categories, database.settings,
+    database.stickers, database.gameProgress, database.syncOutbox,
+  ], async () => {
+      const [songs, playlists, categories, stickers, progress] = await Promise.all([
+        database.songs.toArray(), database.playlists.toArray(), database.categories.toArray(),
+        database.stickers.toArray(), database.gameProgress.toArray(),
+      ]);
+      for (const row of songs) await enqueueSyncOperation(database, 'song', row.id, 'delete');
+      for (const row of playlists) await enqueueSyncOperation(database, 'playlist', row.id, 'delete');
+      for (const row of categories) await enqueueSyncOperation(database, 'category', row.id, 'delete');
+      for (const row of stickers) await enqueueSyncOperation(database, 'sticker', row.id, 'delete');
+      for (const row of progress) await enqueueSyncOperation(database, 'game_progress', row.gameId, 'delete');
+      await database.songs.clear();
+      await database.playlists.clear();
+      await database.categories.clear();
+      await database.settings.clear();
+      await database.stickers.clear();
+      await database.gameProgress.clear();
+    });
+  try { localStorage.removeItem('leanna-stickers'); } catch { /* Storage optionnel. */ }
   await ensureSeeded(database);
+  const [songs, playlists, categories] = await Promise.all([
+    database.songs.toArray(), database.playlists.toArray(), database.categories.toArray(),
+  ]);
+  await database.transaction('rw', database.syncOutbox, database.settings, async () => {
+    for (const row of categories) await enqueueSyncOperation(database, 'category', row.id, 'upsert', { ...row });
+    for (const row of songs) await enqueueSyncOperation(database, 'song', row.id, 'upsert', { ...row });
+    for (const row of playlists) await enqueueSyncOperation(database, 'playlist', row.id, 'upsert', { ...row });
+    await enqueueSyncOperation(database, 'settings', 'parent', 'upsert', { maxSessionMinutes: 0, maxVolumePreference: 80, childMode: false, soundsEnabled: false, fullscreenMode: false, schemaVersion: 1 });
+  });
 }

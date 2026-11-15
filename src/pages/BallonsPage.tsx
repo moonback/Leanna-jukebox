@@ -5,6 +5,7 @@ import { useCelebration } from '../components/games/Celebration';
 import { BALLOON_COLORS } from '../data/games';
 import { speakFrench } from '../services/speech';
 import { playTone } from '../services/sound';
+import { recordGameRound } from '../services/gameProgress';
 
 interface Balloon {
   id: number;
@@ -50,7 +51,10 @@ export function BallonsPage() {
   const popped = useRef(0);
   const celebrateEvery5 = () => {
     popped.current += 1;
-    if (popped.current % 5 === 0) celebrate();
+    if (popped.current % 5 === 0) {
+      celebrate();
+      void recordGameRound('ballons').catch(() => undefined);
+    }
   };
 
   return (

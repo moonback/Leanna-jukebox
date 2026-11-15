@@ -1628,3 +1628,26 @@ body {
 @media (prefers-reduced-motion: reduce) {
   .home-music-bg__cover { animation: none; }
 }
+
+
+/* Phase 1 — cibles tactiles et mouvement réduit, notamment sur tablette. */
+@media (pointer: coarse) {
+  .btn,
+  .chip,
+  .item-row > .row-wrap .btn,
+  .session-break-overlay button {
+    min-width: 48px;
+    min-height: 48px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

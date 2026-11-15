@@ -7,6 +7,7 @@ import { EmojiPicture } from '../components/ui/EmojiPicture';
 import { IMAGIER_ITEMS, memoryDeck, spokenWord } from '../data/imagier';
 import { speakFrench } from '../services/speech';
 import { playWrong } from '../services/sound';
+import { recordGameRound } from '../services/gameProgress';
 
 const PAIRS = 6;
 
@@ -34,6 +35,7 @@ export function MemoirePage() {
     if (first.item.id === card.item.id) {
       const done = new Set(matched).add(card.item.id);
       setMatched(done);
+      if (done.size === PAIRS) void recordGameRound('memoire').catch(() => undefined);
       setOpen([]);
       celebrate(done.size === PAIRS); // feu d'artifice à chaque paire, autocollant à la victoire
       speakFrench(done.size === PAIRS ? 'Bravo ! Tu as trouvé toutes les paires !' : `Bravo ! Deux fois ${spokenWord(card.item)} !`);

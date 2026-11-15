@@ -6,6 +6,7 @@ import { EmojiPicture } from '../components/ui/EmojiPicture';
 import { IMAGIER_ITEMS, emojiImage, pickRound, spokenWord, type ImagierItem } from '../data/imagier';
 import { speakFrench } from '../services/speech';
 import { playWrong } from '../services/sound';
+import { recordGameRound } from '../services/gameProgress';
 
 // Une silhouette n'a de sens qu'avec une vraie image (l'emoji texte ne se noircit pas partout pareil).
 const WITH_IMAGE = IMAGIER_ITEMS.filter((i) => emojiImage(i.emoji));
@@ -27,6 +28,7 @@ export function OmbresPage() {
     if (found) return;
     if (item.id === round.target.id) {
       setFound(true);
+      void recordGameRound('ombres').catch(() => undefined);
       speakFrench(`Bravo ! C'est l'ombre de ${spokenWord(item)} !`);
       celebrate();
       timer.current = window.setTimeout(() => {

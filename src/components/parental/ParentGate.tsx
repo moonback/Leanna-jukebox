@@ -12,7 +12,7 @@ import { LoadingState } from '../ui/LoadingState';
  * Protection de l'espace parents : création du PIN à la première utilisation, puis déverrouillage.
  * Les enfants ne voient que l'écran de code, jamais le contenu protégé.
  */
-export function ParentGate({ children }: { children: ReactNode }) {
+export function ParentGate({ children, allowReset = true }: { children: ReactNode; allowReset?: boolean }) {
   const auth = useParentAuth();
   const [unlocked, setUnlocked] = useState(false);
   const [setupFirst, setSetupFirst] = useState<string | null>(null);
@@ -100,7 +100,7 @@ export function ParentGate({ children }: { children: ReactNode }) {
         }}
       />
       {message && <p className="muted">{message}</p>}
-      {!confirmReset ? (
+      {allowReset && (!confirmReset ? (
         <Button size="normal" variant="secondary" onClick={() => setConfirmReset(true)}>
           Code oublié ?
         </Button>
@@ -124,7 +124,7 @@ export function ParentGate({ children }: { children: ReactNode }) {
             <Button onClick={() => setConfirmReset(false)}>Annuler</Button>
           </div>
         </div>
-      )}
+      ))}
     </div>
   );
 }

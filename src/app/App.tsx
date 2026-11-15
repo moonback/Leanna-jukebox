@@ -5,7 +5,10 @@ import { ensureSeeded } from '../storage/seed';
 import { db } from '../storage/database';
 import { LoadingState } from '../components/ui/LoadingState';
 import { ErrorBoundary } from '../components/layout/ErrorBoundary';
-import { AuthGate } from '../components/layout/AuthGate';
+import { SpeechNotice } from '../components/ui/SpeechNotice';
+import { OfflineStatus } from '../components/layout/OfflineStatus';
+import { AndroidBackButton } from '../components/layout/AndroidBackButton';
+import { CloudSessionBootstrap } from '../components/layout/CloudSessionBootstrap';
 import { toUserMessage } from '../services/errors';
 
 export function App() {
@@ -32,13 +35,17 @@ export function App() {
   }
   if (!ready) return <LoadingState label="Préparation du jukebox…" />;
 
+  // L'authentification cloud n'est jamais un prérequis au parcours enfant.
+  // La session Supabase est restaurée en tâche de fond, sans bloquer l'accueil.
   return (
     <ErrorBoundary>
-      <AuthGate>
-        <HashRouter>
-          <AppRoutes />
-        </HashRouter>
-      </AuthGate>
+      <HashRouter>
+        <CloudSessionBootstrap />
+        <AndroidBackButton />
+        <SpeechNotice />
+        <OfflineStatus />
+        <AppRoutes />
+      </HashRouter>
     </ErrorBoundary>
   );
 }

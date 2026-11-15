@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { ChevronLeft, Maximize, Pause, Play, SkipBack, SkipForward, RotateCw } from 'lucide-react';
 import { Illustration } from '../../illustrations/Illustration';
 import { usePlayer } from '../../hooks/usePlayer';
@@ -10,6 +10,7 @@ interface MusicPlayerProps {
   autoplay: boolean;
   volume: number;
   fullscreenMode: boolean;
+  forcePaused?: boolean;
   hasPrevious: boolean;
   hasNext: boolean;
   onPrevious: () => void;
@@ -27,7 +28,7 @@ function formatTime(seconds: number): string {
 
 /** Lecteur : vidéo officielle YouTube, commandes à l'extérieur de l'iframe, aucune superposition. */
 export function MusicPlayer(props: MusicPlayerProps) {
-  const { song, autoplay, volume, fullscreenMode, hasPrevious, hasNext, onPrevious, onNext, onBack, onStarted, onEnded } = props;
+  const { song, autoplay, volume, fullscreenMode, forcePaused = false, hasPrevious, hasNext, onPrevious, onNext, onBack, onStarted, onEnded } = props;
   const frameRef = useRef<HTMLDivElement>(null);
   const [fullscreenError, setFullscreenError] = useState(false);
   const { hostRef, state, play, pause, retry } = usePlayer({
@@ -39,9 +40,15 @@ export function MusicPlayer(props: MusicPlayerProps) {
     onEnded,
   });
 
+  const pauseRef = useRef(pause);
+  pauseRef.current = pause;
   const isPlaying = state.status === 'playing';
   const progress = state.duration > 0 ? Math.min(100, (state.currentTime / state.duration) * 100) : 0;
   const hasError = state.status === 'error' && state.error !== undefined;
+
+  useEffect(() => {
+    if (forcePaused && isPlaying) pauseRef.current();
+  }, [forcePaused, isPlaying]);
 
   const goFullscreen = async () => {
     try {
@@ -91,13 +98,9 @@ export function MusicPlayer(props: MusicPlayerProps) {
           <p style={{ margin: 0, fontSize: '1.2rem', fontWeight: 900 }}>{state.error.childMessage}</p>
           <div className="row-wrap" style={{ justifyContent: 'center' }}>
             {state.error.retryable && (
-              <Button variant="secondary" onClick={retry} icon={<RotateCw size={20} />}>
-                Réessayer
-              </Button>
+              <Button variant="secondary" onClick={retry} icon={<RotateCw size={20} />}>Réessayer</Button>
             )}
-            <Button variant="primary" onClick={onBack}>
-              Retour à la bibliothèque
-            </Button>
+            <Button variant="primary" onClick={onBack}>Retour à la bibliothèque</Button>
           </div>
           <p className="muted" style={{ fontSize: '0.85rem' }}>{state.error.parentHint}</p>
         </div>
@@ -111,7 +114,7 @@ export function MusicPlayer(props: MusicPlayerProps) {
       </p>
 
       <div className="row-wrap" style={{ justifyContent: 'center', gap: 20 }}>
-        <Button size="xxl" label="Chanson précédente" disabled={!hasPrevious} onClick={onPrevious} icon={<SkipBack size={34} />} />
+        <Button size="xxl" label="Chanson précédente" disabled={!hasPrevious || forcePaused} onClick={onPrevious} icon={<SkipBack size={34} />} />
         {isPlaying ? (
           <Button size="xxl" variant="primary" label="Pause" onClick={pause} icon={<Pause size={40} fill="currentColor" />} />
         ) : (
@@ -119,17 +122,16 @@ export function MusicPlayer(props: MusicPlayerProps) {
             size="xxl"
             variant="primary"
             label="Lecture"
-            disabled={state.status === 'demo' || state.status === 'loading' || hasError}
+            disabled={forcePaused || state.status === 'demo' || state.status === 'loading' || hasError}
             onClick={() => {
-              // Le tap sur Lecture est le geste utilisateur requis pour passer en plein écran.
               if (fullscreenMode && !document.fullscreenElement) void goFullscreen();
               play();
             }}
             icon={<Play size={40} fill="currentColor" />}
           />
         )}
-        <Button size="xxl" label="Chanson suivante" disabled={!hasNext} onClick={onNext} icon={<SkipForward size={34} />} />
-        <Button size="icon" label="Plein écran" onClick={goFullscreen} icon={<Maximize size={26} />} />
+        <Button size="xxl" label="Chanson suivante" disabled={!hasNext || forcePaused} onClick={onNext} icon={<SkipForward size={34} />} />
+        <Button size="icon" label="Plein écran" disabled={forcePaused} onClick={goFullscreen} icon={<Maximize size={26} />} />
       </div>
       {fullscreenError && <p className="error-text" style={{ textAlign: 'center' }}>Le plein écran n’est pas disponible sur cet appareil.</p>}
     </section>
