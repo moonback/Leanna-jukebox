@@ -34,11 +34,11 @@ export function CompterPage() {
   const { celebrate, celebration } = useCelebration(3);
   const done = round.mode === 'compter' ? counted.length === round.count : found;
 
-  const question = round.mode === 'compter' ? `Compte avec moi !` : `Où il y a ${quantity(round.item, round.count)} ?`;
+  const question = round.mode === 'compter' ? `Compte avec moi !` : `Où y a-t-il ${quantity(round.item, round.count)} ?`;
   const ask = () => speakFrench(question);
 
   useEffect(() => {
-    speakFrench(round.mode === 'compter' ? 'Compte avec moi !' : `Où il y a ${quantity(round.item, round.count)} ?`);
+    speakFrench(round.mode === 'compter' ? 'Compte avec moi !' : `Où y a-t-il ${quantity(round.item, round.count)} ?`);
   }, [round]);
   useEffect(() => () => window.clearTimeout(timer.current), []);
 

@@ -27,7 +27,7 @@ export function countingRound(max = 3, random = Math.random): { item: ImagierIte
   return { item: COUNTABLE[Math.floor(random() * COUNTABLE.length)]!, count: 1 + Math.floor(random() * max) };
 }
 
-/** Les groupes 1, 2, 3… mélangés, pour « Où il y a deux lapins ? ». */
+/** Les groupes 1, 2, 3… mélangés, pour « Où y a-t-il deux lapins ? ». */
 export function groupChoices(max = 3, random = Math.random): number[] {
   return shuffle(Array.from({ length: max }, (_, i) => i + 1), random);
 }
