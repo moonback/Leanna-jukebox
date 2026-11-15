@@ -19,6 +19,10 @@ export async function enqueueSyncOperation(
   operation: 'upsert' | 'delete',
   patch: Record<string, unknown> = {},
 ): Promise<void> {
+  const ownerUserId = localStorage.getItem(OWNER_KEY);
+  // En mode strictement local, l'outbox reste vide : le premier rattachement enverra un snapshot complet.
+  if (!ownerUserId) return;
+
   const safePatch = entityType === 'settings'
     ? Object.fromEntries(Object.entries(patch).filter(([key]) => !DEVICE_ONLY_SETTINGS.has(key)))
     : patch;
@@ -27,7 +31,7 @@ export async function enqueueSyncOperation(
 
   await database.syncOutbox.add({
     operationId: operationId(),
-    ownerUserId: localStorage.getItem(OWNER_KEY),
+    ownerUserId,
     entityType,
     entityId,
     operation,
