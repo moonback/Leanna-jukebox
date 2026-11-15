@@ -194,7 +194,7 @@ export async function pullAll(client: SupabaseClient, userId: string, database: 
     playlists,
   });
 
-  await restoreBackup(data, database);
+  await restoreBackup(data, database, { enqueueSync: false });
   await database.transaction('rw', database.stickers, database.gameProgress, async () => {
     await database.stickers.clear();
     await database.gameProgress.clear();
