@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { Volume2 } from 'lucide-react';
+import '../styles/mini-games.css';
 import { AppShell } from '../components/layout/AppShell';
 import { GameHeader } from '../components/games/GameHeader';
 import { EmojiPicture } from '../components/ui/EmojiPicture';
@@ -79,7 +80,7 @@ export function MiniGamePage(){
     {kind==='cris'&&<section className="mini-game-grid" aria-label="Animaux et leurs cris">
       <p className="cherche-question" style={{gridColumn:'1 / -1'}}>Quel animal fait ce bruit ?</p>
       <button type="button" className="cherche-question" style={{gridColumn:'1 / -1'}} onClick={ask}>🔊 Écouter le cri</button>
-      {choices.slice(0,4).map(i=><button key={i} type="button" className="mini-game-choice" onClick={()=>choose(i)}><EmojiPicture emoji={ANIMALS[i]!.emoji}/><small>{ANIMALS[i]!.name}</small></button>)}
+      {choices.map(i=><button key={i} type="button" className="mini-game-choice" onClick={()=>choose(i)}><EmojiPicture emoji={ANIMALS[i]!.emoji}/><small>{ANIMALS[i]!.name}</small></button>)}
     </section>}
     {kind==='puzzle'&&<section aria-label="Puzzle de quatre pièces">
       <p className="cherche-question">Assemble les 4 pièces dans l’ordre</p>
