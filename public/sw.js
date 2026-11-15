@@ -31,10 +31,10 @@ async function trimCache(cacheName, maxEntries) {
 self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(SHELL_CACHE)
-      .then((cache) => cache.addAll([
+      .then((cache) => cache.addAll(Array.from(new Set([
         ...shellUrls(),
         ...(self.LEANNA_PRECACHE_URLS || []).map((url) => new URL(url, self.registration.scope).href),
-      ]))
+      ]))))
       .then(() => self.skipWaiting()),
   );
 });
