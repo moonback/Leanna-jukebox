@@ -91,7 +91,7 @@ export function PlayerPage() {
             <div aria-hidden="true" style={{ fontSize: '3.5rem' }}>🌙 🐱</div>
             <h2 id="session-break-title" style={{ margin: 0 }}>C’est l’heure d’une petite pause !</h2>
             <p className="muted" style={{ margin: 0 }}>La musique est en pause. Demande à un parent de saisir son code pour reprendre.</p>
-            <ParentGate>
+            <ParentGate allowReset={false}>
               <div className="stack" style={{ alignItems: 'center' }}>
                 <p style={{ margin: 0, fontWeight: 800 }}>Tu peux reprendre quand ton parent est prêt.</p>
                 <Button
