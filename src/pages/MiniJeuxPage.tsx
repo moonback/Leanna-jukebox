@@ -149,6 +149,12 @@ export function MiniJeuxPage() {
 
   const placePiece = (piece: Choice) => {
     if (completed || placed.some((item) => item.id === piece.id)) return;
+    const expected = PUZZLE[placed.length];
+    if (piece.id !== expected?.id) {
+      setMessage('Regarde le modèle pour trouver la prochaine pièce.');
+      speakFrench('Regarde le modèle pour trouver la prochaine pièce.');
+      return;
+    }
     const next = [...placed, piece];
     setPlaced(next);
     speakFrench(piece.label);
@@ -193,6 +199,10 @@ export function MiniJeuxPage() {
 
         {activity === 'puzzle' ? (
           <>
+            <div className="mini-puzzle-model" aria-label="Modèle du puzzle">
+              <span>Le modèle :</span>
+              {PUZZLE.map((piece) => <span key={piece.id} aria-hidden="true">{piece.emoji}</span>)}
+            </div>
             <div className="mini-puzzle-board" aria-label="Pièces placées">
               {Array.from({ length: 4 }, (_, index) => (
                 <div className={`mini-puzzle-slot${placed[index] ? ' has-piece' : ''}`} key={index}>
