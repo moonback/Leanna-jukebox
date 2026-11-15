@@ -26,6 +26,20 @@ describe('responsive — garde-fous statiques', () => {
     expect(css).toMatch(/repeat\(auto-fill, minmax\(min\(100%, 150px\), 1fr\)\)/);
   });
 
+  it('prévoit des cibles tactiles de 48 px et des boutons parents plus grands', () => {
+    const css = read('src/styles/global.css');
+    expect(css).toMatch(/--touch-min:\s*56px/);
+    expect(css).toMatch(/@media\s*\(pointer:\s*coarse\)/);
+    expect(css).toMatch(/min-height:\s*48px/);
+  });
+
+  it('respecte la préférence système de réduction des animations', () => {
+    const css = read('src/styles/global.css');
+    expect(css).toMatch(/prefers-reduced-motion:\s*reduce/);
+    expect(css).toMatch(/animation-duration:\s*0\.01ms/);
+    expect(css).toMatch(/:focus-visible/);
+  });
+
   it('désactive le zoom au double-tap sur les boutons (tablette)', () => {
     expect(read('src/styles/global.css')).toMatch(/touch-action:\s*manipulation/);
   });
