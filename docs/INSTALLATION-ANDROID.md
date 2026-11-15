@@ -1,44 +1,78 @@
-# Installation de Leanna Jukebox sur Android
+# Installation Android — Leanna Jukebox
 
-## Option 1 — Installer la PWA (sans Android Studio)
+## Prérequis
 
-La version web est installable depuis un navigateur compatible et son interface est mise en cache pour les démarrages hors ligne.
+- Node.js 22 ou supérieur.
+- Android Studio 2025.2.1 ou supérieur.
+- Android SDK Platform 24 ou supérieur (API 36 recommandé).
+- Une tablette Android pour les essais finaux.
 
-1. Déployer le site sur une adresse HTTPS.
-2. Ouvrir l'adresse dans Chrome sur la tablette Android.
-3. Attendre le premier chargement complet avec Internet afin que le service worker mette en cache l'application.
-4. Utiliser **Installer Leanna** si le bouton apparaît, ou le menu Chrome **⋮ → Installer l'application** / **Ajouter à l'écran d'accueil**.
-5. Ouvrir l'icône installée au moins une fois en ligne, puis tester le démarrage en mode avion.
+Capacitor 8 est utilisé pour l'enveloppe native Android. Le projet web reste React/Vite et continue à fonctionner comme PWA.
 
-Le service worker conserve l'application, ses ressources statiques chargées et un nombre limité de miniatures YouTube déjà consultées. Les données métier restent dans IndexedDB/Dexie. La synchronisation familiale se met en pause hors ligne et reprend au retour du réseau.
+## Installer les dépendances
 
-**Limite importante :** les vidéos YouTube sont diffusées par YouTube et ne sont pas téléchargées ni mises en cache. La lecture d'une chanson nécessite donc une connexion Internet. Le mode hors ligne couvre l'interface, la bibliothèque locale, l'imagier, les jeux, les autocollants et les données déjà enregistrées ; il ne garantit pas la lecture vidéo.
+Depuis la racine du dépôt :
 
-## Option 2 — Générer un APK avec Capacitor
-
-Le dépôt contient déjà `capacitor.config.json`, mais les dépendances Capacitor et le projet Android natif ne sont pas encore ajoutés. Sur une machine avec Node.js 22+, Android Studio et le SDK Android :
-
-```bash
-npm install @capacitor/core @capacitor/android
-npm install -D @capacitor/cli
-npx cap init "Leanna Jukebox" "fr.leanna.jukebox" --web-dir dist
-npm run build
-npx cap add android
-npx cap sync android
-npx cap open android
+```powershell
+npm ci
 ```
 
-Dans Android Studio : sélectionner la variante **debug**, puis **Build → Build Bundle(s) / APK(s) → Build APK(s)**. Le fichier debug est généré sous `android/app/build/outputs/apk/debug/`.
+Les dépendances Capacitor Core, Android et App sont déjà déclarées dans `package.json` et verrouillées dans `package-lock.json`.
 
-Après toute modification du frontend, relancer `npm run build` puis `npx cap sync android`.
+## Générer le projet Android natif
 
-## Vérifications obligatoires sur la tablette
+```powershell
+npm run android:add
+```
 
-- Installer l'APK ou la PWA et lancer l'application en mode avion après une première ouverture en ligne.
-- Vérifier la rotation, les zones de sécurité de l'écran, la reprise après mise en veille et la persistance IndexedDB.
-- Vérifier les sons après une interaction utilisateur (Android peut suspendre l'AudioContext).
-- Vérifier la lecture YouTube en ligne et son message/état hors ligne.
-- Tester le bouton Retour Android : depuis une activité, revenir à l'accueil enfant ; depuis l'accueil, ne pas quitter l'application accidentellement.
-- Tester l'épinglage d'écran Android ou le mode Lock Task pour l'usage par un jeune enfant.
+Cette commande construit le frontend puis demande à Capacitor de générer le dossier `android/`. Elle n'est à exécuter qu'une fois.
 
-Le build APK et ces essais matériels doivent être réalisés sur une machine équipée d'Android Studio/SDK et sur la tablette cible ; ils ne peuvent pas être certifiés depuis le dépôt seul.
+## Synchroniser et ouvrir Android Studio
+
+```powershell
+npm run android:sync
+npm run android:open
+```
+
+Après chaque modification du frontend, exécuter `npm run android:sync` avant de reconstruire l'APK.
+
+## Construire l'APK debug sous Windows
+
+```powershell
+npm run android:apk
+```
+
+Fichier attendu : `android/app/build/outputs/apk/debug/app-debug.apk`.
+
+Pour installer depuis un appareil connecté avec le débogage USB activé :
+
+```powershell
+cd android
+.\gradlew.bat installDebug
+```
+
+Ou transférer `app-debug.apk` sur la tablette et autoriser temporairement l'installation depuis cette source.
+
+## Bouton Retour Android
+
+Le composant natif `AndroidBackButton` applique le comportement suivant :
+
+- Depuis une activité enfant ou l'espace parents, le bouton Retour ramène à l'accueil enfant.
+- Depuis l'accueil enfant, il minimise l'application au lieu de la fermer.
+- Dans le navigateur web/PWA, ce composant ne s'active pas.
+
+## Usage enfant et mode kiosque
+
+Le mode kiosque n'est pas activé automatiquement : il dépend du contrôle parental Android et du modèle de tablette. Pour un usage familial, utiliser **Épinglage d'application** dans les paramètres Android. Pour un déploiement administré, configurer Android Enterprise / Lock Task avec un administrateur d'appareil. Tester la sortie du mode épinglé avec le code parental.
+
+## Essais à réaliser sur la tablette
+
+- Démarrer l'application après installation, puis la relancer en mode avion.
+- Vérifier que les chansons, catégories, playlists, autocollants et progressions restent présents.
+- Vérifier que l'interface, les jeux et l'imagier restent utilisables hors ligne.
+- Vérifier que YouTube affiche clairement l'indisponibilité hors ligne : la vidéo reste un flux Internet, elle n'est jamais téléchargée.
+- Tester le bouton Retour depuis chaque activité, puis depuis l'accueil.
+- Tester rotation, mise en veille/reprise, son, plein écran et zones de sécurité.
+- Tester l'épinglage d'écran et le contrôle de sortie par un adulte.
+
+Le dépôt contient les scripts et le comportement applicatif Capacitor. Le dossier `android/` et l'APK doivent être générés sur une machine disposant d'Android Studio et du SDK ; ils ne sont pas produits par une simple modification de fichiers GitHub.
