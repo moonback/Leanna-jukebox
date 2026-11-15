@@ -13,10 +13,13 @@ export function CloudSessionBootstrap() {
       if (!active) return;
       if (event === 'SIGNED_OUT') {
         stopSync();
-      } else if (event === 'SIGNED_IN' && session?.user.id) {
-        queueMicrotask(() => {
-          if (active) void startSync(session.user.id);
-        });
+      } else if (event === 'SIGNED_IN') {
+        const userId = session?.user.id;
+        if (userId) {
+          queueMicrotask(() => {
+            if (active) void startSync(userId);
+          });
+        }
       }
     });
 
