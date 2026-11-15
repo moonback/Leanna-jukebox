@@ -1,5 +1,5 @@
 import { useState, useSyncExternalStore } from 'react';
-import { Cloud, LogOut, RefreshCw } from 'lucide-react';
+import { Cloud, LogOut, RefreshCw, Radio, Wifi, WifiOff } from 'lucide-react';
 import { Button } from '../ui/Button';
 import { supabase } from '../../storage/cloud/supabaseClient';
 import { getSyncStatus, restoreFromCloud, subscribeSync, syncNow } from '../../storage/cloud/sync';
@@ -7,20 +7,15 @@ import { toUserMessage } from '../../services/errors';
 
 const STATE_LABEL = { idle: 'À jour', syncing: 'Synchronisation…', error: 'Erreur de synchronisation' } as const;
 
-/** État de la synchronisation Supabase, envoi/récupération manuels et déconnexion. */
+/** État de la synchronisation Supabase, abonnement temps réel et actions parentales. */
 export function CloudSyncCard() {
   const status = useSyncExternalStore(subscribeSync, getSyncStatus);
   const [error, setError] = useState<string | null>(null);
   if (!supabase) return null;
   const client = supabase;
-
   const run = async (action: () => Promise<void>) => {
     setError(null);
-    try {
-      await action();
-    } catch (err) {
-      setError(toUserMessage(err));
-    }
+    try { await action(); } catch (err) { setError(toUserMessage(err)); }
   };
 
   return (
@@ -32,9 +27,13 @@ export function CloudSyncCard() {
             {STATE_LABEL[status.state]}
             {status.lastSyncedAt ? ` · ${new Date(status.lastSyncedAt).toLocaleTimeString('fr-FR')}` : ''}
           </p>
+          <p className="muted" role="status" style={{ display: 'flex', alignItems: 'center', gap: 8, margin: 0 }}>
+            {status.realtime === 'connected' ? <Wifi size={18} /> : status.realtime === 'connecting' ? <Radio size={18} /> : <WifiOff size={18} />}
+            {status.realtime === 'connected' ? 'Temps réel actif · les autres appareils sont écoutés' : status.realtime === 'connecting' ? 'Connexion au canal temps réel…' : 'Temps réel indisponible · mode local conservé'}
+          </p>
           {(status.error || error) && <p className="error-text" role="alert">{status.error ?? error}</p>}
           <Button variant="primary" icon={<Cloud size={20} />} disabled={status.state === 'syncing'} onClick={() => run(syncNow)}>
-            Envoyer vers le cloud
+            Synchroniser maintenant
           </Button>
           <Button icon={<RefreshCw size={20} />} disabled={status.state === 'syncing'} onClick={() => run(restoreFromCloud)}>
             Récupérer depuis le cloud
