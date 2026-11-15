@@ -40,7 +40,7 @@ Vite démarre normalement sur `http://localhost:5173`. Sur une tablette Android 
 - Gestion des chansons, catégories et playlists.
 - Ajout par URL YouTube et recherche YouTube Data API.
 - Réglages de lecture et sauvegarde/restauration JSON.
-- Connexion Supabase facultative pour retrouver la bibliothèque sur plusieurs appareils.
+- Connexion Supabase facultative, accessible uniquement dans « Compte et synchronisation » de l’espace parents. L’accueil enfant reste accessible sans compte et la session cloud est restaurée en arrière-plan.
 
 Le PIN parental, son sel et les compteurs d'échecs restent sur l'appareil. Ils ne sont jamais synchronisés.
 
@@ -67,11 +67,12 @@ La synchronisation est optionnelle. Dexie reste la source de données locale uti
 3. Activer l'authentification e-mail/mot de passe dans Supabase Auth et configurer la confirmation d'adresse selon le besoin.
 4. Déployer sur HTTPS pour les essais multi-appareils.
 
-La migration versionnée crée les tables `categories`, `songs`, `playlists`, `playlist_songs` et `settings`, active RLS avec une politique limitée à `auth.uid() = user_id`, puis ajoute les tables à la publication `supabase_realtime`.
+Appliquer les deux migrations versionnées dans l’ordre chronologique :
 
-### À propos de `init_jukebox.sql`
+1. `supabase/migrations/20261114000000_init_jukebox.sql` crée le schéma initial des catégories, chansons, playlists, liaisons et réglages, avec les politiques RLS.
+2. `supabase/migrations/202611150001_family_realtime_sync.sql` complète le schéma pour la synchronisation familiale, renforce les politiques RLS et active la publication Realtime.
 
-Aucun fichier `init_jukebox.sql` n'est présent dans l'arborescence actuelle du dépôt. Ne cherchez donc pas à exécuter un ancien script portant ce nom en plus de la migration ci-dessus. La migration versionnée `202611150001_family_realtime_sync.sql` est le schéma de référence actuel pour la synchronisation familiale. Si un ancien projet Supabase possède déjà des tables créées par un script historique, inspecter son schéma avant d'appliquer la migration ; ne pas supprimer ni recréer les tables à l'aveugle.
+Le fichier initial est bien présent dans `supabase/migrations/` sous un nom horodaté ; il n’existe simplement pas de script séparé à la racine nommé `init_jukebox.sql`. Pour un projet Supabase déjà existant, inspecter les migrations appliquées, les tables, contraintes, politiques et publications avant toute intervention. Ne pas réinitialiser les tables à l’aveugle.
 
 ### Limites actuelles de la synchronisation
 
@@ -89,7 +90,7 @@ Les autocollants gagnés sont actuellement stockés dans `localStorage` sur l'ap
 
 - Utilisation du lecteur officiel YouTube IFrame API et de ses contrôles/liens natifs.
 - Aucun téléchargement, aucune extraction de flux, aucune suppression de publicité et aucune lecture en arrière-plan.
-- La lecture est mise en pause lorsque l'application devient masquée.
+- La lecture est mise en pause lorsque l'application devient masquée. Si le parent configure une durée maximale, le lecteur s’arrête à l’échéance et la reprise exige le PIN parental.
 - L'espace enfant ne demande pas de saisie de texte ; l'espace parents est protégé séparément par PIN.
 - Le lecteur YouTube peut traiter des données techniques même avec `youtube-nocookie.com`. Avant toute distribution publique, publier une politique de confidentialité et vérifier les conditions YouTube, les règles applicables aux contenus destinés aux enfants, le RGPD et les obligations relatives aux cookies.
 
