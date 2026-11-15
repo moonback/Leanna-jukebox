@@ -1,10 +1,10 @@
 /// <reference types="vitest/config" />
-import { defineConfig } from 'vite';
+import { defineConfig, type Plugin } from 'vite';
 import react from '@vitejs/plugin-react';
 
-const offlinePrecache = {
+const offlinePrecache: Plugin = {
   name: 'leanna-offline-precache',
-  generateBundle(this: { emitFile: (file: { type: 'asset'; fileName: string; source: string }) => void }, _options: unknown, bundle: Record<string, unknown>) {
+  generateBundle(_options, bundle) {
     const files = Object.keys(bundle)
       .filter((file) => !file.endsWith('.map') && file !== 'sw.js' && file !== 'precache-manifest.js')
       .map((file) => `./${file}`);
