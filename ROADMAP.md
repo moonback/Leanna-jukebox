@@ -86,11 +86,15 @@ Roadmap remise à niveau le 15 novembre 2026 à partir du dépôt `moonback/Lean
 
 **Objectif :** installer Leanna Jukebox sur la tablette et garantir un démarrage fiable sans réseau.
 
-- [ ] Ajouter manifest PWA, icônes et service worker pour l'interface, l'imagier et les sons.
-- [ ] Installer Capacitor et générer un APK debug.
-- [ ] Tester sur la tablette Android cible, y compris rotation, reprise, audio et stockage.
-- [ ] Documenter/tester l'épinglage d'écran ou le mode Lock Task.
-- [ ] Gérer le bouton Retour Android : navigation interne vers l'accueil, sans sortie accidentelle de l'application.
+- [x] Ajouter le manifest PWA, les icônes SVG et le service worker : cache de l'app shell, ressources chargées et miniatures YouTube déjà consultées.
+- [x] Ajouter la détection online/offline et le bouton d'installation lorsque le navigateur expose `beforeinstallprompt`.
+- [x] Documenter l'installation PWA, les limites YouTube hors ligne et la procédure de génération APK : `docs/INSTALLATION-ANDROID.md`.
+- [ ] Installer les dépendances Capacitor, créer le projet Android et générer un APK debug sur une machine Android Studio.
+- [ ] Tester sur la tablette Android cible : rotation, reprise, audio, IndexedDB et démarrage en mode avion.
+- [ ] Tester l'épinglage de l'écran ou le mode Lock Task.
+- [ ] Gérer et valider le bouton Retour Android : navigation vers l'accueil enfant, sans sortie accidentelle de l'application.
+
+**Limite fonctionnelle hors ligne :** l'application et les données locales sont disponibles après une première ouverture en ligne ; les vidéos YouTube restent diffusées en streaming et nécessitent Internet. Le cache ne télécharge jamais de flux vidéo.
 
 ### Phase 4 — Contenu et pédagogie (continu, lots de 2 à 4 jours)
 
