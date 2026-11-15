@@ -6,6 +6,7 @@ import { db } from '../storage/database';
 import { LoadingState } from '../components/ui/LoadingState';
 import { ErrorBoundary } from '../components/layout/ErrorBoundary';
 import { SpeechNotice } from '../components/ui/SpeechNotice';
+import { OfflineStatus } from '../components/layout/OfflineStatus';
 import { CloudSessionBootstrap } from '../components/layout/CloudSessionBootstrap';
 import { toUserMessage } from '../services/errors';
 
@@ -40,6 +41,7 @@ export function App() {
       <HashRouter>
         <CloudSessionBootstrap />
         <SpeechNotice />
+        <OfflineStatus />
         <AppRoutes />
       </HashRouter>
     </ErrorBoundary>
