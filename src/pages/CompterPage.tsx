@@ -62,7 +62,7 @@ export function CompterPage() {
       return;
     }
     speakFrench(`${NUMBER_WORDS[list.length]} ! Il y a ${quantity(round.item, round.count)}. Bravo !`);
-    void recordGameRound('compter');
+    void recordGameRound('compter').catch(() => undefined);
     celebrate();
     next();
   };
@@ -71,7 +71,7 @@ export function CompterPage() {
     if (done) return;
     if (group === round.count) {
       setFound(true);
-      void recordGameRound('compter');
+      void recordGameRound('compter').catch(() => undefined);
       speakFrench(`Oui ! ${quantity(round.item, group)}. Bravo !`);
       celebrate();
       next();
