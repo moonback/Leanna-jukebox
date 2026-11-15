@@ -21,7 +21,7 @@ export function SpeechNotice() {
       role="status"
       aria-live="polite"
       style={{
-        position: 'fixed', zIndex: 1000, left: 16, right: 16, bottom: 'calc(env(safe-area-inset-bottom, 0px) + 16px)',
+        position: 'fixed', zIndex: 1000, left: 16, right: 16, bottom: 'calc(env(safe-area-inset-bottom, 0px) + 96px)',
         display: 'flex', alignItems: 'center', gap: 12, maxWidth: 680, margin: '0 auto',
         padding: '14px 16px', borderRadius: 18, background: '#fff', color: '#393447',
         boxShadow: '0 8px 28px rgba(30, 25, 45, .2)', fontWeight: 700,
