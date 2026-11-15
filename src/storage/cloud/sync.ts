@@ -332,7 +332,7 @@ export async function startSync(userId: string, database: JukeboxDatabase = defa
       await drainOutbox(client, userId, database);
       await pullAll(client, userId, database);
     } else if (pending > 0 || legacyDirty) {
-      if (legacyDirty && pending === 0) await queueInitialSnapshot(database, userId);
+      if (legacyDirty) await queueInitialSnapshot(database, userId);
       await drainOutbox(client, userId, database);
       await pullAll(client, userId, database);
     } else {
@@ -430,6 +430,8 @@ export async function restoreFromCloud(): Promise<void> {
   const client = supabase;
   const userId = status.userId;
   if (!client || !userId) return;
+  const pending = await activeDb.syncOutbox.where('ownerUserId').equals(userId).count();
+  if (pending > 0) throw new Error('Des opérations locales sont encore en attente. Synchronise-les avant de remplacer les données locales par celles du cloud.');
   setStatus({ state: 'syncing', error: null });
   try {
     await pullAll(client, userId, activeDb);
