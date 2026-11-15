@@ -1,4 +1,4 @@
-# Leanna Jukebox — Mes petites chansons préférées
+# Leanna Jukebox — Mes chansons préférées
 
 Application web React (Vite + TypeScript) pour qu'une enfant de 3 ans choisisse et regarde ses chansons
 préférées sur tablette Android. Les vidéos passent exclusivement par le **lecteur officiel YouTube IFrame Player API**.
