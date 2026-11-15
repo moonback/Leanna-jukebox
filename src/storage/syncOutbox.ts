@@ -1,10 +1,14 @@
 import type { JukeboxDatabase, SyncEntityType } from './database';
 
 const DEVICE_ONLY_SETTINGS = new Set(['pinHash', 'pinSalt', 'pinIterations', 'failedAttempts', 'lockedUntil']);
+const OWNER_KEY = 'leanna-cloud-owner';
 
 function operationId(): string {
-  return globalThis.crypto?.randomUUID?.()
-    ?? `op-${Date.now()}-${Math.random().toString(36).slice(2, 12)}`;
+  if (globalThis.crypto?.randomUUID) return globalThis.crypto.randomUUID();
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (char) => {
+    const value = Math.floor(Math.random() * 16);
+    return (char === 'x' ? value : (value & 0x3) | 0x8).toString(16);
+  });
 }
 
 /** Enregistre une mutation locale dans la même transaction IndexedDB que l'entité. */
@@ -23,6 +27,7 @@ export async function enqueueSyncOperation(
 
   await database.syncOutbox.add({
     operationId: operationId(),
+    ownerUserId: localStorage.getItem(OWNER_KEY),
     entityType,
     entityId,
     operation,
