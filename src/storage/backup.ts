@@ -159,8 +159,10 @@ export async function restoreBackup(
 
 /** Supprime toutes les données locales (chansons, playlists, catégories, PIN et réglages), puis réinitialise. */
 export async function deleteAllData(database: JukeboxDatabase = defaultDb): Promise<void> {
-  await database.transaction('rw', database.songs, database.playlists, database.categories,
-    database.settings, database.stickers, database.gameProgress, database.syncOutbox, async () => {
+  await database.transaction('rw', [
+    database.songs, database.playlists, database.categories, database.settings,
+    database.stickers, database.gameProgress, database.syncOutbox,
+  ], async () => {
       const [songs, playlists, categories, stickers, progress] = await Promise.all([
         database.songs.toArray(), database.playlists.toArray(), database.categories.toArray(),
         database.stickers.toArray(), database.gameProgress.toArray(),
