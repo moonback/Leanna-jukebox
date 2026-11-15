@@ -37,9 +37,12 @@ create policy "Users manage own sync records" on public.sync_records
 drop policy if exists "Users read own sync receipts" on public.sync_operation_receipts;
 create policy "Users read own sync receipts" on public.sync_operation_receipts
   for select to authenticated using (auth.uid() = user_id);
+drop policy if exists "Users create own sync receipts" on public.sync_operation_receipts;
+create policy "Users create own sync receipts" on public.sync_operation_receipts
+  for insert to authenticated with check (auth.uid() = user_id);
 revoke all on public.sync_records, public.sync_operation_receipts from anon;
 grant select, insert, update, delete on public.sync_records to authenticated;
-grant select on public.sync_operation_receipts to authenticated;
+grant select, insert on public.sync_operation_receipts to authenticated;
 
 create or replace function public.merge_sync_record(
   p_operation_id uuid,
@@ -112,7 +115,7 @@ begin
     deleted_at = case when p_operation = 'delete' then v_now else null end,
     server_updated_at = v_now,
     device_id = coalesce(nullif(p_device_id, ''), 'unknown')
-  returning to_jsonb(sync_records.*) into v_result;
+  returning to_jsonb(sync_records) into v_result;
 
   return v_result;
 end;
