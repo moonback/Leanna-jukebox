@@ -101,7 +101,7 @@ Roadmap remise à niveau le 15 novembre 2026 à partir du dépôt `moonback/Lean
 
 **Objectif :** enrichir les activités sans complexifier le parcours enfant.
 
-- [ ] Ajouter des jeux courts : couleurs, formes, puzzle 4 pièces, tri grand/petit, animaux et leurs cris.
+- [x] Ajouter des jeux courts : couleurs, formes, puzzle 4 pièces, tri grand/petit, animaux et leurs cris (page `MiniJeuxPage`, cinq activités tactiles, consignes vocales et progression locale/synchronisable).
 - [ ] Définir des niveaux de difficulté 3, 4 et 5 ans réglables par le parent.
 - [ ] Étendre l'imagier (vêtements, corps, objets du quotidien) et enregistrer les prononciations.
 - [ ] Créer des albums d'autocollants thématiques et des objectifs facultatifs sans pression.
