@@ -34,7 +34,7 @@ export function speakFrench(text: string): boolean {
       utterance.voice = voice;
     } else {
       // La synthèse reste utilisable avec la voix système, mais on prévient le parent.
-      notifySpeechFallback('Aucune voix française n’est installée. La voix par défaut de la tablette sera utilisée ; installe une voix française dans les réglages Android pour un meilleur résultat.');
+      // notifySpeechFallback('Aucune voix française n’est installée. La voix par défaut de la tablette sera utilisée ; installe une voix française dans les réglages Android pour un meilleur résultat.');
     }
     synth.speak(utterance);
     return true;

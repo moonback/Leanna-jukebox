@@ -1769,3 +1769,40 @@ body {
   .chip--small { min-height: 0; }
   .songs-admin { grid-template-columns: minmax(0, 1fr); }
 }
+
+/* Mode simple : la page est fixe, seule la liste des musiques défile. */
+html.no-touch-zoom,
+html.no-touch-zoom body {
+  height: 100dvh;
+  overflow: hidden;
+}
+html.no-touch-zoom .app-shell {
+  height: 100dvh;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  padding-bottom: calc(var(--safe-bottom) + 12px);
+}
+html.no-touch-zoom .simple-layout {
+  flex: 1;
+  min-height: 0;
+  grid-template-rows: minmax(0, 1fr);
+  align-items: stretch;
+}
+html.no-touch-zoom .simple-list {
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+  min-height: 0;
+  align-content: start;
+  padding: 8px;
+  margin: -8px;
+}
+html.no-touch-zoom .simple-player-column {
+  position: static;
+  align-self: end;
+}
+@media (max-width: 600px) {
+  html.no-touch-zoom .simple-layout { grid-template-rows: minmax(0, 1fr) auto; }
+}
