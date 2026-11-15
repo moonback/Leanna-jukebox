@@ -1,13 +1,17 @@
-import { useState } from 'react';
+import { useLiveQuery } from 'dexie-react-hooks';
 import { Link } from 'react-router-dom';
 import { AppShell } from '../components/layout/AppShell';
 import { GameHeader } from '../components/games/GameHeader';
 import { EmojiPicture } from '../components/ui/EmojiPicture';
-import { getStickers } from '../services/stickers';
+import { migrateLegacyStickers } from '../services/stickers';
+import { db } from '../storage/database';
 
 /** Album des autocollants gagnés dans les jeux. */
 export function AutocollantsPage() {
-  const [stickers] = useState(getStickers);
+  const stickers = useLiveQuery(async () => {
+    await migrateLegacyStickers(db);
+    return db.stickers.orderBy('createdAt').toArray();
+  }, [], []) ?? [];
 
   return (
     <AppShell showNavigation={false}>
@@ -23,9 +27,9 @@ export function AutocollantsPage() {
         </div>
       ) : (
         <div className="stickers-album">
-          {stickers.map((emoji, i) => (
-            <span key={i} className="sticker imagier-card__emoji" style={{ rotate: `${((i * 37) % 21) - 10}deg`, animationDelay: `${Math.min(i * 40, 600)}ms` }}>
-              <EmojiPicture emoji={emoji} />
+          {stickers.map((sticker, i) => (
+            <span key={sticker.id} className="sticker imagier-card__emoji" style={{ rotate: `${((i * 37) % 21) - 10}deg`, animationDelay: `${Math.min(i * 40, 600)}ms` }}>
+              <EmojiPicture emoji={sticker.emoji} />
             </span>
           ))}
         </div>
