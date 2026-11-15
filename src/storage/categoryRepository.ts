@@ -2,6 +2,7 @@ import { db as defaultDb, type JukeboxDatabase } from './database';
 import { AppError } from '../services/errors';
 import { isIllustrationKey, type IllustrationKey } from '../illustrations/illustrationKeys';
 import type { Category } from '../types/category';
+import { enqueueSyncOperation } from './syncOutbox';
 import { MAX_PLAYLIST_TITLE } from './playlistRepository';
 
 export async function listCategories(database: JukeboxDatabase = defaultDb): Promise<Category[]> {
@@ -23,7 +24,7 @@ export async function addCategory(
   database: JukeboxDatabase = defaultDb,
 ): Promise<Category> {
   const valid = checkCategory(input.title, input.illustration);
-  return database.transaction('rw', database.categories, async () => {
+  return database.transaction('rw', database.categories, database.syncOutbox, async () => {
     const last = await database.categories.orderBy('sortOrder').last();
     const category: Category = {
       id: crypto.randomUUID?.() ?? `cat-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`,
@@ -31,6 +32,7 @@ export async function addCategory(
       sortOrder: (last?.sortOrder ?? -1) + 1,
     };
     await database.categories.add(category);
+    await enqueueSyncOperation(database, 'category', category.id, 'upsert', { ...category });
     return category;
   });
 }
@@ -43,7 +45,10 @@ export async function updateCategory(
   const current = await database.categories.get(id);
   if (!current) throw new AppError('not-found', 'Cette catégorie n’existe plus.');
   const valid = checkCategory(patch.title ?? current.title, patch.illustration ?? current.illustration);
-  await database.categories.update(id, valid);
+  await database.transaction('rw', database.categories, database.syncOutbox, async () => {
+    await database.categories.update(id, valid);
+    await enqueueSyncOperation(database, 'category', id, 'upsert', valid);
+  });
 }
 
 /**
@@ -51,12 +56,17 @@ export async function updateCategory(
  * pour qu'aucune chanson ne disparaisse par erreur. Impossible de supprimer la dernière catégorie.
  */
 export async function deleteCategory(id: string, database: JukeboxDatabase = defaultDb): Promise<void> {
-  await database.transaction('rw', database.categories, database.songs, async () => {
+  await database.transaction('rw', database.categories, database.songs, database.syncOutbox, async () => {
     const all = await database.categories.orderBy('sortOrder').toArray();
     if (all.length <= 1) throw new AppError('validation', 'Il faut garder au moins une catégorie.');
     const fallback = all.find((c) => c.id !== id);
     if (!fallback) throw new AppError('validation', 'Il faut garder au moins une catégorie.');
-    await database.songs.where('categoryId').equals(id).modify({ categoryId: fallback.id });
+    const movedSongs = await database.songs.where('categoryId').equals(id).toArray();
+    for (const song of movedSongs) {
+      await database.songs.update(song.id, { categoryId: fallback.id, updatedAt: Date.now() });
+      await enqueueSyncOperation(database, 'song', song.id, 'upsert', { categoryId: fallback.id, updatedAt: Date.now() });
+    }
     await database.categories.delete(id);
+    await enqueueSyncOperation(database, 'category', id, 'delete');
   });
 }
