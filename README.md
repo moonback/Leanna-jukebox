@@ -114,6 +114,20 @@ Le PIN de l'application ne verrouille pas Android. Pour un usage enfant, complé
 
 GitHub Actions exécute ces trois contrôles sur les pull requests vers `main` et sur les pushes vers `main`. Le résultat faisant foi est celui du workflow sur le commit concerné ; aucun nombre fixe de tests n'est annoncé ici afin d'éviter une documentation périmée.
 
-## Android
+## Installation PWA et fonctionnement hors ligne
 
-Le projet est préparé pour un routage compatible avec un futur packaging Capacitor (`HashRouter`, `base: './'`, configuration `capacitor.config.json`). Capacitor et la plateforme Android doivent encore être installés et validés sur une tablette réelle avant de produire un APK de distribution.
+Le projet fournit maintenant un manifest installable, des icônes adaptées, un service worker et un indicateur réseau/installation.
+
+- La première ouverture doit être effectuée en ligne sur une origine HTTPS ; le service worker met en cache l'app shell et les ressources chargées.
+- Les fichiers statiques sont conservés dans le cache local ; les miniatures YouTube déjà consultées sont mises en cache avec une limite.
+- Les chansons, catégories, playlists, autocollants et progressions restent dans IndexedDB/Dexie. La synchronisation Supabase se met en pause hors ligne et reprend lorsque le réseau revient.
+- Sur Android Chrome : menu **⋮ → Installer l'application** ou bouton **Installer Leanna** lorsqu'il est proposé.
+- Sur iOS Safari : **Partager → Sur l'écran d'accueil**.
+
+**Limite hors ligne :** les vidéos YouTube ne sont ni téléchargées ni mises en cache. La lecture vidéo exige une connexion Internet. Le cache hors ligne rend l'application, l'imagier, les jeux et les données locales disponibles, pas les flux vidéo YouTube.
+
+## Android natif (APK)
+
+La configuration Capacitor est présente dans `capacitor.config.json`, mais les dépendances Capacitor et le projet Android natif ne sont pas encore ajoutés. Le guide `docs/INSTALLATION-ANDROID.md` décrit l'installation PWA et les commandes pour générer un APK debug depuis une machine équipée d'Android Studio et du SDK Android.
+
+Le bouton Retour Android, l'épinglage d'écran/Lock Task, la rotation, la reprise audio et le stockage doivent encore être validés sur la tablette cible avant une distribution native.
