@@ -62,9 +62,10 @@ export async function deleteCategory(id: string, database: JukeboxDatabase = def
     const fallback = all.find((c) => c.id !== id);
     if (!fallback) throw new AppError('validation', 'Il faut garder au moins une catégorie.');
     const movedSongs = await database.songs.where('categoryId').equals(id).toArray();
+    const updatedAt = Date.now();
     for (const song of movedSongs) {
-      await database.songs.update(song.id, { categoryId: fallback.id, updatedAt: Date.now() });
-      await enqueueSyncOperation(database, 'song', song.id, 'upsert', { categoryId: fallback.id, updatedAt: Date.now() });
+      await database.songs.update(song.id, { categoryId: fallback.id, updatedAt });
+      await enqueueSyncOperation(database, 'song', song.id, 'upsert', { categoryId: fallback.id, updatedAt });
     }
     await database.categories.delete(id);
     await enqueueSyncOperation(database, 'category', id, 'delete');
