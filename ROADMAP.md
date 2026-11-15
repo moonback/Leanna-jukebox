@@ -8,8 +8,8 @@ Roadmap remise à niveau le 15 novembre 2026 à partir du dépôt `moonback/Lean
 
 - **Stack** : React 19, Vite 8, TypeScript strict, Dexie/IndexedDB, Supabase JS, Framer Motion, React Router.
 - **Espace enfant** : accueil, bibliothèque musicale, mode simple, lecteur YouTube officiel, imagier illustré, jeux et album d'autocollants.
-- **Imagier** : six catégories (animaux, fruits, légumes, véhicules, maison, nature) ; le corpus est défini dans `src/data/imagier.ts`.
-- **Jeux** : Ballons, Piano, Cherche et trouve, Compter, Ombres et Mémoire.
+- **Imagier** : neuf catégories (animaux, fruits, légumes, véhicules, maison, nature, vêtements, corps, objets du quotidien) ; prononciation française au toucher via la synthèse vocale système.
+- **Jeux** : Ballons, Piano, Cherche et trouve, Compter, Ombres, Mémoire, Couleurs, Formes, Puzzle 4 pièces, Grand/Petit et Cris des animaux.
 - **Espace parents** : PIN PBKDF2-SHA256 avec temporisation persistée, gestion des chansons/playlists/catégories, recherche YouTube, réglages, import/export JSON.
 - **Stockage** : Dexie local ; synchronisation Supabase Auth/Postgres/Realtime facultative.
 - **Progression** : autocollants et manches réussies des jeux dans IndexedDB, intégrés à la synchronisation familiale Phase 2 ; exclus de l'export JSON manuel.
@@ -101,9 +101,9 @@ Roadmap remise à niveau le 15 novembre 2026 à partir du dépôt `moonback/Lean
 
 **Objectif :** enrichir les activités sans complexifier le parcours enfant.
 
-- [ ] Ajouter des jeux courts : couleurs, formes, puzzle 4 pièces, tri grand/petit, animaux et leurs cris.
+- [x] Ajouter des jeux courts : couleurs, formes, puzzle 4 pièces, comparaison grand/petit et animaux avec leurs cris prononcés.
 - [ ] Définir des niveaux de difficulté 3, 4 et 5 ans réglables par le parent.
-- [ ] Étendre l'imagier (vêtements, corps, objets du quotidien) et enregistrer les prononciations.
+- [x] Étendre l'imagier aux vêtements, parties du corps et objets du quotidien ; prononcer chaque mot en français au toucher via la synthèse vocale du terminal.
 - [ ] Créer des albums d'autocollants thématiques et des objectifs facultatifs sans pression.
 - [ ] Ajouter un tableau de bord parental local : temps d'activité, jeux préférés et chansons écoutées.
 - [ ] Ajouter des playlists intelligentes « Dodo » et « Réveil ».
