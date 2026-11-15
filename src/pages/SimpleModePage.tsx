@@ -38,7 +38,19 @@ export function SimpleModePage() {
     document.addEventListener('touchmove', blockMultiTouch, { passive: false });
     document.addEventListener('gesturestart', blockGesture);
     document.addEventListener('gesturechange', blockGesture);
+    // Plein écran : le navigateur exige un geste ; on essaie d'abord, puis au premier appui.
+    const enterFullscreen = () => {
+      if (!document.fullscreenElement) document.documentElement.requestFullscreen?.().catch(() => {});
+    };
+    enterFullscreen();
+    const onFirstTouch = () => {
+      enterFullscreen();
+      if (document.fullscreenElement) document.removeEventListener('pointerdown', onFirstTouch);
+    };
+    document.addEventListener('pointerdown', onFirstTouch);
     return () => {
+      document.removeEventListener('pointerdown', onFirstTouch);
+      if (document.fullscreenElement) document.exitFullscreen?.().catch(() => {});
       document.documentElement.classList.remove('no-touch-zoom');
       document.removeEventListener('touchmove', blockMultiTouch);
       document.removeEventListener('gesturestart', blockGesture);
