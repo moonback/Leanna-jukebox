@@ -11,7 +11,7 @@ installMenuBlocking();
 // les ressources chargées et les miniatures YouTube déjà consultées.
 if (import.meta.env.PROD && 'serviceWorker' in navigator) {
   window.addEventListener('load', () => {
-    void navigator.serviceWorker.register(new URL('../public/sw.js', import.meta.url).href)
+    void navigator.serviceWorker.register(`${import.meta.env.BASE_URL}sw.js`, { scope: import.meta.env.BASE_URL })
       .catch((error: unknown) => console.warn('[Leanna] Cache hors ligne indisponible :', error));
   }, { once: true });
 }
