@@ -103,8 +103,6 @@ function safeSettings(settings: Awaited<ReturnType<typeof getSettings>>): Record
 async function queueInitialSnapshot(database: JukeboxDatabase, userId: string): Promise<void> {
   await database.transaction('rw', database.songs, database.playlists, database.categories,
     database.settings, database.stickers, database.gameProgress, database.syncOutbox, async () => {
-      const existing = await database.syncOutbox.where('ownerUserId').equals(userId).count();
-      if (existing > 0) return;
       const [categories, songs, playlists, settings, stickers, progress] = await Promise.all([
         database.categories.toArray(), database.songs.toArray(), database.playlists.toArray(),
         getSettings(database), database.stickers.toArray(), database.gameProgress.toArray(),
@@ -318,6 +316,9 @@ export async function startSync(userId: string, database: JukeboxDatabase = defa
     const pending = await database.syncOutbox.count();
     if (previousOwner && previousOwner !== userId && pending > 0) {
       throw new Error('Des opérations locales de la famille précédente sont encore en attente. Reconnecte-toi à cet ancien compte pour les envoyer, ou exporte la bibliothèque avant de changer de famille.');
+    }
+    if (!previousOwner || previousOwner === userId) {
+      await database.syncOutbox.filter((entry) => !entry.ownerUserId).modify({ ownerUserId: userId });
     }
     const legacyDirty = localStorage.getItem(`${LEGACY_DIRTY_PREFIX}${userId}`) === '1';
 
