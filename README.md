@@ -128,6 +128,18 @@ Le projet fournit maintenant un manifest installable, des icônes adaptées, un 
 
 ## Android natif (APK)
 
-La configuration Capacitor est présente dans `capacitor.config.json`, mais les dépendances Capacitor et le projet Android natif ne sont pas encore ajoutés. Le guide `docs/INSTALLATION-ANDROID.md` décrit l'installation PWA et les commandes pour générer un APK debug depuis une machine équipée d'Android Studio et du SDK Android.
+Capacitor 8 est intégré dans `package.json` et `package-lock.json` avec le plugin App pour le bouton Retour natif.
 
-Le bouton Retour Android, l'épinglage d'écran/Lock Task, la rotation, la reprise audio et le stockage doivent encore être validés sur la tablette cible avant une distribution native.
+Depuis Windows, avec Node.js 22+ et Android Studio/SDK installés :
+
+```powershell
+npm ci
+npm run android:add
+npm run android:sync
+npm run android:open
+npm run android:apk
+```
+
+L'APK debug est attendu dans `android/app/build/outputs/apk/debug/app-debug.apk`. Le dossier `android/` est généré par Capacitor sur la machine de développement ; il n'est pas encore commité dans cette branche.
+
+Le bouton Retour Android ramène vers l'accueil enfant et minimise l'application depuis l'accueil. L'épinglage d'écran/Lock Task reste une configuration Android à activer par un adulte. Les essais rotation, reprise audio, stockage et démarrage en mode avion restent à faire sur la tablette cible. Voir `docs/INSTALLATION-ANDROID.md`.
