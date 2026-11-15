@@ -40,6 +40,7 @@ let status: SyncStatus = {
 const listeners = new Set<() => void>();
 let channel: RealtimeChannel | null = null;
 let remoteTimer: ReturnType<typeof setTimeout> | undefined;
+let flushTimer: ReturnType<typeof setTimeout> | undefined;
 let flushPromise: Promise<void> | null = null;
 let rerunRequested = false;
 let approvedDeletionSignature = '';
@@ -273,7 +274,9 @@ async function drainOutbox(client: SupabaseClient, userId: string, database: Juk
 
 function scheduleFlush(): void {
   if (!status.userId || !navigator.onLine) return;
-  void syncNow();
+  clearTimeout(flushTimer);
+  // Laisser la transaction Dexie qui a créé l'opération se terminer avant de la lire.
+  flushTimer = setTimeout(() => void syncNow(), 900);
 }
 async function flushInternal(): Promise<void> {
   const client = supabase;
@@ -389,6 +392,9 @@ function connectRealtime(client: SupabaseClient, userId: string): void {
 function installOnlineListener(): void {
   if (onlineListenerInstalled) return;
   onlineListenerInstalled = true;
+  window.addEventListener('leanna:sync-outbox-changed', () => {
+    if (status.userId) scheduleFlush();
+  });
   window.addEventListener('online', () => {
     if (!status.userId) return;
     void activeDb.syncOutbox.where('ownerUserId').equals(status.userId).count().then((count) => {
@@ -410,6 +416,7 @@ export async function confirmPendingDeletions(): Promise<void> {
 
 export function stopSync(): void {
   clearTimeout(remoteTimer);
+  clearTimeout(flushTimer);
   if (channel && supabase) void supabase.removeChannel(channel);
   channel = null;
   approvedDeletionSignature = '';
