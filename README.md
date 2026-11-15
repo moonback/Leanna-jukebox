@@ -1,194 +1,106 @@
-# Leanna Jukebox — Mes chansons préférées
+# Leanna Jukebox
 
-Application web React (Vite + TypeScript) pour qu'une enfant de 3 ans choisisse et regarde ses chansons
-préférées sur tablette Android. Les vidéos passent exclusivement par le **lecteur officiel YouTube IFrame Player API**.
-Aucun compte, aucun backend, aucune collecte de données personnelles de l'enfant.
+Leanna Jukebox est une application React destinée à une tablette Android : une interface enfant pour écouter des chansons YouTube, explorer un imagier, jouer à de petits jeux et collectionner des autocollants, ainsi qu'un espace parents protégé par PIN.
 
-## Démarrer
+- **Frontend** : React 19, TypeScript strict, Vite 8, React Router.
+- **Données locales** : IndexedDB avec Dexie. L'application reste utilisable sans compte ni configuration cloud.
+- **Synchronisation familiale facultative** : Supabase Auth, Postgres et Realtime.
+- **Lecture vidéo** : lecteur officiel YouTube IFrame Player API. L'application n'extrait ni ne télécharge les flux vidéo.
+
+## Démarrage
+
+Prérequis : Node.js 22 ou supérieur et npm.
 
 ```bash
-npm install
-npm run dev        # serveur de développement sur http://localhost:5173
-npm run typecheck  # TypeScript strict, aucune erreur attendue
-npm run test       # tests unitaires et composants (Vitest + Testing Library + fake-indexeddb)
-npm run build      # typecheck + build de production dans dist/
-npm run preview    # prévisualisation du build
+npm ci
+npm run dev
+npm run typecheck
+npm run test
+npm run build
+npm run preview
 ```
 
-Sur une tablette en développement, ouvrez l'application via `localhost` (par exemple avec
-`adb reverse tcp:5173 tcp:5173`). Les API `crypto.subtle` (PIN) et `crypto.randomUUID` ne sont pas
-disponibles en HTTP sur une adresse IP du réseau local.
+Vite démarre normalement sur `http://localhost:5173`. Sur une tablette Android connectée en USB, le serveur peut être exposé avec `adb reverse tcp:5173 tcp:5173`, puis ouvert dans le navigateur de la tablette.
 
-## Architecture
+## Fonctionnalités
 
-```
-src/
-  app/            App.tsx (initialisation de la base, HashRouter), routes.tsx
-  pages/          HomePage (accueil enfant), LibraryPage, SongListPage (favoris, récentes, catégorie, playlist),
-                  PlayerPage (lecteur), ParentPage (espace parents)
-  components/
-    layout/       AppShell, ChildNavigation, ErrorBoundary
-    music/        SongCard, SongGrid, CategoryCard, PlaylistCard, MusicPlayer
-    parental/     ParentGate (PIN), PinPad, ParentDashboard, SongEditor, PlaylistEditor,
-                  CategoryEditor, SettingsPanel, ParentAccessButton
-    ui/           Button, Modal, EmptyState, LoadingState, IllustrationPicker
-  hooks/          useMusicLibrary, useSettings, useParentAuth, usePlaylists, usePlayer
-  services/
-    youtube/      youtubeUrlParser (validation des URL), youtubePlayer (IFrame API),
-                  youtubeErrors (messages d'erreur), youtubeMetadata (titre via oEmbed)
-    sources.ts    listes de lecture (all, favorites, recent, cat:, pl:)
-    nowPlaying.ts indicateur de lecture partagé, sound.ts sons facultatifs, errors.ts erreurs centralisées
-  security/       pinService (PBKDF2-SHA256, sel, temporisation)
-  storage/        database (Dexie), songRepository, playlistRepository, categoryRepository,
-                  settingsRepository, backup (export/import/validation), seed (données de démonstration)
-  illustrations/  illustrations SVG intégrées (aucun fichier image à charger)
-  types/          Song, Playlist, Category, ParentSettings
-  styles/         variables (palette, safe areas), global, animations
-```
+### Espace enfant
 
-### Données (IndexedDB via Dexie)
+- Accueil avec accès aux activités et à la bibliothèque musicale.
+- Mode musique simplifié et lecteur YouTube intégré.
+- Miniatures YouTube cliquables ; la lecture ne démarre qu'après une action explicite de l'enfant.
+- Navigation entre les chansons en conservant la liste d'origine.
+- Imagier illustré et prononcé en français, organisé par catégories.
+- Six jeux courts : Ballons, Piano, Cherche et trouve, Compter, Ombres et Mémoire.
+- Album d'autocollants gagnés dans les jeux.
 
-| Table | Contenu | Index |
+### Espace parents
+
+- Accès protégé par PIN local (PBKDF2-SHA256, temporisation persistée).
+- Gestion des chansons, catégories et playlists.
+- Ajout par URL YouTube et recherche YouTube Data API.
+- Réglages de lecture et sauvegarde/restauration JSON.
+- Connexion Supabase facultative pour retrouver la bibliothèque sur plusieurs appareils.
+
+Le PIN parental, son sel et les compteurs d'échecs restent sur l'appareil. Ils ne sont jamais synchronisés.
+
+## Configuration
+
+Copier `.env.example` vers `.env.local`, puis renseigner uniquement les services souhaités.
+
+| Variable | Usage | Obligatoire |
 |---|---|---|
-| `songs` | `Song` (id, title, youtubeVideoId, categoryId, illustration, favorite, sortOrder, createdAt, updatedAt, lastPlayedAt, isDemo) | `id, categoryId, sortOrder, lastPlayedAt, youtubeVideoId` |
-| `playlists` | `Playlist` (id, title, illustration, songIds, sortOrder, createdAt) | `id, sortOrder` |
-| `categories` | `Category` (id, title, illustration, sortOrder) | `id, sortOrder` |
-| `settings` | `ParentSettings`, clé unique `parent` (hash et sel du PIN, compteur d'échecs, réglages) | `key` |
+| `VITE_SUPABASE_URL` | URL du projet Supabase | Non |
+| `VITE_SUPABASE_ANON_KEY` | Clé publique anon Supabase | Non |
+| `VITE_YOUTUBE_API_KEY` | Recherche de vidéos YouTube depuis l'espace parents | Non |
 
-- `favorite` n'est pas indexé (IndexedDB n'indexe pas les booléens) : le filtre se fait en mémoire.
-- **Migrations** : le schéma est en `version(1)`. Toute évolution ajoute une nouvelle `version(n)` avec ses
-  fonctions `upgrade` dans `storage/database.ts`. `schemaVersion` dans les réglages sert de repère.
-- Les hooks `useLiveQuery` (dexie-react-hooks) mettent l'interface à jour à chaque écriture.
-- Les dépôts reçoivent la base en paramètre : ils sont testables sans navigateur et pourront,
-  plus tard, être remplacés par une implémentation Supabase pour une synchronisation familiale.
+Sans variables Supabase, les données restent locales et l'application n'exige aucun compte. Sans clé YouTube Data API, l'ajout d'une chanson par URL reste disponible ; seule la recherche intégrée est désactivée.
 
-## Parcours enfant
+**Sécurité des clés :** toute variable préfixée `VITE_` est intégrée au bundle client. La clé Supabase anon est conçue pour être publique et doit être protégée par les politiques RLS. La clé YouTube Data API est également visible dans le navigateur : restreindre sa clé dans Google Cloud à YouTube Data API v3 et aux origines autorisées. Avant une distribution publique, déplacer cette recherche dans une fonction serveur/Edge Function et retirer la clé du client. Ne jamais placer une clé Supabase `service_role` dans `.env.local` ou dans le frontend.
 
-- **Accueil** : logo, message, accès rapides (Favoris, Playlists, Dernières), catégories, grille de chansons.
-- **Une chanson** : un appui sur la carte ouvre le lecteur. La vidéo se charge, mais **la lecture démarre
-  uniquement après un appui sur le grand bouton Lecture** (action explicite, et évite les blocages d'autoplay).
-- **Suivant / précédent** restent dans la liste d'origine (catégorie, playlist, favoris…).
-- Aucun champ de texte dans l'espace enfant. Navigation en bas à trois cibles.
+## Synchronisation familiale Supabase
 
-## Lecteur YouTube et conformité
+La synchronisation est optionnelle. Dexie reste la source de données locale utilisée par l'interface ; Supabase permet d'associer une bibliothèque à un compte parent.
 
-- Script officiel `https://www.youtube.com/iframe_api`, iframe du domaine `youtube-nocookie.com`.
-- Les commandes de l'application sont **à l'extérieur** de l'iframe ; rien ne la recouvre. Le lien
-  « Regarder sur YouTube » et les contrôles natifs restent visibles.
-- Aucune extraction de flux, aucun téléchargement, aucune suppression de publicité, aucune lecture en arrière-plan :
-  la vidéo se met en pause lorsque l'application n'est plus visible (`visibilitychange`).
-- Erreurs gérées (`youtubeErrors.ts`) : code 2 (paramètre invalide), 5 (lecteur HTML5), 100 (vidéo supprimée ou privée),
-  101/150/153 (lecture interdite dans un lecteur intégré), absence de réseau et délai de chargement du script.
-  Chaque erreur affiche un message adapté à l'enfant, un bouton de retour, et un réessai lorsque c'est pertinent.
-- Titre automatique : endpoint oEmbed officiel (`youtube.com/oembed`), sans scraping. En cas d'échec, le parent saisit le titre.
-- Chansons de démonstration : `Démo : …` marquées `isDemo`, **sans identifiant vidéo**. Elles affichent un message
-  « chanson d'exemple » et ne sont jamais présentées comme jouables.
+1. Créer un projet Supabase et configurer `VITE_SUPABASE_URL` et `VITE_SUPABASE_ANON_KEY`.
+2. Dans le SQL Editor Supabase, exécuter **une seule fois** `supabase/migrations/202611150001_family_realtime_sync.sql`.
+3. Activer l'authentification e-mail/mot de passe dans Supabase Auth et configurer la confirmation d'adresse selon le besoin.
+4. Déployer sur HTTPS pour les essais multi-appareils.
 
-## Validation des liens
+La migration versionnée crée les tables `categories`, `songs`, `playlists`, `playlist_songs` et `settings`, active RLS avec une politique limitée à `auth.uid() = user_id`, puis ajoute les tables à la publication `supabase_realtime`.
 
-`services/youtube/youtubeUrlParser.ts` accepte `youtube.com/watch?v=`, `youtu.be/`, `youtube.com/embed/`,
-`youtube.com/shorts/` et `youtube.com/live/`. L'hôte est comparé **exactement** à une liste blanche
-(`youtube.com`, `www.youtube.com`, `m.youtube.com`, `youtu.be`) : `youtube.com.evil.com` et `evilyoutube.com` sont refusés.
-L'identifiant doit faire exactement 11 caractères `[A-Za-z0-9_-]`.
+### À propos de `init_jukebox.sql`
 
-## Espace parents et PIN
+Aucun fichier `init_jukebox.sql` n'est présent dans l'arborescence actuelle du dépôt. Ne cherchez donc pas à exécuter un ancien script portant ce nom en plus de la migration ci-dessus. La migration versionnée `202611150001_family_realtime_sync.sql` est le schéma de référence actuel pour la synchronisation familiale. Si un ancien projet Supabase possède déjà des tables créées par un script historique, inspecter son schéma avant d'appliquer la migration ; ne pas supprimer ni recréer les tables à l'aveugle.
 
-- **Première utilisation** : création d'un PIN de 4 à 6 chiffres, puis confirmation.
-- **Stockage** : PBKDF2-SHA256 (200 000 itérations, `security/pinService.ts`) avec un sel aléatoire de 16 octets.
-  Le PIN n'est jamais stocké ni affiché en clair. La comparaison se fait à temps constant.
-- **Temporisation** : après 3 échecs, blocage 30 s ; après 5, 5 min ; après 8, 15 min. Le compteur et la date de fin
-  sont **persistés** dans IndexedDB : un rechargement de page ne réinitialise pas le blocage.
-- **Mode enfant** (réglage) : l'accès parents par l'icône exige un appui long de 2 secondes.
-- **Code oublié** : réinitialisation complète après double confirmation. Cette action efface toutes les données.
-- Le pavé numérique est composé de boutons ; il n'y a pas de champ `<input>` pour le PIN.
+### Limites actuelles de la synchronisation
 
-## Sauvegarde
+La synchronisation actuelle déclenche une réconciliation de la bibliothèque et n'est pas encore une réplication transactionnelle complète : pas d'outbox durable ni de tombstones pour toutes les suppressions, et pas de résolution LWW champ par champ garantie. Une modification concurrente ou un appareil local incomplet peut donc présenter un risque de perte de données. Ne pas considérer cette version comme une synchronisation multi-appareils à garanties fortes avant la Phase 2 de la roadmap.
 
-- **Export** : fichier JSON `leanna-jukebox-AAAA-MM-JJ.json` (chansons, playlists, catégories, format `leanna-jukebox-backup` v1).
-  Le PIN et les réglages **ne sont jamais exportés**.
-- **Import** : le fichier est validé entièrement (format, version, liens, identifiants en double, illustrations,
-  références de catégories) avant toute écriture. Une seule transaction remplace les données. Les références vers
-  des chansons absentes sont retirées. Taille maximale : 5 Mo, 2 000 éléments par liste.
-- **Suppression** : efface chansons, playlists, catégories et PIN, puis réinitialise les données de démonstration.
+## Données et sauvegardes
 
-## Synchronisation familiale (Supabase)
+Les chansons, playlists, catégories et réglages sont stockés localement dans IndexedDB via Dexie. Les migrations de schéma Dexie doivent être ajoutées avec une nouvelle version dans `src/storage/database.ts`.
 
-La synchronisation est facultative : sans variables Supabase, l'application reste entièrement locale.
+L'export JSON inclut les chansons, playlists et catégories. Le PIN et les réglages sensibles ne sont pas exportés. L'import valide le fichier avant de remplacer les données dans une transaction.
 
-### Configuration
+Les autocollants gagnés sont actuellement stockés dans `localStorage` sur l'appareil ; ils ne sont pas inclus dans la sauvegarde JSON ni dans la synchronisation familiale.
 
-1. Créer un projet Supabase et renseigner `VITE_SUPABASE_URL` et `VITE_SUPABASE_ANON_KEY` dans `.env.local`.
-2. Exécuter `supabase/migrations/202611150001_family_realtime_sync.sql` dans le SQL Editor Supabase.
-3. Activer l'inscription e-mail/mot de passe dans Supabase Auth et définir les règles de confirmation d'e-mail adaptées.
-4. Déployer l'application sur HTTPS (requis pour certaines API navigateur et recommandé pour l'authentification).
+## YouTube et protection de l'enfant
 
-La migration crée les tables familiales, active RLS avec accès limité à `auth.uid() = user_id`, et ajoute les tables à la publication `supabase_realtime`. N'utilisez jamais une clé `service_role` dans le client.
+- Utilisation du lecteur officiel YouTube IFrame API et de ses contrôles/liens natifs.
+- Aucun téléchargement, aucune extraction de flux, aucune suppression de publicité et aucune lecture en arrière-plan.
+- La lecture est mise en pause lorsque l'application devient masquée.
+- L'espace enfant ne demande pas de saisie de texte ; l'espace parents est protégé séparément par PIN.
+- Le lecteur YouTube peut traiter des données techniques même avec `youtube-nocookie.com`. Avant toute distribution publique, publier une politique de confidentialité et vérifier les conditions YouTube, les règles applicables aux contenus destinés aux enfants, le RGPD et les obligations relatives aux cookies.
 
-### Comportement
+Le PIN de l'application ne verrouille pas Android. Pour un usage enfant, compléter par l'épinglage d'écran ou le mode kiosque Android et un compte système adapté.
 
-- Dexie reste prioritaire pour l'interface et les usages hors ligne.
-- Les changements locaux sont envoyés avec un anti-rebond ; le navigateur reprend l'envoi lorsqu'il revient en ligne.
-- Un canal Realtime écoute les changements des chansons, playlists, catégories, liens de playlist et réglages du compte connecté.
-- À la reconnexion Realtime, l'appareil réconcilie sa copie locale avec le cloud.
-- Le marqueur de changements en attente est isolé par identifiant de compte.
-- Un changement de compte sur un appareil déjà associé à un autre compte ne pousse jamais automatiquement l'ancien cache local vers le nouveau compte.
-- Le PIN et les compteurs d'échecs restent propres à chaque appareil et ne sont pas envoyés dans Supabase.
+## Tests et intégration continue
 
-### Limites à connaître
+`npm run test` lance Vitest et les tests de composants/services. `npm run typecheck` lance TypeScript strict. `npm run build` exécute le typecheck puis le build Vite.
 
-Le canal Realtime déclenche une réconciliation de la bibliothèque complète. La stratégie actuelle est adaptée à une petite bibliothèque familiale, mais n'est pas encore un moteur de réplication transactionnel avec journal de suppressions et résolution LWW champ par champ. En cas de modifications simultanées, le dernier état envoyé peut prévaloir sur un état concurrent. Pour des garanties strictes de non-perte, il faut compléter cette version par une outbox durable et des tombstones avant toute mise en production multi-appareils.
+GitHub Actions exécute ces trois contrôles sur les pull requests vers `main` et sur les pushes vers `main`. Le résultat faisant foi est celui du workflow sur le commit concerné ; aucun nombre fixe de tests n'est annoncé ici afin d'éviter une documentation périmée.
 
-## Responsive
+## Android
 
-Vérifié dans le navigateur intégré (`scrollWidth` ≤ `innerWidth`, pas de débordement horizontal) :
-390×844, 800×1280, 1024×768, 1280×800, 1920×1080. Les grilles utilisent `auto-fill` avec `minmax`, les marges
-tiennent compte des safe areas (`env(safe-area-inset-*)`), `viewport-fit=cover` est activé. Les tests statiques
-(`src/app/responsive.test.ts`) protègent ces réglages.
-
-## Tests
-
-`npm run test` exécute les tests répartis sur 9 fichiers :
-
-| Domaine | Fichier |
-|---|---|
-| Validation des URL YouTube (formats acceptés, domaines refusés) | `services/youtube/youtubeUrlParser.test.ts` |
-| Messages d'erreur du lecteur | `services/youtube/youtubeErrors.test.ts` |
-| Authentification parentale (hash, sel, temporisation) | `security/pinService.test.ts`, `components/parental/PinPad.test.tsx` |
-| Ajout, modification, suppression de chansons, favoris, ordre, playlists, catégories, réglages | `storage/repositories.test.ts` |
-| Sauvegarde locale, restauration et validation d'import | `storage/backup.test.ts` |
-| Sources de lecture (favoris, récentes, catégorie, playlist) | `services/sources.test.ts` |
-| Carte chanson et indicateur de lecture | `components/music/SongCard.test.tsx` |
-| Responsive (garde-fous statiques) | `app/responsive.test.ts` |
-
-## Android et Capacitor (préparation)
-
-- `vite.config.ts` utilise `base: './'` et `HashRouter` : l'application fonctionne depuis des fichiers locaux.
-- `capacitor.config.json` décrit l'identifiant (`fr.leanna.jukebox`) et le dossier `dist`.
-  Capacitor n'est pas installé dans cette version. Pour générer l'APK : `npm i @capacitor/core @capacitor/cli
-  @capacitor/android`, puis `npx cap add android` et `npx cap sync`, après avoir installé le SDK Android.
-- **Verrouillage de l'appareil** : une application web ne peut pas empêcher seule la sortie vers Android.
-  Pour un usage enfant, il faut combiner :
-  1. **Épinglage d'écran** (Android « screen pinning » ou mode Lock Task via une application de gestion
-     d'appareil, par exemple Google Family Link ou une solution MDM) ;
-  2. un écran de verrouillage et des gestes de navigation désactivés dans les réglages Android ;
-  3. un compte utilisateur Android dédié à l'enfant.
-  Le PIN parental protège l'espace parents de l'application, mais pas le système d'exploitation.
-
-## Conformité (points à vérifier avant distribution)
-
-- Les conditions d'utilisation de l'API YouTube et la politique relative aux enfants (COPPA / « Made for Kids »)
-  s'appliquent à toute distribution publique : à valider avec le juridique avant publication.
-- RGPD et protection des mineurs : l'application ne collecte aucune donnée personnelle de l'enfant. Les données
-  restent sur l'appareil. Le lecteur YouTube (domaine `youtube-nocookie.com`) peut toutefois déposer des cookies
-  techniques : les parents doivent en être informés et une politique de confidentialité doit être publiée.
-- Aucun suivi publicitaire, aucune publicité ajoutée par l'application, aucun compte enfant.
-
-## Limites connues
-
-- Le volume maximal limite le lecteur ; les boutons de volume matériels de la tablette restent actifs.
-- Le plein écran exige un geste utilisateur ; il est déclenché par le bouton Lecture si le réglage est activé.
-- La durée d'écoute est indicative : un message propose une pause, la lecture n'est pas coupée.
-- Les métadonnées oEmbed dépendent de la disponibilité du service YouTube ; le parent peut toujours saisir le titre.
-- Il n'y a pas de synchronisation familiale : elle est prévue par l'architecture (dépôts découplés de Dexie),
-  mais non implémentée.
-- Pas de contrôle de l'horloge : la temporisation du PIN repose sur l'horloge de la tablette.
+Le projet est préparé pour un routage compatible avec un futur packaging Capacitor (`HashRouter`, `base: './'`, configuration `capacitor.config.json`). Capacitor et la plateforme Android doivent encore être installés et validés sur une tablette réelle avant de produire un APK de distribution.

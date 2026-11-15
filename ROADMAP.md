@@ -1,113 +1,138 @@
 # Roadmap Leanna Jukebox
 
-Analyse faite le 15 novembre 2026 sur le dépôt `moonback/Leanna-jukebox` (dernier commit : fusion de la PR #8, synchronisation familiale Realtime).
+Roadmap remise à niveau le 15 novembre 2026 à partir du dépôt `moonback/Leanna-jukebox`. Les statuts distinguent les fonctionnalités présentes, les risques observés et les travaux non encore validés par une exécution CI.
 
-## 1. État des lieux
+## 1. État actuel vérifié
 
-### Ce qui existe
-- **Stack** : React 19, Vite, TypeScript strict, Dexie (IndexedDB), Supabase (auth, sync, Realtime), Framer Motion, HashRouter.
-- **Espace enfant** : accueil à 4 tuiles (Musique, Imagier, Jeux, Autocollants), mode musique simple (vidéo fixée en bas), lecteur YouTube IFrame officiel, imagier de 96 images avec voix française.
-- **Jeux** : Cherche et trouve, Mémoire, Ballons, Ombres, Compter, Piano, avec écran de célébration et autocollants.
-- **Espace parents** : PIN PBKDF2 avec temporisation persistée, gestion des chansons, playlists et catégories, recherche YouTube Data API, sauvegarde et restauration JSON, réglages (durée, volume, plein écran, sons), synchronisation cloud.
-- **Qualité** : `tsc --noEmit` passe sans erreur. 116 tests sur 117 passent (13 fichiers).
-- **Taille** : un seul bundle JS de 652 Ko (0,65 Mo au total), aucune découpe par route.
+### Produit présent dans le code
 
-### Écarts constatés
-| # | Constat | Gravité |
-|---|---|---|
-| 1 | `SongCard.test.tsx` échoue : le test cherche un lien « Écouter … », la carte expose « Lire la vidéo : … ». | Faible, à corriger tout de suite |
-| 2 | Le README est périmé : il annonce « aucun compte, aucun backend », « pas de synchronisation familiale », 9 fichiers de test, et ne mentionne ni les jeux, ni l'imagier, ni le mode simple, ni les autocollants. | Moyenne |
-| 3 | `AuthGate` affiche le formulaire de connexion parent dès le lancement si Supabase est configuré et si `sessionStorage` ne contient pas le choix « sans compte ». Une enfant de 3 ans peut tomber sur un écran e-mail/mot de passe. | Élevée |
-| 4 | La synchronisation pousse et réconcilie la bibliothèque entière. Pas de tombstones ni d'outbox durable : une suppression concurrente ou une édition simultanée peut perdre des données (limite déjà documentée dans le README). | Élevée avant usage multi-appareils |
-| 5 | `pushAll` supprime côté cloud tout ce qui est absent en local (`deleteMissing`). Un appareil à la base vide ou partielle peut vider le cloud. | Élevée |
-| 6 | La clé YouTube Data (`VITE_YOUTUBE_API_KEY`) est embarquée dans le bundle client (marquée « shortcut » dans le code). | Moyenne |
-| 7 | Les autocollants et la progression des jeux ne sont ni dans la sauvegarde JSON ni dans la sync (vérifier `stickers.ts` et `backup.ts`). | Moyenne |
-| 8 | Aucun manifest PWA, aucun service worker, aucun mode hors ligne pour l'app elle-même. Capacitor n'est pas installé. Pas de dossier `public/` (pas d'icônes). | Moyenne |
-| 9 | Schéma Dexie en `version(1)` sans stratégie testée de migration. Les réglages « durée d'écoute » ne coupent pas la lecture (simple message). | Faible |
-| 10 | Aucun test pour les pages de jeux, la synchronisation (`sync.ts`, 15 Ko) ni `AuthGate`. Pas de CI. | Moyenne |
-| 11 | Le texte du `index.html` (meta description) est mal encodé (« â€” », « prÃ©fÃ©rÃ©es »). | Faible |
-| 12 | Des chaînes d'interface et de la voix (`speakFrench`) dépendent des voix du navigateur, sans repli si aucune voix française n'est installée. | Faible |
+- **Stack** : React 19, Vite 8, TypeScript strict, Dexie/IndexedDB, Supabase JS, Framer Motion, React Router.
+- **Espace enfant** : accueil, bibliothèque musicale, mode simple, lecteur YouTube officiel, imagier illustré, jeux et album d'autocollants.
+- **Imagier** : six catégories (animaux, fruits, légumes, véhicules, maison, nature) ; le corpus est défini dans `src/data/imagier.ts`.
+- **Jeux** : Ballons, Piano, Cherche et trouve, Compter, Ombres et Mémoire.
+- **Espace parents** : PIN PBKDF2-SHA256 avec temporisation persistée, gestion des chansons/playlists/catégories, recherche YouTube, réglages, import/export JSON.
+- **Stockage** : Dexie local ; synchronisation Supabase Auth/Postgres/Realtime facultative.
+- **Progression** : autocollants stockés dans `localStorage`, actuellement exclus de l'export et de la synchronisation.
+- **Android** : configuration préparatoire Capacitor présente, mais APK et mode kiosque non validés sur appareil réel.
 
-## 2. Roadmap
+### Écarts et risques prioritaires
 
-Estimations en jours de travail d'un développeur. Les phases sont ordonnées par risque et par valeur pour l'enfant.
-
-### Phase 0 : Remise à niveau (1 à 2 jours)
-Objectif : base verte et documentation fiable.
-- [ ] Corriger `SongCard.test.tsx` (aligner le test sur le libellé « Lire la vidéo : … »).
-- [ ] Réécrire le README : mode simple, imagier, jeux, autocollants, sync Supabase, variables d'environnement, nombre réel de tests. Supprimer les affirmations « aucun compte, aucun backend ».
-- [ ] Corriger l'encodage de `index.html` (UTF-8 réel).
-- [ ] Ajouter une CI GitHub Actions : `typecheck`, `test`, `build` sur chaque PR.
-- [ ] Documenter `init_jukebox.sql` face à `family_realtime_sync.sql` (ordre d'application, tables en double éventuelles).
-
-### Phase 1 : Fiabilité de l'expérience enfant (3 à 5 jours)
-Objectif : l'enfant ne voit jamais d'écran destiné aux parents.
-- [ ] Déplacer la connexion Supabase dans l'espace parents (carte « Compte et synchronisation »). L'app démarre toujours sur l'accueil enfant ; la session se restaure en arrière-plan.
-- [ ] Persister le choix « sans compte » dans `localStorage` (et non `sessionStorage`).
-- [ ] Verrouillage de durée : option « fin de session » qui met en pause et affiche un écran de repos, protégé par le PIN pour reprendre.
-- [ ] Repli vocal : si aucune voix française, afficher le texte et un indicateur discret au lieu d'un silence.
-- [ ] Découpage par route (`React.lazy`) pour réduire le bundle initial (objectif < 250 Ko pour l'accueil).
-- [ ] Audit d'accessibilité : cibles tactiles ≥ 48 px, contraste, `prefers-reduced-motion` pour les animations flottantes et les feux d'artifice.
-
-### Phase 2 : Synchronisation sûre (5 à 8 jours)
-Objectif : aucune perte de données entre appareils.
-- [ ] Ajouter `deleted_at` (tombstones) et `updated_at` fiable sur chaque table, côté Supabase et Dexie (migration `version(2)`).
-- [ ] Remplacer `deleteMissing` par la propagation explicite des suppressions.
-- [ ] Outbox durable dans IndexedDB (liste d'opérations rejouables) à la place du simple indicateur « dirty » en `localStorage`.
-- [ ] Résolution des conflits par dernier écrit gagnant, champ par champ, sur `updated_at` serveur.
-- [ ] Garde-fou : refuser un `push` qui supprimerait plus de 30 % de la bibliothèque distante sans confirmation parentale.
-- [ ] Synchroniser les autocollants et la progression des jeux (nouvelle table, ou champ JSON dans `settings`).
-- [ ] Remplacer la réconciliation complète sur chaque événement Realtime par l'application du seul enregistrement modifié.
-- [ ] Tests d'intégration de `sync.ts` avec un faux client Supabase (deux appareils, hors ligne, suppression concurrente, changement de compte).
-
-### Phase 3 : Application installable et hors ligne (4 à 6 jours)
-Objectif : l'app tourne sur la tablette de Leanna sans navigateur.
-- [ ] Manifest PWA, icônes, écran de démarrage, service worker (`vite-plugin-pwa`) pour mettre en cache l'interface, l'imagier et les sons.
-- [ ] Installer Capacitor (`@capacitor/core`, `cli`, `android`), générer l'APK, tester sur tablette réelle.
-- [ ] Mode kiosque : documenter et tester l'épinglage d'écran, ou ajouter un plugin Lock Task.
-- [ ] Gestion propre de la bascule en arrière-plan (pause YouTube, reprise des sons).
-- [ ] Bouton Retour Android : retour à l'accueil, jamais sortie de l'app sans PIN.
-
-### Phase 4 : Contenu et pédagogie (continu, 2 à 4 jours par lot)
-Objectif : garder l'enfant engagée et mesurer ce qui marche.
-- [ ] Nouveaux jeux courts : couleurs, formes, puzzle à 4 pièces, tri (grand/petit), animaux et leurs cris.
-- [ ] Niveaux de difficulté par âge (3, 4, 5 ans), réglables par le parent. Le champ « âge minimum » existe déjà sur les cartes de jeux.
-- [ ] Imagier : ajouter les catégories vêtements, véhicules, corps, maison. Enregistrer les prononciations pour éviter la dépendance à la voix du navigateur.
-- [ ] Autocollants : albums thématiques, objectifs journaliers sans pression.
-- [ ] Tableau de bord parent : temps de jeu, jeux préférés, chansons les plus écoutées, stocké localement et synchronisé.
-- [ ] Playlists intelligentes : « Dodo » (calmes) et « Réveil » (rythmées), via une étiquette sur les chansons.
-
-### Phase 5 : Conformité et mise en production (3 à 5 jours)
-Objectif : distribution en confiance.
-- [ ] Déplacer la recherche YouTube vers une Edge Function Supabase (clé côté serveur, quota par compte). Supprimer `VITE_YOUTUBE_API_KEY` du client.
-- [ ] Politique de confidentialité, mentions sur les cookies techniques de `youtube-nocookie.com`, revue des conditions de l'API YouTube et de la politique « made for kids ».
-- [ ] Supprimer le compte et ses données depuis l'app (droit à l'effacement).
-- [ ] Journalisation d'erreurs sans données personnelles (Sentry ou équivalent, désactivable).
-- [ ] Revue des politiques RLS Supabase, limites de taille et de débit, sauvegarde automatique de la base.
-- [ ] Déploiement HTTPS (Vercel, Netlify ou Cloudflare Pages) et publication Play Store en test interne.
-
-### Phase 6 : Évolutions possibles (à arbitrer)
-- Plusieurs profils enfant par famille (prénom, avatar, historique séparé).
-- Contrôle parent à distance : ajouter une chanson depuis le téléphone, qui apparaît en temps réel sur la tablette (la base Realtime existe).
-- Mode nuit avec berceuses et minuteur d'extinction.
-- Version iOS via Capacitor.
-- Internationalisation (anglais, arabe) si le public s'élargit.
-
-## 3. Ordre conseillé et jalons
-
-| Jalon | Contenu | Durée cumulée | Critère de sortie |
+| # | Constat | Priorité | Phase |
 |---|---|---|---|
-| M0 | Phase 0 | 2 j | CI verte, README exact |
-| M1 | Phase 1 | 7 j | Aucun écran parent atteignable depuis l'accueil enfant sans PIN |
-| M2 | Phase 2 | 15 j | Scénarios deux appareils sans perte, testés automatiquement |
-| M3 | Phase 3 | 21 j | APK installé sur la tablette, fonctionne en mode avion |
-| M4 | Phase 5 | 26 j | Clé YouTube côté serveur, politique publiée |
-| M5 | Phase 4 | continu | Un lot de contenu par itération |
+| 1 | Le test SongCard attendait un ancien libellé et ne correspondait plus à l'ARIA réelle du lien. | P0 | 0 |
+| 2 | Le README décrivait une version antérieure et contredisait le code sur les jeux, l'imagier, l'authentification et la synchronisation. | P0 | 0 |
+| 3 | Le code d'AuthGate peut afficher une connexion parent au lancement lorsque Supabase est configuré et qu'aucun choix « sans compte » n'est mémorisé. | Élevée | 1 |
+| 4 | La synchronisation ne dispose pas encore d'une outbox durable et de tombstones complets ; la réconciliation globale et `deleteMissing` nécessitent une protection contre les caches vides/partiels. | Critique avant usage multi-appareils | 2 |
+| 5 | La clé `VITE_YOUTUBE_API_KEY` est embarquée dans le client. Elle doit être déplacée côté serveur avant distribution publique. | Élevée | 5 |
+| 6 | Les autocollants et la progression des jeux ne sont pas dans la sauvegarde ni dans la synchronisation. | Moyenne | 2 |
+| 7 | Pas de PWA/service worker complet ; Capacitor n'est pas installé et le comportement Android n'est pas validé sur tablette. | Moyenne | 3 |
+| 8 | Les jeux, le flux AuthGate et les scénarios de synchronisation nécessitent une couverture de tests dédiée. | Moyenne | 1–2 |
+| 9 | Le fallback de synthèse vocale française dépend des voix installées sur le navigateur. | Faible | 1 |
+| 10 | La durée d'écoute est un rappel et non une coupure automatique de la lecture. | Faible | 1 |
 
-Si la sync multi-appareils n'est pas utilisée tout de suite, on peut passer de M1 à M3 et reporter M2 ; dans ce cas, désactiver la sync par défaut (ne pas afficher `AuthGate` au démarrage).
+### Vérification d'encodage
 
-## 4. Risques principaux
-- **Perte de données par la sync** (écarts 4 et 5) : traiter avant tout usage sur deux appareils.
-- **Enfant face à un écran parent** (écart 3) : traiter avant le prochain test avec Leanna.
-- **Conformité YouTube et « made for kids »** : à valider avant toute distribution hors cercle familial.
-- **Dépendance aux voix du navigateur** : les prononciations enregistrées suppriment le risque.
+`index.html` contient déjà une déclaration `<meta charset="UTF-8">` et les caractères français y sont correctement décodés dans la version du dépôt consultée. Aucun remplacement artificiel n'est nécessaire dans ce fichier. Les fichiers édités doivent rester en UTF-8.
+
+## 2. Phases
+
+### Phase 0 — Remise à niveau et base verte (1 à 2 jours)
+
+**Objectif :** documentation alignée sur le produit réel et contrôles automatiques reproductibles.
+
+- [x] Corriger le test `SongCard.test.tsx` pour vérifier le libellé accessible réel « Lire la vidéo : … », la destination et la miniature.
+- [x] Réécrire le README : modes enfant, imagier, jeux, autocollants, espace parents, variables, Supabase et limites connues.
+- [x] Vérifier l'encodage de `index.html` : UTF-8 déjà valide, pas de modification inutile.
+- [x] Documenter le statut de `init_jukebox.sql` : absent du dépôt ; la migration versionnée actuelle est la référence.
+- [x] Ajouter GitHub Actions pour `typecheck`, `test` et `build` sur push et pull request vers `main`.
+- [ ] Confirmer que le workflow CI passe sur cette branche ; le statut ne peut être déclaré vert qu'après exécution par GitHub Actions.
+
+**Critère de sortie :** workflow vert sur la branche et README conforme au code. Phase en attente du résultat CI.
+
+### Phase 1 — Fiabilité de l'expérience enfant (3 à 5 jours)
+
+**Objectif :** l'enfant arrive toujours sur l'accueil enfant ; aucun écran de connexion ou réglage parent ne doit interrompre son parcours.
+
+- [ ] Déplacer la connexion Supabase dans l'espace parents (carte « Compte et synchronisation »). Restaurer la session en arrière-plan sans bloquer l'accueil.
+- [ ] Persister le choix « sans compte » dans `localStorage` plutôt que `sessionStorage`.
+- [ ] Ajouter une fin de session réelle : pause du lecteur et écran de repos ; reprise protégée par PIN.
+- [ ] Ajouter un fallback explicite si aucune voix française n'est installée.
+- [ ] Découper les routes avec `React.lazy` pour réduire le bundle initial (objectif indicatif : accueil inférieur à 250 Ko compressé, à mesurer).
+- [ ] Auditer l'accessibilité : zones tactiles ≥ 48 px, contraste, `prefers-reduced-motion`.
+
+### Phase 2 — Synchronisation familiale sûre (5 à 8 jours)
+
+**Objectif :** empêcher la perte de données entre appareils et rendre les conflits explicites.
+
+- [ ] Concevoir des tombstones `deleted_at` et des horodatages serveur cohérents pour toutes les entités synchronisées.
+- [ ] Remplacer les suppressions implicites `deleteMissing` par la propagation explicite des suppressions.
+- [ ] Ajouter une outbox durable IndexedDB avec opérations rejouables et idempotentes.
+- [ ] Résoudre les conflits LWW champ par champ à partir d'une horloge serveur ; conserver l'information de version.
+- [ ] Bloquer ou demander confirmation parentale avant tout push susceptible de supprimer plus de 30 % des enregistrements distants.
+- [ ] Synchroniser les autocollants et la progression des jeux.
+- [ ] Remplacer la réconciliation complète déclenchée par Realtime par l'application incrémentale des changements, avec resynchronisation complète contrôlée.
+- [ ] Ajouter des tests d'intégration à deux appareils : hors ligne, retour en ligne, suppressions concurrentes, changement de compte, cache vide et cache partiel.
+
+**Critère de sortie :** scénarios de concurrence et de reprise testés automatiquement sans perte de données.
+
+### Phase 3 — Application installable et hors ligne (4 à 6 jours)
+
+**Objectif :** installer Leanna Jukebox sur la tablette et garantir un démarrage fiable sans réseau.
+
+- [ ] Ajouter manifest PWA, icônes et service worker pour l'interface, l'imagier et les sons.
+- [ ] Installer Capacitor et générer un APK debug.
+- [ ] Tester sur la tablette Android cible, y compris rotation, reprise, audio et stockage.
+- [ ] Documenter/tester l'épinglage d'écran ou le mode Lock Task.
+- [ ] Gérer le bouton Retour Android : navigation interne vers l'accueil, sans sortie accidentelle de l'application.
+
+### Phase 4 — Contenu et pédagogie (continu, lots de 2 à 4 jours)
+
+**Objectif :** enrichir les activités sans complexifier le parcours enfant.
+
+- [ ] Ajouter des jeux courts : couleurs, formes, puzzle 4 pièces, tri grand/petit, animaux et leurs cris.
+- [ ] Définir des niveaux de difficulté 3, 4 et 5 ans réglables par le parent.
+- [ ] Étendre l'imagier (vêtements, corps, objets du quotidien) et enregistrer les prononciations.
+- [ ] Créer des albums d'autocollants thématiques et des objectifs facultatifs sans pression.
+- [ ] Ajouter un tableau de bord parental local : temps d'activité, jeux préférés et chansons écoutées.
+- [ ] Ajouter des playlists intelligentes « Dodo » et « Réveil ».
+
+### Phase 5 — Conformité et mise en production (3 à 5 jours)
+
+**Objectif :** préparer une distribution sécurisée et conforme.
+
+- [ ] Déplacer la recherche YouTube dans une Edge Function Supabase ; retirer `VITE_YOUTUBE_API_KEY` du bundle client.
+- [ ] Publier politique de confidentialité et mentions sur les cookies/traceurs techniques du lecteur.
+- [ ] Vérifier les conditions YouTube, les règles « Made for Kids », le RGPD et les obligations applicables aux mineurs.
+- [ ] Ajouter la suppression du compte et des données associées.
+- [ ] Ajouter une journalisation d'erreurs minimisée, sans données personnelles de l'enfant et désactivable.
+- [ ] Auditer les politiques RLS, les limites de taille/débit et les sauvegardes.
+- [ ] Déployer en HTTPS et publier un test interne Android avant toute diffusion publique.
+
+### Phase 6 — Évolutions à arbitrer
+
+- [ ] Plusieurs profils enfant par famille avec historique isolé.
+- [ ] Ajout d'une chanson depuis le téléphone parent, visible sur la tablette en temps réel.
+- [ ] Mode nuit, berceuses et minuteur d'extinction.
+- [ ] Version iOS via Capacitor.
+- [ ] Internationalisation si le public s'élargit.
+
+## 3. Jalons et ordre conseillé
+
+| Jalon | Contenu | Critère de sortie |
+|---|---|---|
+| M0 | Phase 0 | CI verte et documentation alignée |
+| M1 | Phase 1 | L'accueil enfant n'est jamais bloqué par une connexion parent |
+| M2 | Phase 2 | Scénarios multi-appareils sans perte, validés automatiquement |
+| M3 | Phase 3 | APK installé sur tablette, interface disponible hors ligne |
+| M4 | Phase 5 | Recherche YouTube côté serveur et conformité documentée |
+| M5 | Phase 4 | Lots de contenu livrés et testés en continu |
+
+**Ordre recommandé :** terminer P0, puis P1 avant de remettre la tablette à l'enfant avec Supabase configuré. Ne pas activer l'usage familial multi-appareils à grande échelle avant P2. P3 peut être mené après P1 si l'installation Android est prioritaire.
+
+## 4. Risques à surveiller
+
+1. **Perte de données de synchronisation** : risque le plus important avant usage multi-appareils ; P2 est un prérequis.
+2. **Écran parent visible à l'ouverture** : traiter en P1 avant le prochain usage enfant.
+3. **Clé YouTube dans le client** : acceptable uniquement comme raccourci restreint pendant le développement ; déplacer côté serveur avant distribution.
+4. **Conformité du lecteur et des contenus enfants** : revue nécessaire avant diffusion publique.
+5. **Progression non sauvegardée** : les autocollants restent actuellement locaux et peuvent être perdus à la réinstallation.
