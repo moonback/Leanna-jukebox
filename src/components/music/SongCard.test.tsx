@@ -31,11 +31,14 @@ afterEach(() => {
 });
 
 describe('SongCard', () => {
-  it('affiche le nom et un lien explicite vers le lecteur avec la liste d’origine', () => {
+  it('affiche la miniature, le libellé accessible et conserve la liste d’origine', () => {
     renderCard();
-    const link = screen.getByRole('link', { name: 'Écouter Le lapin malin' });
+    const link = screen.getByRole('link', { name: 'Lire la vidéo : Le lapin malin' });
     expect(link).toHaveAttribute('href', '/play/song-1?list=all');
-    expect(screen.getByText('Le lapin malin')).toBeInTheDocument();
+    expect(link.querySelector('img')).toHaveAttribute(
+      'src',
+      'https://img.youtube.com/vi/dQw4w9WgXcQ/hqdefault.jpg',
+    );
   });
 
   it('n’affiche pas l’indicateur de lecture quand la chanson ne joue pas', () => {
