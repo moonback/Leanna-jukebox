@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Leanna Jukebox</string>
+    <string name="title_activity_main">Leanna Jukebox</string>
+    <string name="package_name">fr.leanna.jukebox</string>
+    <string name="custom_url_scheme">fr.leanna.jukebox</string>
+</resources>
