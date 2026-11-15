@@ -12,7 +12,7 @@ Roadmap remise à niveau le 15 novembre 2026 à partir du dépôt `moonback/Lean
 - **Jeux** : Ballons, Piano, Cherche et trouve, Compter, Ombres et Mémoire.
 - **Espace parents** : PIN PBKDF2-SHA256 avec temporisation persistée, gestion des chansons/playlists/catégories, recherche YouTube, réglages, import/export JSON.
 - **Stockage** : Dexie local ; synchronisation Supabase Auth/Postgres/Realtime facultative.
-- **Progression** : autocollants stockés dans `localStorage`, actuellement exclus de l'export et de la synchronisation.
+- **Progression** : autocollants et manches réussies des jeux dans IndexedDB, intégrés à la synchronisation familiale Phase 2 ; exclus de l'export JSON manuel.
 - **Android** : configuration préparatoire Capacitor présente, mais APK et mode kiosque non validés sur appareil réel.
 
 ### Écarts et risques prioritaires
@@ -22,9 +22,9 @@ Roadmap remise à niveau le 15 novembre 2026 à partir du dépôt `moonback/Lean
 | 1 | Le test SongCard attendait un ancien libellé et ne correspondait plus à l'ARIA réelle du lien. | P0 | 0 |
 | 2 | Le README décrivait une version antérieure et contredisait le code sur les jeux, l'imagier, l'authentification et la synchronisation. | P0 | 0 |
 | 3 | Le parcours enfant était auparavant bloqué par AuthGate lorsque Supabase était configuré ; la Phase 1 retire ce blocage et réserve la connexion à l’espace parents. | Élevée | 1 |
-| 4 | La synchronisation ne dispose pas encore d'une outbox durable et de tombstones complets ; la réconciliation globale et `deleteMissing` nécessitent une protection contre les caches vides/partiels. | Critique avant usage multi-appareils | 2 |
+| 4 | L'outbox, les tombstones et la fusion LWW serveur sont implémentés ; les tests d'intégration multi-appareils restent indispensables avant usage familial en production. | Critique jusqu'à validation | 2 |
 | 5 | La clé `VITE_YOUTUBE_API_KEY` est embarquée dans le client. Elle doit être déplacée côté serveur avant distribution publique. | Élevée | 5 |
-| 6 | Les autocollants et la progression des jeux ne sont pas dans la sauvegarde ni dans la synchronisation. | Moyenne | 2 |
+| 6 | Les autocollants et les manches réussies sont maintenant synchronisés ; ils restent exclus de l'export JSON manuel. | Résolu côté synchronisation | 2 |
 | 7 | Pas de PWA/service worker complet ; Capacitor n'est pas installé et le comportement Android n'est pas validé sur tablette. | Moyenne | 3 |
 | 8 | Les jeux et les scénarios de synchronisation nécessitent encore une couverture de tests dédiée ; les parcours principaux de la Phase 1 disposent de garde-fous. | Moyenne | 2 |
 | 9 | La qualité de la synthèse vocale dépend des voix installées ; un fallback explicite est désormais affiché. | Faible | 1 |
@@ -67,14 +67,18 @@ Roadmap remise à niveau le 15 novembre 2026 à partir du dépôt `moonback/Lean
 
 **Objectif :** empêcher la perte de données entre appareils et rendre les conflits explicites.
 
-- [ ] Concevoir des tombstones `deleted_at` et des horodatages serveur cohérents pour toutes les entités synchronisées.
-- [ ] Remplacer les suppressions implicites `deleteMissing` par la propagation explicite des suppressions.
-- [ ] Ajouter une outbox durable IndexedDB avec opérations rejouables et idempotentes.
-- [ ] Résoudre les conflits LWW champ par champ à partir d'une horloge serveur ; conserver l'information de version.
-- [ ] Bloquer ou demander confirmation parentale avant tout push susceptible de supprimer plus de 30 % des enregistrements distants.
-- [ ] Synchroniser les autocollants et la progression des jeux.
-- [ ] Remplacer la réconciliation complète déclenchée par Realtime par l'application incrémentale des changements, avec resynchronisation complète contrôlée.
-- [ ] Ajouter des tests d'intégration à deux appareils : hors ligne, retour en ligne, suppressions concurrentes, changement de compte, cache vide et cache partiel.
+- [x] Ajouter le journal cloud canonique `sync_records`, les tombstones `deleted_at` et l'horodatage serveur `server_updated_at` via la migration `202611160001_sync_outbox_lww.sql`.
+- [x] Supprimer `deleteMissing` : les suppressions locales sont transmises comme opérations explicites et restent historisées côté cloud.
+- [x] Ajouter une outbox Dexie persistante, écrite dans la même transaction locale que les mutations ; UUID d'opération et reçus serveur assurent le rejeu idempotent.
+- [x] Fusionner les patches champ par champ dans `merge_sync_record` ; le serveur horodate chaque champ et la dernière opération reçue gagne.
+- [x] Exiger une confirmation parentale lorsque le lot contient plus de 30 % de suppressions d'une catégorie d'entités ; l'approbation est liée aux opérations confirmées.
+- [x] Synchroniser les autocollants existants (migration depuis `localStorage`) et les manches réussies des jeux.
+- [x] Appliquer les événements Realtime à l'entité concernée ; conserver un pull complet contrôlé au démarrage et après reconnexion.
+- [x] Isoler l'outbox par compte familial et bloquer le changement de compte si des opérations de la famille précédente restent en attente.
+- [ ] Ajouter les tests d'intégration Supabase à deux appareils : hors ligne, retour en ligne, suppressions concurrentes, changement de compte, cache vide et cache partiel.
+- [ ] Appliquer la migration sur un projet Supabase de test et vérifier RLS, RPC, publication Realtime et reprise des lignes historiques.
+
+**Validation restante avant clôture :** CI verte, tests d'intégration à deux clients et migration exécutée sur un projet Supabase de test. Les horodatages LWW sont attribués à la réception par le serveur ; une opération hors ligne est arbitrée au moment de son arrivée, pas selon l'horloge locale de l'appareil.
 
 **Critère de sortie :** scénarios de concurrence et de reprise testés automatiquement sans perte de données.
 
@@ -130,7 +134,7 @@ Roadmap remise à niveau le 15 novembre 2026 à partir du dépôt `moonback/Lean
 | M4 | Phase 5 | Recherche YouTube côté serveur et conformité documentée |
 | M5 | Phase 4 | Lots de contenu livrés et testés en continu |
 
-**Ordre recommandé :** terminer P0, puis P1 avant de remettre la tablette à l'enfant avec Supabase configuré. Ne pas activer l'usage familial multi-appareils à grande échelle avant P2. P3 peut être mené après P1 si l'installation Android est prioritaire.
+**Ordre recommandé :** terminer P0 et P1 avant l'usage enfant. La Phase 2 dispose maintenant de son architecture et de son code, mais ne doit pas être considérée comme validée pour la production avant les tests multi-appareils et la migration sur un projet Supabase de test. P3 peut être mené en parallèle après P1.
 
 ## 4. Risques à surveiller
 
@@ -138,4 +142,4 @@ Roadmap remise à niveau le 15 novembre 2026 à partir du dépôt `moonback/Lean
 2. **Écran parent visible à l'ouverture** : traiter en P1 avant le prochain usage enfant.
 3. **Clé YouTube dans le client** : acceptable uniquement comme raccourci restreint pendant le développement ; déplacer côté serveur avant distribution.
 4. **Conformité du lecteur et des contenus enfants** : revue nécessaire avant diffusion publique.
-5. **Progression non sauvegardée** : les autocollants restent actuellement locaux et peuvent être perdus à la réinstallation.
+5. **Progression** : les autocollants et les manches réussies sont désormais synchronisés, mais restent absents de l'export JSON manuel.
