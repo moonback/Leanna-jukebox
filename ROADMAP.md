@@ -21,7 +21,7 @@ Roadmap remise à niveau le 15 novembre 2026 à partir du dépôt `moonback/Lean
 |---|---|---|---|
 | 1 | Le test SongCard attendait un ancien libellé et ne correspondait plus à l'ARIA réelle du lien. | P0 | 0 |
 | 2 | Le README décrivait une version antérieure et contredisait le code sur les jeux, l'imagier, l'authentification et la synchronisation. | P0 | 0 |
-| 3 | Le code d'AuthGate peut afficher une connexion parent au lancement lorsque Supabase est configuré et qu'aucun choix « sans compte » n'est mémorisé. | Élevée | 1 |
+| 3 | Le parcours enfant était auparavant bloqué par AuthGate lorsque Supabase était configuré ; la Phase 1 retire ce blocage et réserve la connexion à l’espace parents. | Élevée | 1 |
 | 4 | La synchronisation ne dispose pas encore d'une outbox durable et de tombstones complets ; la réconciliation globale et `deleteMissing` nécessitent une protection contre les caches vides/partiels. | Critique avant usage multi-appareils | 2 |
 | 5 | La clé `VITE_YOUTUBE_API_KEY` est embarquée dans le client. Elle doit être déplacée côté serveur avant distribution publique. | Élevée | 5 |
 | 6 | Les autocollants et la progression des jeux ne sont pas dans la sauvegarde ni dans la synchronisation. | Moyenne | 2 |
@@ -43,7 +43,7 @@ Roadmap remise à niveau le 15 novembre 2026 à partir du dépôt `moonback/Lean
 - [x] Corriger le test `SongCard.test.tsx` pour vérifier le libellé accessible réel « Lire la vidéo : … », la destination et la miniature.
 - [x] Réécrire le README : modes enfant, imagier, jeux, autocollants, espace parents, variables, Supabase et limites connues.
 - [x] Vérifier l'encodage de `index.html` : UTF-8 déjà valide, pas de modification inutile.
-- [x] Documenter le statut de `init_jukebox.sql` : absent du dépôt ; la migration versionnée actuelle est la référence.
+- [x] Documenter les deux migrations Supabase versionnées et leur ordre d’application (schéma initial puis synchronisation familiale).
 - [x] Ajouter GitHub Actions pour `typecheck`, `test` et `build` sur push et pull request vers `main`.
 - [ ] Confirmer que le workflow CI passe sur cette branche ; le statut ne peut être déclaré vert qu'après exécution par GitHub Actions.
 
@@ -53,12 +53,15 @@ Roadmap remise à niveau le 15 novembre 2026 à partir du dépôt `moonback/Lean
 
 **Objectif :** l'enfant arrive toujours sur l'accueil enfant ; aucun écran de connexion ou réglage parent ne doit interrompre son parcours.
 
-- [ ] Déplacer la connexion Supabase dans l'espace parents (carte « Compte et synchronisation »). Restaurer la session en arrière-plan sans bloquer l'accueil.
-- [ ] Persister le choix « sans compte » dans `localStorage` plutôt que `sessionStorage`.
-- [ ] Ajouter une fin de session réelle : pause du lecteur et écran de repos ; reprise protégée par PIN.
-- [ ] Ajouter un fallback explicite si aucune voix française n'est installée.
-- [ ] Découper les routes avec `React.lazy` pour réduire le bundle initial (objectif indicatif : accueil inférieur à 250 Ko compressé, à mesurer).
-- [ ] Auditer l'accessibilité : zones tactiles ≥ 48 px, contraste, `prefers-reduced-motion`.
+- [x] Retirer le blocage global `AuthGate` : l'accueil et les routes enfant sont accessibles sans compte.
+- [x] Déplacer la connexion Supabase dans la carte « Compte et synchronisation » des réglages parents ; restaurer la session à l’ouverture de cette carte.
+- [x] Mémoriser « Continuer sans compte » dans `localStorage` depuis l’espace parents ; la connexion reste réactivable explicitement.
+- [x] Transformer la durée de session en vraie pause du lecteur, avec écran de repos et reprise via le PIN parental.
+- [x] Signaler les limites de synthèse vocale : utiliser la voix système si aucune voix française n’est installée et afficher une information accessible ; informer si l’API est absente.
+- [x] Découper les pages avec `React.lazy` et `Suspense` pour charger les activités à la demande.
+- [x] Renforcer les cibles tactiles à 48 px minimum sur les interfaces tactiles et appliquer globalement `prefers-reduced-motion`.
+
+**Validation restante avant clôture :** exécuter la CI sur la branche, vérifier le poids compressé du chunk initial (objectif indicatif : moins de 250 Ko) et réaliser un contrôle visuel sur la tablette Android cible, notamment le contraste et la reprise par PIN.
 
 ### Phase 2 — Synchronisation familiale sûre (5 à 8 jours)
 
