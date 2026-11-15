@@ -53,7 +53,7 @@ export function BallonsPage() {
     popped.current += 1;
     if (popped.current % 5 === 0) {
       celebrate();
-      void recordGameRound('ballons');
+      void recordGameRound('ballons').catch(() => undefined);
     }
   };
 
