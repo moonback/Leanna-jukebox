@@ -1,5 +1,5 @@
 import type { RealtimeChannel, SupabaseClient } from '@supabase/supabase-js';
-import { db as defaultDb, type JukeboxDatabase, type SyncEntityType, type SyncOutboxRecord } from '../database';
+import { db as defaultDb, type JukeboxDatabase, type SyncEntityType } from '../database';
 import { BACKUP_FORMAT, BACKUP_VERSION, parseBackup, restoreBackup } from '../backup';
 import { defaultSettings } from '../seed';
 import { getSettings } from '../settingsRepository';
@@ -28,7 +28,6 @@ interface SyncRecord {
 }
 
 const PAGE = 500;
-const CHUNK = 100;
 const REMOTE_DEBOUNCE_MS = 250;
 const OWNER_KEY = 'leanna-cloud-owner';
 const LEGACY_DIRTY_PREFIX = 'leanna-cloud-dirty:';
@@ -101,10 +100,10 @@ function safeSettings(settings: Awaited<ReturnType<typeof getSettings>>): Record
   };
 }
 
-async function queueInitialSnapshot(database: JukeboxDatabase): Promise<void> {
+async function queueInitialSnapshot(database: JukeboxDatabase, userId: string): Promise<void> {
   await database.transaction('rw', database.songs, database.playlists, database.categories,
     database.settings, database.stickers, database.gameProgress, database.syncOutbox, async () => {
-      const existing = await database.syncOutbox.count();
+      const existing = await database.syncOutbox.where('ownerUserId').equals(userId).count();
       if (existing > 0) return;
       const [categories, songs, playlists, settings, stickers, progress] = await Promise.all([
         database.categories.toArray(), database.songs.toArray(), database.playlists.toArray(),
@@ -112,7 +111,11 @@ async function queueInitialSnapshot(database: JukeboxDatabase): Promise<void> {
       ]);
       const queue = async (entityType: SyncEntityType, entityId: string, patch: Record<string, unknown>) => {
         await database.syncOutbox.add({
-          operationId: globalThis.crypto?.randomUUID?.() ?? `op-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`,
+          operationId: globalThis.crypto?.randomUUID?.() ?? 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (char) => {
+            const value = Math.floor(Math.random() * 16);
+            return (char === 'x' ? value : (value & 0x3) | 0x8).toString(16);
+          }),
+          ownerUserId: userId,
           entityType, entityId, operation: 'upsert', patch, createdAt: Date.now(), attempts: 0,
         });
       };
@@ -194,6 +197,10 @@ export async function pullAll(client: SupabaseClient, userId: string, database: 
   });
 
   await restoreBackup(data, database);
+  await database.transaction('rw', database.stickers, database.gameProgress, async () => {
+    await database.stickers.clear();
+    await database.gameProgress.clear();
+  });
   for (const row of records) {
     if (row.entity_type === 'settings' || row.entity_type === 'sticker' || row.entity_type === 'game_progress') {
       await applyRecord(row, database);
@@ -219,7 +226,7 @@ async function applyRealtimeRecord(row: SyncRecord, database: JukeboxDatabase): 
 }
 
 async function checkDeletionThreshold(client: SupabaseClient, userId: string, database: JukeboxDatabase): Promise<boolean> {
-  const pending = await database.syncOutbox.orderBy('createdAt').toArray();
+  const pending = await database.syncOutbox.where('ownerUserId').equals(userId).toArray();
   const deletes = pending.filter((entry) => entry.operation === 'delete');
   if (deletes.length === 0) {
     setStatus({ confirmationRequired: false, pendingDeleteCount: 0 });
@@ -240,7 +247,7 @@ async function drainOutbox(client: SupabaseClient, userId: string, database: Juk
   if (await checkDeletionThreshold(client, userId, database)) {
     throw new Error('Confirmation parentale requise : cette synchronisation supprimerait plus de 30 % des éléments cloud.');
   }
-  const queue = await database.syncOutbox.orderBy('createdAt').toArray();
+  const queue = await database.syncOutbox.where('ownerUserId').equals(userId).sortBy('createdAt');
   for (const entry of queue) {
     try {
       const result = await client.rpc('merge_sync_record', {
@@ -275,7 +282,7 @@ async function flushInternal(): Promise<void> {
   setStatus({ state: 'syncing', error: null });
   try {
     await drainOutbox(client, userId, activeDb);
-    const remaining = await activeDb.syncOutbox.count();
+    const remaining = await activeDb.syncOutbox.where('ownerUserId').equals(userId).count();
     if (remaining === 0) {
       await pullAll(client, userId, activeDb);
       localStorage.removeItem(`${LEGACY_DIRTY_PREFIX}${userId}`);
@@ -309,6 +316,9 @@ export async function startSync(userId: string, database: JukeboxDatabase = defa
     const remoteCategories = await countRemote(client, userId, 'category');
     const remoteEmpty = remoteCategories === 0;
     const pending = await database.syncOutbox.count();
+    if (previousOwner && previousOwner !== userId && pending > 0) {
+      throw new Error('Des opérations locales de la famille précédente sont encore en attente. Reconnecte-toi à cet ancien compte pour les envoyer, ou exporte la bibliothèque avant de changer de famille.');
+    }
     const legacyDirty = localStorage.getItem(`${LEGACY_DIRTY_PREFIX}${userId}`) === '1';
 
     if (previousOwner && previousOwner !== userId) {
@@ -317,11 +327,11 @@ export async function startSync(userId: string, database: JukeboxDatabase = defa
       }
       await pullAll(client, userId, database);
     } else if (remoteEmpty) {
-      await queueInitialSnapshot(database);
+      await queueInitialSnapshot(database, userId);
       await drainOutbox(client, userId, database);
       await pullAll(client, userId, database);
     } else if (pending > 0 || legacyDirty) {
-      if (legacyDirty && pending === 0) await queueInitialSnapshot(database);
+      if (legacyDirty && pending === 0) await queueInitialSnapshot(database, userId);
       await drainOutbox(client, userId, database);
       await pullAll(client, userId, database);
     } else {
@@ -356,10 +366,12 @@ function connectRealtime(client: SupabaseClient, userId: string): void {
       // Reconciliation de rattrapage après une période hors ligne ou une reconnexion.
       clearTimeout(remoteTimer);
       remoteTimer = setTimeout(() => {
-        if (activeDb.syncOutbox.count().then((count) => count === 0)) {
-          void pullAll(client, userId, activeDb).then(() => setStatus({ state: 'idle', lastSyncedAt: Date.now() }))
-            .catch((error) => setStatus({ state: 'error', error: messageOf(error) }));
-        }
+        void activeDb.syncOutbox.where('ownerUserId').equals(userId).count().then((count) => {
+          if (count === 0) {
+            return pullAll(client, userId, activeDb).then(() => setStatus({ state: 'idle', lastSyncedAt: Date.now() }));
+          }
+          return undefined;
+        }).catch((error) => setStatus({ state: 'error', error: messageOf(error) }));
       }, REMOTE_DEBOUNCE_MS);
     } else if (state === 'CHANNEL_ERROR' || state === 'TIMED_OUT' || state === 'CLOSED') {
       setStatus({ realtime: 'disconnected' });
@@ -371,8 +383,12 @@ function installOnlineListener(): void {
   if (onlineListenerInstalled) return;
   onlineListenerInstalled = true;
   window.addEventListener('online', () => {
-    if (status.userId && activeDb.syncOutbox.count().then((count) => count > 0)) scheduleFlush();
-    else if (status.userId && supabase) void pullAll(supabase, status.userId, activeDb).catch((error) => setStatus({ state: 'error', error: messageOf(error) }));
+    if (!status.userId) return;
+    void activeDb.syncOutbox.where('ownerUserId').equals(status.userId).count().then((count) => {
+      if (count > 0) scheduleFlush();
+      else if (supabase && status.userId) return pullAll(supabase, status.userId, activeDb);
+      return undefined;
+    }).catch((error) => setStatus({ state: 'error', error: messageOf(error) }));
   });
 }
 
