@@ -28,7 +28,7 @@ export function OmbresPage() {
     if (found) return;
     if (item.id === round.target.id) {
       setFound(true);
-      void recordGameRound('ombres');
+      void recordGameRound('ombres').catch(() => undefined);
       speakFrench(`Bravo ! C'est l'ombre de ${spokenWord(item)} !`);
       celebrate();
       timer.current = window.setTimeout(() => {
