@@ -60,7 +60,7 @@ export function useCelebration(stickerEvery: number) {
     wins.current += 1;
     const award = bigWin || (stickerEvery > 0 && wins.current % stickerEvery === 0);
     const sticker = award ? IMAGIER_ITEMS[Math.floor(Math.random() * IMAGIER_ITEMS.length)]!.emoji : null;
-    if (sticker) void awardSticker(sticker);
+    if (sticker) void awardSticker(sticker).catch(() => undefined);
     const rockets = launchShow();
     // Le son est calé sur l'animation : chaque « boum » tombe au moment où la fusée éclate.
     rockets.forEach((r) => playFirework(r.delay + RISE));
