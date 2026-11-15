@@ -46,7 +46,7 @@ export function BallonsPage() {
     celebrateEvery5();
   };
 
-  // Petits confettis tous les 5 ballons, autocollant tous les 10.
+  // Feu d'artifice tous les 5 ballons, autocollant tous les 10.
   const popped = useRef(0);
   const celebrateEvery5 = () => {
     popped.current += 1;

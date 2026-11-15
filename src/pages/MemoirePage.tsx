@@ -6,6 +6,7 @@ import { useCelebration } from '../components/games/Celebration';
 import { EmojiPicture } from '../components/ui/EmojiPicture';
 import { IMAGIER_ITEMS, memoryDeck, spokenWord } from '../data/imagier';
 import { speakFrench } from '../services/speech';
+import { playWrong } from '../services/sound';
 
 const PAIRS = 6;
 
@@ -34,11 +35,12 @@ export function MemoirePage() {
       const done = new Set(matched).add(card.item.id);
       setMatched(done);
       setOpen([]);
-      celebrate(done.size === PAIRS); // confettis à chaque paire, autocollant à la victoire
+      celebrate(done.size === PAIRS); // feu d'artifice à chaque paire, autocollant à la victoire
       speakFrench(done.size === PAIRS ? 'Bravo ! Tu as trouvé toutes les paires !' : `Bravo ! Deux fois ${spokenWord(card.item)} !`);
     } else {
       speakFrench(spokenWord(card.item));
       timer.current = window.setTimeout(() => setOpen([]), 1300);
+      playWrong();
     }
   };
 

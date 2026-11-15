@@ -5,6 +5,7 @@ import { useCelebration } from '../components/games/Celebration';
 import { EmojiPicture } from '../components/ui/EmojiPicture';
 import { IMAGIER_ITEMS, emojiImage, pickRound, spokenWord, type ImagierItem } from '../data/imagier';
 import { speakFrench } from '../services/speech';
+import { playWrong } from '../services/sound';
 
 // Une silhouette n'a de sens qu'avec une vraie image (l'emoji texte ne se noircit pas partout pareil).
 const WITH_IMAGE = IMAGIER_ITEMS.filter((i) => emojiImage(i.emoji));
@@ -35,6 +36,7 @@ export function OmbresPage() {
       }, 2400);
     } else {
       setWrong((prev) => ({ id: item.id, tap: (prev?.tap ?? 0) + 1 }));
+      playWrong();
       speakFrench('Non, cherche encore !');
     }
   };

@@ -6,6 +6,7 @@ import { useCelebration } from '../components/games/Celebration';
 import { EmojiPicture } from '../components/ui/EmojiPicture';
 import { IMAGIER_ITEMS, pickRound, spokenWord, type ImagierItem } from '../data/imagier';
 import { speakFrench } from '../services/speech';
+import { playWrong } from '../services/sound';
 
 const CHOICES = 4;
 
@@ -40,6 +41,7 @@ export function ChercheTrouvePage() {
     } else {
       // `tap` relance l'animation de secousse à chaque erreur.
       setWrong((prev) => ({ id: item.id, tap: (prev?.tap ?? 0) + 1 }));
+      playWrong();
       speakFrench(`Ça, c'est ${spokenWord(item)}. Où est ${spokenWord(round.target)} ?`);
     }
   };

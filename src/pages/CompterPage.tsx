@@ -6,6 +6,7 @@ import { useCelebration } from '../components/games/Celebration';
 import { EmojiPicture } from '../components/ui/EmojiPicture';
 import { NUMBER_WORDS, countingRound, groupChoices, quantity } from '../data/games';
 import { speakFrench } from '../services/speech';
+import { playWrong } from '../services/sound';
 
 const MAX = 3; // On apprend jusqu'à 3 pour l'instant : changer ici pour aller plus loin.
 
@@ -73,6 +74,7 @@ export function CompterPage() {
       next();
     } else {
       setWrong((prev) => ({ group, tap: (prev?.tap ?? 0) + 1 }));
+      playWrong();
       // On compte le groupe touché avec elle : l'erreur devient une occasion d'apprendre.
       speakFrench(`Là, il y a ${quantity(round.item, group)}. Cherche ${quantity(round.item, round.count)} !`);
     }
