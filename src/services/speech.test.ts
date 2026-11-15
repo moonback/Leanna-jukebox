@@ -23,7 +23,7 @@ describe('synthèse vocale française', () => {
     synth = { cancel: vi.fn(), getVoices: vi.fn(() => []), speak: vi.fn() };
     Object.defineProperty(window, 'speechSynthesis', { configurable: true, value: synth });
     Object.defineProperty(globalThis, 'SpeechSynthesisUtterance', { configurable: true, value: MockUtterance });
-    onNotice = ((event: CustomEvent<string>) => notices.push(event.detail)) as EventListener;
+    onNotice = (event: Event) => notices.push((event as CustomEvent<string>).detail);
     window.addEventListener('leanna:speech-notice', onNotice);
   });
 
