@@ -40,13 +40,15 @@ export function MusicPlayer(props: MusicPlayerProps) {
     onEnded,
   });
 
+  const pauseRef = useRef(pause);
+  pauseRef.current = pause;
   const isPlaying = state.status === 'playing';
   const progress = state.duration > 0 ? Math.min(100, (state.currentTime / state.duration) * 100) : 0;
   const hasError = state.status === 'error' && state.error !== undefined;
 
   useEffect(() => {
-    if (forcePaused && isPlaying) pause();
-  }, [forcePaused, isPlaying, pause]);
+    if (forcePaused && isPlaying) pauseRef.current();
+  }, [forcePaused, isPlaying]);
 
   const goFullscreen = async () => {
     try {
