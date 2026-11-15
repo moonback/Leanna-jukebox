@@ -42,7 +42,7 @@ let channel: RealtimeChannel | null = null;
 let remoteTimer: ReturnType<typeof setTimeout> | undefined;
 let flushPromise: Promise<void> | null = null;
 let rerunRequested = false;
-let deletionApproved = false;
+let approvedDeletionSignature = '';
 let activeDb: JukeboxDatabase = defaultDb;
 let onlineListenerInstalled = false;
 
@@ -237,8 +237,10 @@ async function checkDeletionThreshold(client: SupabaseClient, userId: string, da
     const remoteCount = await countRemote(client, userId, type);
     if (remoteCount > 0 && count / remoteCount > 0.3) blocked = true;
   }
-  setStatus({ confirmationRequired: blocked && !deletionApproved, pendingDeleteCount: deletes.length });
-  return blocked && !deletionApproved;
+  const signature = deletes.map((entry) => entry.operationId).sort().join('|');
+  const approved = signature.length > 0 && signature === approvedDeletionSignature;
+  setStatus({ confirmationRequired: blocked && !approved, pendingDeleteCount: deletes.length });
+  return blocked && !approved;
 }
 
 async function drainOutbox(client: SupabaseClient, userId: string, database: JukeboxDatabase): Promise<void> {
@@ -265,7 +267,7 @@ async function drainOutbox(client: SupabaseClient, userId: string, database: Juk
       throw error;
     }
   }
-  deletionApproved = false;
+  approvedDeletionSignature = '';
   setStatus({ confirmationRequired: false, pendingDeleteCount: 0 });
 }
 
@@ -345,6 +347,10 @@ export async function startSync(userId: string, database: JukeboxDatabase = defa
     installOnlineListener();
   } catch (error) {
     setStatus({ state: 'error', error: messageOf(error), realtime: 'disconnected' });
+    if (status.confirmationRequired) {
+      connectRealtime(client, userId);
+      installOnlineListener();
+    }
   }
 }
 
@@ -393,17 +399,20 @@ function installOnlineListener(): void {
   });
 }
 
-export function confirmPendingDeletions(): void {
-  deletionApproved = true;
+export async function confirmPendingDeletions(): Promise<void> {
+  const userId = status.userId;
+  if (!userId) return;
+  const deletes = (await activeDb.syncOutbox.where('ownerUserId').equals(userId).toArray())
+    .filter((entry) => entry.operation === 'delete');
+  approvedDeletionSignature = deletes.map((entry) => entry.operationId).sort().join('|');
   setStatus({ confirmationRequired: false, error: null });
-  scheduleFlush();
 }
 
 export function stopSync(): void {
   clearTimeout(remoteTimer);
   if (channel && supabase) void supabase.removeChannel(channel);
   channel = null;
-  deletionApproved = false;
+  approvedDeletionSignature = '';
   rerunRequested = false;
   setStatus({
     state: 'idle', userId: null, lastSyncedAt: null, error: null,
