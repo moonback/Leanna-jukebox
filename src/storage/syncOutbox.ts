@@ -35,4 +35,7 @@ export async function enqueueSyncOperation(
     createdAt: Date.now(),
     attempts: 0,
   });
+  if (typeof window !== 'undefined') {
+    window.dispatchEvent(new Event('leanna:sync-outbox-changed'));
+  }
 }
