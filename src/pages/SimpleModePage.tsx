@@ -1,10 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Lock } from 'lucide-react';
+import { X } from 'lucide-react';
 import { AppShell } from '../components/layout/AppShell';
-import { Modal } from '../components/ui/Modal';
-import { PinPad } from '../components/parental/PinPad';
-import { useParentAuth } from '../hooks/useParentAuth';
 import { SimplePlayer } from '../components/music/SimplePlayer';
 import { LoadingState } from '../components/ui/LoadingState';
 import { EmptyState } from '../components/ui/EmptyState';
@@ -24,11 +21,9 @@ export function SimpleModePage() {
   const library = useMusicLibrary();
   const { settings } = useSettings();
   const [selectedId, setSelectedId] = useState<string | null>(null);
-  const [exitOpen, setExitOpen] = useState(false);
-  const auth = useParentAuth();
   const navigate = useNavigate();
 
-  // Mode simple : pas de zoom tactile (pincement, double tap).
+  // Mode simple : pas de zoom tactile (pincement, double tap). Le plein écran est global.
   useEffect(() => {
     document.documentElement.classList.add('no-touch-zoom');
     const blockMultiTouch = (e: TouchEvent) => {
@@ -38,19 +33,7 @@ export function SimpleModePage() {
     document.addEventListener('touchmove', blockMultiTouch, { passive: false });
     document.addEventListener('gesturestart', blockGesture);
     document.addEventListener('gesturechange', blockGesture);
-    // Plein écran : le navigateur exige un geste ; on essaie d'abord, puis au premier appui.
-    const enterFullscreen = () => {
-      if (!document.fullscreenElement) document.documentElement.requestFullscreen?.().catch(() => {});
-    };
-    enterFullscreen();
-    const onFirstTouch = () => {
-      enterFullscreen();
-      if (document.fullscreenElement) document.removeEventListener('pointerdown', onFirstTouch);
-    };
-    document.addEventListener('pointerdown', onFirstTouch);
     return () => {
-      document.removeEventListener('pointerdown', onFirstTouch);
-      if (document.fullscreenElement) document.exitFullscreen?.().catch(() => {});
       document.documentElement.classList.remove('no-touch-zoom');
       document.removeEventListener('touchmove', blockMultiTouch);
       document.removeEventListener('gesturestart', blockGesture);
@@ -73,42 +56,17 @@ export function SimpleModePage() {
     <AppShell showNavigation={false}>
       <header className="row-wrap" style={{ gap: 12, justifyContent: 'space-between' }}>
         <h1 style={{ margin: 0, fontSize: 'clamp(1.4rem, 5vw, 2rem)', fontWeight: 900 }}>Leanna-Jukebox</h1>
-        {/* Sortie protégée : seul un parent avec le code PIN peut quitter ce mode. */}
+        {/* Sortie directe du mode simple, sans code. */}
         <button
           type="button"
           className="btn btn--secondary btn--icon"
-          aria-label="Sortir du mode simple (code parent)"
-          title="Sortir du mode simple (code parent)"
-          onClick={() => {
-            if (auth.hasPin) setExitOpen(true);
-            else navigate('/');
-          }}
+          aria-label="Sortir du mode simple"
+          title="Sortir du mode simple"
+          onClick={() => navigate('/')}
         >
-          <Lock size={24} />
+          <X size={24} />
         </button>
       </header>
-
-      {exitOpen && (
-        <Modal title="Sortir du mode simple" onClose={() => setExitOpen(false)}>
-          <div className="row-wrap" style={{ justifyContent: 'center' }}>
-            <PinPad
-              title="Code parent"
-              hint="Saisis le code PIN pour quitter le mode simple."
-              submitLabel="Sortir"
-              onSubmit={async (pin) => {
-                const result = await auth.unlock(pin);
-                if (result.status === 'ok') {
-                  setExitOpen(false);
-                  navigate('/');
-                  return null;
-                }
-                if (result.status === 'locked') return 'Trop d’essais. Patiente un instant.';
-                return 'Code incorrect.';
-              }}
-            />
-          </div>
-        </Modal>
-      )}
 
       {songs.length === 0 ? (
         <div style={{ marginTop: 16 }}>

@@ -3,9 +3,13 @@ import { createRoot } from 'react-dom/client';
 import { App } from './app/App';
 import './styles/global.css';
 import { installMenuBlocking } from './services/blockMenus';
+import { installFullscreen } from './services/fullscreen';
 
 // Seul le simple appui compte : pas de clic droit ni de menu d'appui long.
 installMenuBlocking();
+
+// Toute l'app tourne en plein écran.
+installFullscreen();
 
 // Le service worker n'est activé qu'en production. Il met en cache l'app shell,
 // les ressources chargées et les miniatures YouTube déjà consultées.
