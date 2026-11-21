@@ -17,6 +17,7 @@ const AutocollantsPage = lazy(() => import('../pages/AutocollantsPage').then((m)
 const BallonsPage = lazy(() => import('../pages/BallonsPage').then((m) => ({ default: m.BallonsPage })));
 const OmbresPage = lazy(() => import('../pages/OmbresPage').then((m) => ({ default: m.OmbresPage })));
 const CompterPage = lazy(() => import('../pages/CompterPage').then((m) => ({ default: m.CompterPage })));
+const MiniGamePage = lazy(() => import('../pages/MiniGamePage').then((m) => ({ default: m.MiniGamePage })));
 const PianoPage = lazy(() => import('../pages/PianoPage').then((m) => ({ default: m.PianoPage })));
 
 export function AppRoutes() {
@@ -37,6 +38,7 @@ export function AppRoutes() {
         <Route path="/ombres" element={<OmbresPage />} />
         <Route path="/compter" element={<CompterPage />} />
         <Route path="/piano" element={<PianoPage />} />
+        <Route path="/mini/:game" element={<MiniGamePage />} />
         <Route path="/simple" element={<SimpleModePage />} />
         <Route path="/parents" element={<ParentPage />} />
         <Route path="*" element={<Navigate to="/" replace />} />
