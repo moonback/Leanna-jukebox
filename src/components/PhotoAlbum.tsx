@@ -31,7 +31,7 @@ async function compressPhoto(file: File): Promise<File> {
       });
       if (!blob) throw new Error('La compression de cette photo a échoué.');
       if (blob.size <= MAX_COMPRESSED_SIZE) {
-        const extension = blob.type === 'image/webp' ? 'webp' : 'jpg';
+        const extension = blob.type === 'image/webp' ? 'webp' : blob.type === 'image/png' ? 'png' : 'jpg';
         const name = file.name.replace(/\\.[^.]+$/, '') || 'photo';
         return new File([blob], `${name}.${extension}`, {
           type: blob.type || 'image/jpeg',
