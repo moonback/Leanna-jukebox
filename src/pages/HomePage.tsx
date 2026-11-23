@@ -5,6 +5,7 @@ import { ParentAccessButton } from '../components/parental/ParentAccessButton';
 import { Illustration } from '../illustrations/Illustration';
 import { speakFrench } from '../services/speech';
 import { useMusicLibrary } from '../hooks/useMusicLibrary';
+import { useSettings } from '../hooks/useSettings';
 
 const TILES = [
   { to: '/simple', label: 'Musique', hint: 'Écouter une chanson', icon: Smile, color: '#e0ecdf' },
@@ -31,6 +32,7 @@ const MUSIC_BG = [
 /** Accueil enfant : mascotte, message de bienvenue et deux grands choix centrés, sur un fond d'images musicales. */
 export function HomePage() {
   const library = useMusicLibrary();
+  const { settings } = useSettings();
   // Miniatures des chansons enregistrées (les chansons de démonstration n'ont pas de vidéo).
   const covers = library.songs.filter((s) => s.youtubeVideoId).map((s) => s.youtubeVideoId);
 
@@ -71,7 +73,7 @@ export function HomePage() {
           className="quick-tiles"
           style={{ width: '100%', marginTop: 8, gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 220px))' /* 4 en ligne, 2 × 2 sur téléphone */, justifyContent: 'center' }}
         >
-          {TILES.map(({ to, label, hint, icon: Icon, color }) => (
+          {TILES.filter((tile) => tile.to !== '/videos' || settings.videosEnabled).map(({ to, label, hint, icon: Icon, color }) => (
             <Link
               key={to}
               to={to}
