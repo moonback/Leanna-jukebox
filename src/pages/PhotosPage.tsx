@@ -6,7 +6,7 @@ import { PhotoAlbum } from '../components/PhotoAlbum';
 /** Album consultable depuis l'espace enfant ; la gestion reste dans l'espace parents. */
 export function PhotosPage() {
   return (
-    <AppShell>
+    <AppShell showNavigation={false}>
       <header className="row-wrap" style={{ alignItems: 'center', marginBottom: 20 }}>
         <Link to="/" aria-label="Retour à l’accueil" className="btn btn--secondary btn--icon">
           <ChevronLeft size={28} />
