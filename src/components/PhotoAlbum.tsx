@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState, type ChangeEvent } from 'react';
-import { ImagePlus, RefreshCw, Trash2 } from 'lucide-react';
+import { ChevronLeft, ChevronRight, ImagePlus, RefreshCw, Trash2, X } from 'lucide-react';
 import { supabase } from '../storage/cloud/supabaseClient';
 import { EmptyState } from '../components/ui/EmptyState';
 import { Button } from '../components/ui/Button';
@@ -25,6 +25,7 @@ export function PhotoAlbum({ parentMode = false }: PhotoAlbumProps) {
   const [error, setError] = useState<string | null>(null);
   const [info, setInfo] = useState<string | null>(null);
   const [reloadKey, setReloadKey] = useState(0);
+  const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
 
   const loadPhotos = useCallback(async () => {
     if (!supabase) {
@@ -115,6 +116,7 @@ export function PhotoAlbum({ parentMode = false }: PhotoAlbumProps) {
       const { error: rowError } = await supabase.from('photo_album').delete().eq('id', photo.id);
       if (rowError) throw rowError;
       setPhotos((current) => current.filter((item) => item.id !== photo.id));
+      setSelectedIndex((current) => current === null ? null : current >= photos.length - 1 ? null : current > photos.indexOf(photo) ? current - 1 : current);
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : 'Suppression impossible.');
     } finally {
@@ -165,12 +167,19 @@ export function PhotoAlbum({ parentMode = false }: PhotoAlbumProps) {
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 180px), 1fr))', gap: 12 }}>
           {photos.map((photo) => (
             <figure key={photo.id} className="glass" style={{ margin: 0, padding: 8, overflow: 'hidden' }}>
-              <img
-                src={photo.url}
-                alt={photo.caption ?? 'Photo de l’album familial'}
-                loading="lazy"
-                style={{ width: '100%', aspectRatio: '1', objectFit: 'cover', borderRadius: 12 }}
-              />
+              <button
+                type="button"
+                onClick={() => setSelectedIndex(photos.findIndex((item) => item.id === photo.id))}
+                aria-label={`Afficher la photo ${photos.findIndex((item) => item.id === photo.id) + 1} en grand`}
+                style={{ display: 'block', width: '100%', padding: 0, border: 0, background: 'transparent', cursor: 'zoom-in' }}
+              >
+                <img
+                  src={photo.url}
+                  alt={photo.caption ?? 'Photo de l’album familial'}
+                  loading="lazy"
+                  style={{ display: 'block', width: '100%', aspectRatio: '1', objectFit: 'cover', borderRadius: 12 }}
+                />
+              </button>
               {parentMode && (
                 <figcaption style={{ display: 'flex', justifyContent: 'flex-end', paddingTop: 6 }}>
                   <Button variant="danger" icon={<Trash2 size={18} />} disabled={busy} onClick={() => void removePhoto(photo)}>
@@ -183,6 +192,38 @@ export function PhotoAlbum({ parentMode = false }: PhotoAlbumProps) {
         </div>
       )}
       {busy && <p className="muted" role="status">Chargement…</p>}
+      {selectedIndex !== null && photos[selectedIndex] && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-label="Visionneuse de photos"
+          onClick={(event) => { if (event.target === event.currentTarget) setSelectedIndex(null); }}
+          onKeyDown={(event) => {
+            if (event.key === 'Escape') setSelectedIndex(null);
+            if (event.key === 'ArrowLeft') setSelectedIndex((index) => index === null ? null : (index - 1 + photos.length) % photos.length);
+            if (event.key === 'ArrowRight') setSelectedIndex((index) => index === null ? null : (index + 1) % photos.length);
+          }}
+          tabIndex={0}
+          style={{ position: 'fixed', inset: 0, zIndex: 1000, display: 'grid', gridTemplateRows: 'auto 1fr auto', gap: 12, padding: 16, background: 'rgba(0,0,0,.92)', color: '#fff' }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <span>{selectedIndex + 1} / {photos.length}</span>
+            <button type="button" onClick={() => setSelectedIndex(null)} aria-label="Fermer" style={{ border: 0, background: 'transparent', color: 'inherit', cursor: 'pointer' }}>
+              <X size={28} />
+            </button>
+          </div>
+          <div style={{ minHeight: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 12 }}>
+            <button type="button" disabled={photos.length < 2} onClick={() => setSelectedIndex((index) => index === null ? null : (index - 1 + photos.length) % photos.length)} aria-label="Photo précédente" style={{ border: 0, borderRadius: 999, padding: 10, background: 'rgba(255,255,255,.16)', color: '#fff', cursor: 'pointer' }}>
+              <ChevronLeft size={30} />
+            </button>
+            <img src={photos[selectedIndex].url} alt={photos[selectedIndex].caption ?? 'Photo de l’album familial'} style={{ maxWidth: 'min(100%, 1100px)', maxHeight: '100%', objectFit: 'contain', borderRadius: 8 }} />
+            <button type="button" disabled={photos.length < 2} onClick={() => setSelectedIndex((index) => index === null ? null : (index + 1) % photos.length)} aria-label="Photo suivante" style={{ border: 0, borderRadius: 999, padding: 10, background: 'rgba(255,255,255,.16)', color: '#fff', cursor: 'pointer' }}>
+              <ChevronRight size={30} />
+            </button>
+          </div>
+          <p style={{ margin: 0, textAlign: 'center', opacity: .8 }}>Utilise les flèches pour passer à la photo précédente ou suivante.</p>
+        </div>
+      )}
       <p className="muted">Les photos sont privées et visibles uniquement avec le compte familial connecté.</p>
     </section>
   );
