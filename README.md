@@ -74,6 +74,7 @@ Appliquer les trois migrations versionnées dans l’ordre chronologique :
 2. `supabase/migrations/202611150001_family_realtime_sync.sql` — synchronisation familiale historique et publication Realtime.
 3. `supabase/migrations/202611160001_sync_outbox_lww.sql` — journal canonique `sync_records`, reçus idempotents, fonction serveur `merge_sync_record`, tombstones et reprise des bibliothèques déjà présentes.
 4. `supabase/migrations/202611170001_photo_album.sql` — bucket privé `family-photos`, table `photo_album` et politiques RLS/Storage par compte parent.
+5. `supabase/migrations/202611230001_video_album.sql` — bucket privé `family-videos`, table `video_album` et politiques RLS/Storage par compte parent (vidéos jusqu’à 50 Mo).
 
 Pour un projet Supabase déjà existant, inspecter les migrations appliquées, les tables, contraintes, politiques et publications avant toute intervention. Ne pas réinitialiser les tables à l’aveugle. La troisième migration doit être appliquée après les deux premières ; elle reprend les données des tables historiques dans le journal canonique sans supprimer les anciennes tables.
 
