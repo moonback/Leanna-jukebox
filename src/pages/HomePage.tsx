@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { Smile, Images, Gamepad2 } from 'lucide-react';
+import { Smile, Images, Gamepad2, Video } from 'lucide-react';
 import { AppShell } from '../components/layout/AppShell';
 import { ParentAccessButton } from '../components/parental/ParentAccessButton';
 import { Illustration } from '../illustrations/Illustration';
@@ -11,6 +11,7 @@ const TILES = [
   { to: '/imagier', label: 'Imagier', hint: 'Découvrir les images', icon: Images, color: '#f1dce8' },
   { to: '/jeux', label: 'Jeux', hint: 'Ballons, piano, mémoire…', icon: Gamepad2, color: '#dceaf3' },
   { to: '/photos', label: 'Photos', hint: 'Voir les photos de famille', icon: Images, color: '#f6edcf' },
+  { to: '/videos', label: 'Vidéos', hint: 'Regarder les vidéos de famille', icon: Video, color: '#dceaf3' },
   // { to: '/autocollants', label: 'Autocollants', hint: 'Mes récompenses', icon: Sticker, color: '#f6edcf' },
 ] as const;
 
