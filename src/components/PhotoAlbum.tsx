@@ -67,6 +67,7 @@ export function PhotoAlbum({ parentMode = false }: PhotoAlbumProps) {
   const [reloadKey, setReloadKey] = useState(0);
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
   const [activityKey, setActivityKey] = useState(0);
+  const [uploadProgress, setUploadProgress] = useState<{ completed: number; total: number; percent: number; stage: string } | null>(null);
 
   const loadPhotos = useCallback(async () => {
     if (!supabase) {
@@ -121,15 +122,18 @@ export function PhotoAlbum({ parentMode = false }: PhotoAlbumProps) {
     setBusy(true);
     setError(null);
     setInfo(null);
+    setUploadProgress({ completed: 0, total: files.length, percent: 0, stage: 'Préparation…' });
     try {
       const { data: userData, error: userError } = await supabase.auth.getUser();
       if (userError) throw userError;
       if (!userData.user) throw new Error('Connecte-toi au compte familial dans Réglages pour ajouter des photos.');
       let uploaded = 0;
-      for (const file of files) {
+      for (const [index, file] of files.entries()) {
+        setUploadProgress({ completed: index, total: files.length, percent: Math.round((index / files.length) * 100), stage: `Compression de la photo ${index + 1}/${files.length}…` });
         if (!file.type.startsWith('image/')) throw new Error(`${file.name} n’est pas une image.`);
         if (file.size > MAX_FILE_SIZE) throw new Error(`${file.name} dépasse la limite de 10 Mo.`);
         const compressedFile = await compressPhoto(file);
+        setUploadProgress({ completed: index, total: files.length, percent: Math.round(((index + 0.55) / files.length) * 100), stage: `Envoi de la photo ${index + 1}/${files.length}…` });
         const extension = compressedFile.name.split('.').pop()?.toLowerCase().replace(/[^a-z0-9]/g, '') || 'jpg';
         const path = `${userData.user.id}/${crypto.randomUUID()}.${extension}`;
         const { error: uploadError } = await supabase.storage.from(BUCKET).upload(path, compressedFile, {
@@ -147,6 +151,7 @@ export function PhotoAlbum({ parentMode = false }: PhotoAlbumProps) {
           throw insertError;
         }
         uploaded += 1;
+        setUploadProgress({ completed: uploaded, total: files.length, percent: Math.round((uploaded / files.length) * 100), stage: `${uploaded}/${files.length} photo${uploaded > 1 ? 's' : ''} importée${uploaded > 1 ? 's' : ''}` });
       }
       setInfo(`${uploaded} photo${uploaded > 1 ? 's ajoutée' : ' ajoutée'}${uploaded > 1 ? 's' : ''} à l’album.`);
       setReloadKey((key) => key + 1);
@@ -154,6 +159,7 @@ export function PhotoAlbum({ parentMode = false }: PhotoAlbumProps) {
       setError(cause instanceof Error ? cause.message : 'Envoi des photos impossible.');
     } finally {
       setBusy(false);
+      setUploadProgress(null);
     }
   };
 
@@ -206,6 +212,25 @@ export function PhotoAlbum({ parentMode = false }: PhotoAlbumProps) {
           </Button>
         </div>
       </div>
+      {uploadProgress && (
+        <div className="stack" role="status" aria-live="polite" style={{ gap: 6 }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12 }}>
+            <span>{uploadProgress.stage}</span>
+            <strong>{uploadProgress.percent}%</strong>
+          </div>
+          <div
+            role="progressbar"
+            aria-label="Progression de l’import des photos"
+            aria-valuemin={0}
+            aria-valuemax={100}
+            aria-valuenow={uploadProgress.percent}
+            style={{ height: 12, width: '100%', overflow: 'hidden', borderRadius: 999, background: 'var(--color-border, rgba(0,0,0,.12))' }}
+          >
+            <div style={{ height: '100%', width: `${uploadProgress.percent}%`, borderRadius: 999, background: 'var(--color-primary, #8b75c9)', transition: 'width .25s ease' }} />
+          </div>
+          <span className="muted">{uploadProgress.completed} sur {uploadProgress.total} photo{uploadProgress.total > 1 ? 's' : ''}</span>
+        </div>
+      )}
       {error && <p className="error-text" role="alert">{error}</p>}
       {info && <p role="status" className="muted">{info}</p>}
       {!busy && photos.length === 0 ? (
