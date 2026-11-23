@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { Smile, Images, Gamepad2, Sticker } from 'lucide-react';
+import { Smile, Images, Gamepad2 } from 'lucide-react';
 import { AppShell } from '../components/layout/AppShell';
 import { ParentAccessButton } from '../components/parental/ParentAccessButton';
 import { Illustration } from '../illustrations/Illustration';
