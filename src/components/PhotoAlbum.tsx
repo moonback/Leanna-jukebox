@@ -6,6 +6,46 @@ import { Button } from '../components/ui/Button';
 
 const BUCKET = 'family-photos';
 const MAX_FILE_SIZE = 10 * 1024 * 1024;
+const MAX_COMPRESSED_SIZE = 1024 * 1024;
+
+async function compressPhoto(file: File): Promise<File> {
+  if (file.size <= MAX_COMPRESSED_SIZE) return file;
+
+  const bitmap = await createImageBitmap(file);
+  try {
+    const scale = Math.min(1, 1920 / Math.max(bitmap.width, bitmap.height));
+    let width = Math.max(1, Math.round(bitmap.width * scale));
+    let height = Math.max(1, Math.round(bitmap.height * scale));
+    const canvas = document.createElement('canvas');
+    const context = canvas.getContext('2d');
+    if (!context) throw new Error('La compression de cette photo est impossible.');
+
+    for (let attempt = 0; attempt < 12; attempt += 1) {
+      canvas.width = width;
+      canvas.height = height;
+      context.clearRect(0, 0, width, height);
+      context.drawImage(bitmap, 0, 0, width, height);
+
+      const blob = await new Promise<Blob | null>((resolve) => {
+        canvas.toBlob(resolve, 'image/webp', Math.max(0.35, 0.86 - attempt * 0.07));
+      });
+      if (!blob) throw new Error('La compression de cette photo a échoué.');
+      if (blob.size <= MAX_COMPRESSED_SIZE) {
+        const extension = blob.type === 'image/webp' ? 'webp' : blob.type === 'image/png' ? 'png' : 'jpg';
+        const name = file.name.replace(/\\.[^.]+$/, '') || 'photo';
+        return new File([blob], `${name}.${extension}`, {
+          type: blob.type || 'image/jpeg',
+          lastModified: file.lastModified,
+        });
+      }
+      width = Math.max(1, Math.round(width * 0.85));
+      height = Math.max(1, Math.round(height * 0.85));
+    }
+    throw new Error(`${file.name} ne peut pas être réduite sous 1 Mo.`);
+  } finally {
+    bitmap.close();
+  }
+}
 
 interface PhotoRow {
   id: string;
@@ -89,10 +129,11 @@ export function PhotoAlbum({ parentMode = false }: PhotoAlbumProps) {
       for (const file of files) {
         if (!file.type.startsWith('image/')) throw new Error(`${file.name} n’est pas une image.`);
         if (file.size > MAX_FILE_SIZE) throw new Error(`${file.name} dépasse la limite de 10 Mo.`);
-        const extension = file.name.split('.').pop()?.toLowerCase().replace(/[^a-z0-9]/g, '') || 'jpg';
+        const compressedFile = await compressPhoto(file);
+        const extension = compressedFile.name.split('.').pop()?.toLowerCase().replace(/[^a-z0-9]/g, '') || 'jpg';
         const path = `${userData.user.id}/${crypto.randomUUID()}.${extension}`;
-        const { error: uploadError } = await supabase.storage.from(BUCKET).upload(path, file, {
-          contentType: file.type,
+        const { error: uploadError } = await supabase.storage.from(BUCKET).upload(path, compressedFile, {
+          contentType: compressedFile.type,
           upsert: false,
         });
         if (uploadError) throw uploadError;
