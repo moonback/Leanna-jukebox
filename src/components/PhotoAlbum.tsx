@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState, type ChangeEvent } from 'react';
+import { useCallback, useEffect, useRef, useState, type ChangeEvent } from 'react';
 import { ChevronLeft, ChevronRight, ImagePlus, RefreshCw, Trash2, X } from 'lucide-react';
 import { supabase } from '../storage/cloud/supabaseClient';
 import { EmptyState } from '../components/ui/EmptyState';
@@ -68,6 +68,7 @@ export function PhotoAlbum({ parentMode = false }: PhotoAlbumProps) {
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
   const [activityKey, setActivityKey] = useState(0);
   const [uploadProgress, setUploadProgress] = useState<{ completed: number; total: number; percent: number; stage: string } | null>(null);
+  const touchStart = useRef<{ x: number; y: number } | null>(null);
 
   const loadPhotos = useCallback(async () => {
     if (!supabase) {
@@ -290,7 +291,25 @@ export function PhotoAlbum({ parentMode = false }: PhotoAlbumProps) {
               <X size={28} />
             </button>
           </div>
-          <div style={{ minHeight: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 12 }}>
+          <div
+            onTouchStart={(event) => {
+              const touch = event.touches[0];
+              touchStart.current = { x: touch.clientX, y: touch.clientY };
+            }}
+            onTouchEnd={(event) => {
+              if (!touchStart.current) return;
+              const touch = event.changedTouches[0];
+              const deltaX = touch.clientX - touchStart.current.x;
+              const deltaY = touch.clientY - touchStart.current.y;
+              touchStart.current = null;
+              if (Math.abs(deltaX) > 50 && Math.abs(deltaX) > Math.abs(deltaY) * 1.2 && photos.length > 1) {
+                setActivityKey((key) => key + 1);
+                setSelectedIndex((index) => index === null ? null : (index + (deltaX < 0 ? 1 : -1) + photos.length) % photos.length);
+              }
+            }}
+            onTouchCancel={() => { touchStart.current = null; }}
+            style={{ minHeight: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 12, touchAction: 'pan-y' }}
+          >
             <button type="button" disabled={photos.length < 2} onClick={() => setSelectedIndex((index) => index === null ? null : (index - 1 + photos.length) % photos.length)} aria-label="Photo précédente" style={{ border: 0, borderRadius: 999, padding: 10, background: 'rgba(255,255,255,.16)', color: '#fff', cursor: 'pointer' }}>
               <ChevronLeft size={30} />
             </button>
@@ -299,7 +318,7 @@ export function PhotoAlbum({ parentMode = false }: PhotoAlbumProps) {
               <ChevronRight size={30} />
             </button>
           </div>
-          <p style={{ margin: 0, textAlign: 'center', opacity: .8 }}>Utilise les flèches pour passer à la photo précédente ou suivante.</p>
+          <p style={{ margin: 0, textAlign: 'center', opacity: .8 }}>Balaye l’écran ou utilise les flèches pour passer à la photo précédente ou suivante.</p>
         </div>
       )}
       <p className="muted">Les photos sont privées et visibles uniquement avec le compte familial connecté.</p>
