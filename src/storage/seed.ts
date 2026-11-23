@@ -28,6 +28,7 @@ export function defaultSettings(): ParentSettings {
     childMode: false,
     soundsEnabled: false,
     fullscreenMode: false,
+    videosEnabled: false,
     schemaVersion: CURRENT_SCHEMA_VERSION,
   };
 }
