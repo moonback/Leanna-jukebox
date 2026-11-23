@@ -293,12 +293,17 @@ export function PhotoAlbum({ parentMode = false }: PhotoAlbumProps) {
           </div>
           <div
             onTouchStart={(event) => {
-              const touch = event.touches[0];
+              const touch = event.touches.item(0);
+              if (!touch) return;
               touchStart.current = { x: touch.clientX, y: touch.clientY };
             }}
             onTouchEnd={(event) => {
               if (!touchStart.current) return;
-              const touch = event.changedTouches[0];
+              const touch = event.changedTouches.item(0);
+              if (!touch) {
+                touchStart.current = null;
+                return;
+              }
               const deltaX = touch.clientX - touchStart.current.x;
               const deltaY = touch.clientY - touchStart.current.y;
               touchStart.current = null;
