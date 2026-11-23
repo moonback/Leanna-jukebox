@@ -26,6 +26,7 @@ export function PhotoAlbum({ parentMode = false }: PhotoAlbumProps) {
   const [info, setInfo] = useState<string | null>(null);
   const [reloadKey, setReloadKey] = useState(0);
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
+  const [activityKey, setActivityKey] = useState(0);
 
   const loadPhotos = useCallback(async () => {
     if (!supabase) {
@@ -63,6 +64,15 @@ export function PhotoAlbum({ parentMode = false }: PhotoAlbumProps) {
   }, []);
 
   useEffect(() => { void loadPhotos(); }, [loadPhotos, reloadKey]);
+
+  // En diaporama, avance après 10 secondes sans interaction.
+  useEffect(() => {
+    if (selectedIndex === null || photos.length < 2) return;
+    const timeout = window.setTimeout(() => {
+      setSelectedIndex((current) => current === null ? null : (current + 1) % photos.length);
+    }, 10_000);
+    return () => window.clearTimeout(timeout);
+  }, [selectedIndex, photos.length, activityKey]);
 
   const upload = async (event: ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(event.target.files ?? []);
@@ -197,8 +207,10 @@ export function PhotoAlbum({ parentMode = false }: PhotoAlbumProps) {
           role="dialog"
           aria-modal="true"
           aria-label="Visionneuse de photos"
-          onClick={(event) => { if (event.target === event.currentTarget) setSelectedIndex(null); }}
+          onClick={(event) => { setActivityKey((key) => key + 1); if (event.target === event.currentTarget) setSelectedIndex(null); }}
+          onPointerDown={() => setActivityKey((key) => key + 1)}
           onKeyDown={(event) => {
+            setActivityKey((key) => key + 1);
             if (event.key === 'Escape') setSelectedIndex(null);
             if (event.key === 'ArrowLeft') setSelectedIndex((index) => index === null ? null : (index - 1 + photos.length) % photos.length);
             if (event.key === 'ArrowRight') setSelectedIndex((index) => index === null ? null : (index + 1) % photos.length);
