@@ -20,6 +20,8 @@ export interface ParentSettings {
   soundsEnabled: boolean;
   /** Passe le lecteur en plein écran au lancement d'une chanson (action explicite requise). */
   fullscreenMode: boolean;
+  /** Affiche l'espace vidéos dans l'interface enfant (désactivé par défaut). */
+  videosEnabled: boolean;
   schemaVersion: number;
 }
 

@@ -1,5 +1,6 @@
 import { NavLink } from 'react-router-dom';
 import { BookOpen, Home, Images, Library, ListMusic, Video } from 'lucide-react';
+import { useSettings } from '../../hooks/useSettings';
 
 const items = [
   { to: '/', label: 'Accueil', icon: Home, end: true },
@@ -12,6 +13,8 @@ const items = [
 
 /** Navigation enfant : quatre grandes cibles, espacées pour éviter les mauvaises manipulations. */
 export function ChildNavigation() {
+  const { settings } = useSettings();
+  const visibleItems = items.filter((item) => item.to !== '/videos' || settings.videosEnabled);
   return (
     <nav
       aria-label="Navigation principale"
@@ -23,13 +26,13 @@ export function ChildNavigation() {
         bottom: 'calc(var(--safe-bottom) + 12px)',
         width: 'min(560px, calc(100% - 32px))',
         display: 'grid',
-        gridTemplateColumns: 'repeat(6, minmax(0, 1fr))',
+        gridTemplateColumns: `repeat(${visibleItems.length}, minmax(0, 1fr))`,
         gap: 8,
         padding: 8,
         zIndex: 20,
       }}
     >
-      {items.map(({ to, label, icon: Icon, end }) => (
+      {visibleItems.map(({ to, label, icon: Icon, end }) => (
         <NavLink
           key={to}
           to={to}

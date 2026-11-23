@@ -1,10 +1,13 @@
-import { Link } from 'react-router-dom';
+import { Link, Navigate } from 'react-router-dom';
 import { ChevronLeft } from 'lucide-react';
 import { AppShell } from '../components/layout/AppShell';
 import { VideoAlbum } from '../components/VideoAlbum';
+import { useSettings } from '../hooks/useSettings';
 
 /** Album consultable depuis l'espace enfant ; la gestion reste dans l'espace parents. */
 export function VideosPage() {
+  const { settings } = useSettings();
+  if (!settings.videosEnabled) return <Navigate to="/" replace />;
   return (
     <AppShell showNavigation={false}>
       <header className="row-wrap" style={{ alignItems: 'center', marginBottom: 20 }}>

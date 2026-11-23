@@ -107,6 +107,10 @@ export function SettingsPanel() {
             <input type="checkbox" checked={settings.fullscreenMode} onChange={(e) => save({ fullscreenMode: e.target.checked })} style={{ width: 26, height: 26 }} />
           </label>
           <label className="field field--row">
+            Espace vidéos (désactivé par défaut)
+            <input type="checkbox" checked={settings.videosEnabled} onChange={(e) => save({ videosEnabled: e.target.checked })} style={{ width: 26, height: 26 }} />
+          </label>
+          <label className="field field--row">
             Sons d’interface (désactivés par défaut)
             <input
               type="checkbox"

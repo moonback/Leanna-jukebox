@@ -188,6 +188,6 @@ export async function deleteAllData(database: JukeboxDatabase = defaultDb): Prom
     for (const row of categories) await enqueueSyncOperation(database, 'category', row.id, 'upsert', { ...row });
     for (const row of songs) await enqueueSyncOperation(database, 'song', row.id, 'upsert', { ...row });
     for (const row of playlists) await enqueueSyncOperation(database, 'playlist', row.id, 'upsert', { ...row });
-    await enqueueSyncOperation(database, 'settings', 'parent', 'upsert', { maxSessionMinutes: 0, maxVolumePreference: 80, childMode: false, soundsEnabled: false, fullscreenMode: false, schemaVersion: 1 });
+    await enqueueSyncOperation(database, 'settings', 'parent', 'upsert', { maxSessionMinutes: 0, maxVolumePreference: 80, childMode: false, soundsEnabled: false, fullscreenMode: false, videosEnabled: false, schemaVersion: 1 });
   });
 }

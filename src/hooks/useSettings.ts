@@ -6,5 +6,5 @@ import type { ParentSettings } from '../types/settings';
 /** Réglages parents en direct (volume maximal, mode enfant, plein écran…). */
 export function useSettings(): { settings: ParentSettings; loaded: boolean } {
   const stored = useLiveQuery(() => db.settings.get('parent'), [], undefined);
-  return { settings: stored ?? defaultSettings(), loaded: stored !== undefined };
+  return { settings: { ...defaultSettings(), ...stored }, loaded: stored !== undefined };
 }
