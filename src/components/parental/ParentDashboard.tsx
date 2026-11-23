@@ -1,5 +1,5 @@
 ﻿import { useState } from 'react';
-import { ArrowDown, ArrowUp, FolderOpen, ListMusic, Music, Pencil, Plus, Search, Settings, Star, Trash2, type LucideIcon } from 'lucide-react';
+import { ArrowDown, ArrowUp, FolderOpen, Images, ListMusic, Music, Pencil, Plus, Search, Settings, Star, Trash2, type LucideIcon } from 'lucide-react';
 import { useMusicLibrary } from '../../hooks/useMusicLibrary';
 import { Illustration } from '../../illustrations/Illustration';
 import { Button } from '../ui/Button';
@@ -12,13 +12,15 @@ import { deleteSong, moveSong, toggleFavorite } from '../../storage/songReposito
 import { db } from '../../storage/database';
 import { toUserMessage } from '../../services/errors';
 import type { Song } from '../../types/song';
+import { PhotoAlbum } from '../PhotoAlbum';
 
-type Tab = 'songs' | 'playlists' | 'categories' | 'settings';
+type Tab = 'songs' | 'playlists' | 'categories' | 'photos' | 'settings';
 
 const TABS: Array<{ key: Tab; label: string; Icon: LucideIcon }> = [
   { key: 'songs', label: 'Chansons', Icon: Music },
   { key: 'playlists', label: 'Playlists', Icon: ListMusic },
   { key: 'categories', label: 'Catégories', Icon: FolderOpen },
+  { key: 'photos', label: 'Photos', Icon: Images },
   { key: 'settings', label: 'Réglages', Icon: Settings },
 ];
 
@@ -43,6 +45,7 @@ export function ParentDashboard() {
       {tab === 'songs' && <SongsTab />}
       {tab === 'playlists' && <PlaylistEditor />}
       {tab === 'categories' && <CategoryEditor />}
+      {tab === 'photos' && <PhotoAlbum parentMode />}
       {tab === 'settings' && <SettingsPanel />}
     </div>
   );

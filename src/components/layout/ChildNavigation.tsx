@@ -1,11 +1,12 @@
 import { NavLink } from 'react-router-dom';
-import { BookOpen, Home, Library, ListMusic } from 'lucide-react';
+import { BookOpen, Home, Images, Library, ListMusic } from 'lucide-react';
 
 const items = [
   { to: '/', label: 'Accueil', icon: Home, end: true },
   { to: '/library', label: 'Bibliothèque', icon: Library, end: false },
   { to: '/list/favorites', label: 'Favoris', icon: ListMusic, end: false },
   { to: '/imagier', label: 'Imagier', icon: BookOpen, end: false },
+  { to: '/photos', label: 'Photos', icon: Images, end: false },
 ];
 
 /** Navigation enfant : quatre grandes cibles, espacées pour éviter les mauvaises manipulations. */
@@ -21,7 +22,7 @@ export function ChildNavigation() {
         bottom: 'calc(var(--safe-bottom) + 12px)',
         width: 'min(560px, calc(100% - 32px))',
         display: 'grid',
-        gridTemplateColumns: 'repeat(4, 1fr)',
+        gridTemplateColumns: 'repeat(5, minmax(0, 1fr))',
         gap: 8,
         padding: 8,
         zIndex: 20,

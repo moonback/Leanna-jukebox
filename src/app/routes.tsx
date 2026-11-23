@@ -7,6 +7,7 @@ const LibraryPage = lazy(() => import('../pages/LibraryPage').then((m) => ({ def
 const SongListPage = lazy(() => import('../pages/SongListPage').then((m) => ({ default: m.SongListPage })));
 const PlayerPage = lazy(() => import('../pages/PlayerPage').then((m) => ({ default: m.PlayerPage })));
 const ParentPage = lazy(() => import('../pages/ParentPage').then((m) => ({ default: m.ParentPage })));
+const PhotosPage = lazy(() => import('../pages/PhotosPage').then((m) => ({ default: m.PhotosPage })));
 const SimpleModePage = lazy(() => import('../pages/SimpleModePage').then((m) => ({ default: m.SimpleModePage })));
 const ImagierPage = lazy(() => import('../pages/ImagierPage').then((m) => ({ default: m.ImagierPage })));
 const ChercheTrouvePage = lazy(() => import('../pages/ChercheTrouvePage').then((m) => ({ default: m.ChercheTrouvePage })));
@@ -39,6 +40,7 @@ export function AppRoutes() {
         <Route path="/piano" element={<PianoPage />} />
         <Route path="/simple" element={<SimpleModePage />} />
         <Route path="/parents" element={<ParentPage />} />
+        <Route path="/photos" element={<PhotosPage />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </Suspense>
